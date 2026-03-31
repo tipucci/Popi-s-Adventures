@@ -1,0 +1,92 @@
+﻿import { h } from "preact";
+import { useEffect, useRef } from "preact/hooks";
+import { withBase } from "../utils/base.js";
+
+export default function Mappa({ escursioni = [], height = "420px" }) {
+  const mapElement = useRef(null);
+  const mapInstance = useRef(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function initMap() {
+      const points = escursioni.filter(
+        (item) => Number.isFinite(item.lat) && Number.isFinite(item.lng)
+      );
+
+      if (!mapElement.current || !points.length) return;
+
+      const L = (await import("leaflet")).default;
+
+      if (cancelled || mapInstance.current) return;
+
+      delete L.Icon.Default.prototype._getIconUrl;
+      L.Icon.Default.mergeOptions({
+        iconRetinaUrl:
+          "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+        iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+        shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png"
+      });
+
+      const map = L.map(mapElement.current, {
+        scrollWheelZoom: false
+      });
+
+      mapInstance.current = map;
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      }).addTo(map);
+
+      const bounds = [];
+
+      points.forEach((item) => {
+        const marker = L.marker([item.lat, item.lng]).addTo(map);
+        marker.bindPopup(
+          `<strong>${item.titolo}</strong><br/>${item.luogo}<br/><a href="${withBase(`/escursioni/${item.slug}`)}">Apri dettaglio</a>`
+        );
+        bounds.push([item.lat, item.lng]);
+      });
+
+      if (bounds.length === 1) {
+        map.setView(bounds[0], 11);
+      } else {
+        map.fitBounds(bounds, { padding: [40, 40] });
+      }
+
+      setTimeout(() => {
+        map.invalidateSize();
+      }, 0);
+    }
+
+    initMap();
+
+    return () => {
+      cancelled = true;
+      if (mapInstance.current) {
+        mapInstance.current.remove();
+        mapInstance.current = null;
+      }
+    };
+  }, [escursioni]);
+
+  const hasCoordinates = escursioni.some(
+    (item) => Number.isFinite(item.lat) && Number.isFinite(item.lng)
+  );
+
+  if (!hasCoordinates) {
+    return (
+      <div class="flex h-full min-h-[260px] w-full min-w-0 items-center justify-center rounded-[1.75rem] border border-dashed border-forest-300 bg-white/70 p-6 text-center text-sm text-forest-700 sm:min-h-[320px]">
+        Nessuna coordinata disponibile. Aggiungi `lat` e `lng` al foglio Google per vedere la mappa.
+      </div>
+    );
+  }
+
+  return (
+    <div
+      ref={mapElement}
+      class="leaflet-host w-full min-w-0 max-w-full overflow-hidden rounded-[1.75rem] border border-white/70 shadow-card"
+      style={{ height, minHeight: "260px" }}
+    />
+  );
+}

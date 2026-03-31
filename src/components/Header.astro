@@ -1,0 +1,52 @@
+---
+import { withBase } from "../utils/base.js";
+
+const {
+  title = "Popi's Adventures",
+  subtitle = "Un diario, tre popi e un sacco di avventure",
+  image = "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1400&q=80"
+} = Astro.props;
+---
+
+<section class="relative overflow-hidden rounded-[2rem] bg-forest-800 text-white shadow-card">
+  <div class="absolute inset-0">
+    <img
+      src={image}
+      alt="Panorama di montagna"
+      class="h-full w-full object-cover opacity-55"
+      loading="eager"
+    />
+    <div class="absolute inset-0 bg-gradient-to-t from-forest-800 via-forest-800/55 to-transparent"></div>
+  </div>
+
+  <div class="relative px-6 py-10 sm:px-10 sm:py-14">
+    <div class="max-w-2xl">
+      <h1 class="font-display text-4xl leading-tight sm:text-5xl lg:text-6xl">Popi's Adventures</h1>
+      <p class="mt-4 max-w-xl text-sm text-cream/90 sm:text-base">{subtitle}</p>
+
+      <div class="mt-8 flex flex-wrap gap-3">
+        <a
+          href={withBase("/escursioni")}
+          class="inline-flex items-center justify-center rounded-full bg-terracotta-500 px-5 py-3 text-sm font-bold text-white transition hover:bg-terracotta-400"
+        >
+          Scopri le escursioni
+        </a>
+        <a
+          href={`${withBase("/escursioni")}#mappa`}
+          class="inline-flex items-center justify-center rounded-full border border-white/30 bg-white/10 px-5 py-3 text-sm font-bold text-white transition hover:bg-white/20"
+        >
+          Apri la mappa
+        </a>
+      </div>
+    </div>
+
+
+  </div>
+</section>
+
+
+
+
+
+
+

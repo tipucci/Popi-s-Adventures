@@ -1,0 +1,311 @@
+const CSV_URL =
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vT29EGlSwQbCjoc9lnwcS3x7VX8XommgfcI9qrFsrCZzQmlNEjoYqKq5YU1ZKhgHKnidVX8LWTLmTuT/pub?gid=0&single=true&output=csv";
+
+const FETCH_TIMEOUT_MS = 8000;
+
+const fallbackCovers = [
+  "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1521295121783-8a321d551ad2?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1482192596544-9eb780fc7f66?auto=format&fit=crop&w=1200&q=80"
+];
+
+function slugify(value = "") {
+  return value
+    .toString()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function normalizeHeader(value = "") {
+  return value
+    .toString()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+}
+
+function toNumber(value, fallback = 0) {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value !== "string") return fallback;
+  const normalized = value.replace(",", ".").replace(/[^\d.-]/g, "");
+  const parsed = Number.parseFloat(normalized);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function toOptionalNumber(value) {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value !== "string" || !value.trim()) return Number.NaN;
+  const normalized = value.replace(",", ".").replace(/[^\d.-]/g, "");
+  const parsed = Number.parseFloat(normalized);
+  return Number.isFinite(parsed) ? parsed : Number.NaN;
+}
+
+function toBoolean(value) {
+  if (typeof value === "boolean") return value;
+  if (typeof value !== "string") return false;
+  return ["si", "sì", "yes", "true", "1", "x"].includes(value.trim().toLowerCase());
+}
+
+function toArray(value) {
+  if (Array.isArray(value)) return value.filter(Boolean);
+  if (typeof value !== "string") return [];
+  return value
+    .split(/[|,;]/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function parseDateParts(value = "") {
+  const text = String(value).trim();
+  if (!text) return null;
+
+  const isoMatch = text.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/);
+  if (isoMatch) {
+    const [, year, month, day] = isoMatch;
+    return { year: Number(year), month: Number(month), day: Number(day) };
+  }
+
+  const euMatch = text.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{2,4})$/);
+  if (euMatch) {
+    const [, day, month, rawYear] = euMatch;
+    const year = rawYear.length === 2 ? Number(`20${rawYear}`) : Number(rawYear);
+    return { year, month: Number(month), day: Number(day) };
+  }
+
+  const parsed = new Date(text);
+  if (Number.isNaN(parsed.getTime())) return null;
+  return {
+    year: parsed.getFullYear(),
+    month: parsed.getMonth() + 1,
+    day: parsed.getDate()
+  };
+}
+
+function normalizeDate(value) {
+  const parts = parseDateParts(value);
+  if (!parts) return "";
+  const { year, month, day } = parts;
+  return `${String(year).padStart(4, "0")}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
+function dateToTime(value) {
+  const normalized = normalizeDate(value);
+  if (!normalized) return 0;
+  return new Date(`${normalized}T00:00:00`).getTime();
+}
+
+function parseCsv(text) {
+  const rows = [];
+  let row = [];
+  let current = "";
+  let inQuotes = false;
+
+  for (let i = 0; i < text.length; i += 1) {
+    const char = text[i];
+    const next = text[i + 1];
+
+    if (char === '"') {
+      if (inQuotes && next === '"') {
+        current += '"';
+        i += 1;
+      } else {
+        inQuotes = !inQuotes;
+      }
+      continue;
+    }
+
+    if (char === "," && !inQuotes) {
+      row.push(current);
+      current = "";
+      continue;
+    }
+
+    if ((char === "\n" || char === "\r") && !inQuotes) {
+      if (char === "\r" && next === "\n") i += 1;
+      row.push(current);
+      rows.push(row);
+      row = [];
+      current = "";
+      continue;
+    }
+
+    current += char;
+  }
+
+  if (current.length || row.length) {
+    row.push(current);
+    rows.push(row);
+  }
+
+  if (!rows.length) return [];
+
+  const [headers, ...entries] = rows;
+  const normalizedHeaders = headers.map(normalizeHeader);
+
+  return entries
+    .filter((entry) => entry.some((cell) => String(cell).trim() !== ""))
+    .map((entry) => {
+      const item = {};
+      normalizedHeaders.forEach((header, index) => {
+        item[header] = (entry[index] || "").trim();
+      });
+      return item;
+    });
+}
+
+function pickCover(seed = "") {
+  const index = Math.abs(seed.split("").reduce((total, char) => total + char.charCodeAt(0), 0)) % fallbackCovers.length;
+  return fallbackCovers[index];
+}
+
+function hasGea(raw) {
+  if (toBoolean(raw.cane) || toBoolean(raw.gea) || toBoolean(raw.con_gea)) {
+    return true;
+  }
+
+  const partecipanti = toArray(raw.partecipanti).map((item) => slugify(item));
+  return partecipanti.includes("gea") || partecipanti.includes("cane");
+}
+
+function normalizeParticipants(raw) {
+  const people = ["meg", "tizi"];
+  if (hasGea(raw)) {
+    people.push("gea");
+  }
+  return people;
+}
+
+function normalizeTags(rawTag, rawFields) {
+  const tags = new Set(toArray(rawTag).map((item) => item.toLowerCase()));
+  if (rawFields.provincia) tags.add(rawFields.provincia.toLowerCase());
+  if (toBoolean(rawFields.anello)) tags.add("anello");
+  if (toBoolean(rawFields.rifugio)) tags.add("rifugio");
+  if (toBoolean(rawFields.acqua)) tags.add("acqua");
+  return [...tags].filter(Boolean);
+}
+
+function formatLuogo(raw) {
+  const parts = [raw.luogo, raw.provincia].filter(Boolean);
+  return parts.join(", ") || "Localita da definire";
+}
+
+function buildDescription(raw) {
+  const parts = [];
+  if (raw.note) parts.push(raw.note);
+  if (raw.nome_rifugio) parts.push(`Rifugio: ${raw.nome_rifugio}.`);
+  if (raw.voto) parts.push(`Voto personale: ${raw.voto}/10.`);
+  return parts.join(" ") || "Escursione importata dal diario condiviso.";
+}
+
+function toApiShape(raw) {
+  const gea = hasGea(raw);
+
+  return {
+    data: normalizeDate(raw.data || ""),
+    titolo: raw.titolo || "",
+    luogo: raw.luogo || "",
+    km: toNumber(raw.km),
+    durata: raw.durata || "",
+    dislivello: toNumber(raw.dislivello),
+    difficolta: raw.difficolta || "",
+    partecipanti: raw.partecipanti || "",
+    cane: gea,
+    tag: raw.tag || "",
+    note: raw.note || "",
+    provincia: raw.provincia || "",
+    acqua: toBoolean(raw.acqua),
+    rifugio: toBoolean(raw.rifugio),
+    nome_rifugio: raw.nome_rifugio || "",
+    anello: toBoolean(raw.anello),
+    voto: toNumber(raw.voto),
+    slug: raw.slug || "",
+    lat: toOptionalNumber(raw.lat ?? raw.latitudine),
+    lng: toOptionalNumber(raw.lng ?? raw.longitudine ?? raw.lon ?? raw.long)
+  };
+}
+
+export function normalizeEscursione(raw, index = 0) {
+  const api = toApiShape(raw);
+  const titolo = api.titolo || `Escursione ${index + 1}`;
+  const luogoCompleto = formatLuogo(api);
+  const tag = normalizeTags(api.tag, api);
+  const partecipanti = normalizeParticipants(raw);
+  const cover = pickCover(`${titolo}-${luogoCompleto}`);
+
+  return {
+    ...api,
+    slug: api.slug ? slugify(api.slug) : slugify(titolo),
+    luogo: luogoCompleto,
+    descrizione: buildDescription(api),
+    durataMinuti: toNumber(api.durata),
+    partecipanti,
+    tag,
+    cover,
+    foto: [cover]
+  };
+}
+
+export function sortByDateDesc(a, b) {
+  return dateToTime(b.data) - dateToTime(a.data);
+}
+
+export async function fetchEscursioniCsv() {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+
+  try {
+    const response = await fetch(CSV_URL, {
+      signal: controller.signal,
+      headers: {
+        Accept: "text/csv,text/plain;q=0.9,*/*;q=0.8"
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`CSV responded with ${response.status}`);
+    }
+
+    const text = await response.text();
+    return parseCsv(text);
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+export async function getEscursioni() {
+  try {
+    const rows = await fetchEscursioniCsv();
+    return rows.map(normalizeEscursione).sort(sortByDateDesc);
+  } catch (error) {
+    return [];
+  }
+}
+
+export async function getEscursioneBySlug(slug) {
+  const escursioni = await getEscursioni();
+  return escursioni.find((item) => item.slug === slug);
+}
+
+export async function getEscursioniApiData() {
+  try {
+    const rows = await fetchEscursioniCsv();
+    return rows.map(toApiShape).sort(sortByDateDesc);
+  } catch (error) {
+    return [];
+  }
+}
+
+export function getCsvUrl() {
+  return CSV_URL;
+}
+

@@ -1,0 +1,15 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import Filtri from "../../components/Filtri.jsx";
+import { getEscursioni } from "../../data/escursioni.js";
+
+const escursioni = await getEscursioni();
+---
+
+<Layout
+  title="Escursioni | Popi's Adventures"
+  description="Elenco filtrabile di tutte le escursioni con ordinamento, paginazione e mappa."
+  active="escursioni"
+>
+  <Filtri client:load escursioni={escursioni} />
+</Layout>
