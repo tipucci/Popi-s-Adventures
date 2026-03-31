@@ -1,4 +1,4 @@
-﻿@import url("https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Nunito:wght@400;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Nunito:wght@400;600;700;800&display=swap");
 @import "leaflet/dist/leaflet.css";
 
 @tailwind base;
@@ -45,4 +45,21 @@ img {
 .leaflet-popup-tip {
   background: #fff8f2;
   color: #243c26;
+}
+
+.leaflet-host .leaflet-container {
+  border-radius: inherit;
+}
+
+.leaflet-host .leaflet-pane,
+.leaflet-host .leaflet-tile-pane,
+.leaflet-host .leaflet-map-pane,
+.leaflet-host .leaflet-control-container {
+  border-radius: inherit;
+}
+
+.leaflet-host .leaflet-control-attribution,
+.leaflet-host .leaflet-control-zoom {
+  overflow: hidden;
+  border-radius: 1rem;
 }

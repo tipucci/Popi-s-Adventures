@@ -5,6 +5,7 @@ import CardEscursione from "../components/CardEscursione.jsx";
 import Mappa from "../components/Mappa.jsx";
 import { getEscursioni } from "../data/escursioni.js";
 import { withBase } from "../utils/base.js";
+import { formatKilometers, formatMeters } from "../utils/format.js";
 
 const escursioni = await getEscursioni();
 const recenti = escursioni.slice(0, 3);
@@ -12,8 +13,8 @@ const hasEscursioni = escursioni.length > 0;
 
 const stats = {
   uscite: escursioni.length,
-  km: escursioni.reduce((total, item) => total + item.km, 0).toFixed(1),
-  dislivello: escursioni.reduce((total, item) => total + item.dislivello, 0),
+  km: formatKilometers(escursioni.reduce((total, item) => total + item.km, 0)),
+  dislivello: formatMeters(escursioni.reduce((total, item) => total + item.dislivello, 0)),
   conGea: escursioni.filter((item) => item.partecipanti.includes("gea")).length
 };
 ---

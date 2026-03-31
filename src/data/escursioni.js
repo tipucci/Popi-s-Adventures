@@ -53,7 +53,12 @@ function toOptionalNumber(value) {
 function toBoolean(value) {
   if (typeof value === "boolean") return value;
   if (typeof value !== "string") return false;
-  return ["si", "sì", "yes", "true", "1", "x"].includes(value.trim().toLowerCase());
+  const normalized = value
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+  return ["si", "yes", "true", "1", "x"].includes(normalized);
 }
 
 function toArray(value) {
@@ -185,11 +190,25 @@ function normalizeParticipants(raw) {
   return people;
 }
 
+function getRifugioName(raw) {
+  const value = raw.nome_rifugio || raw.rifugio || "";
+  if (typeof value !== "string") return "";
+  const normalized = value.trim();
+  if (!normalized || toBoolean(normalized) || ["no", "nessuno"].includes(normalized.toLowerCase())) {
+    return "";
+  }
+  return normalized;
+}
+
+function hasRifugio(raw) {
+  return toBoolean(raw.rifugio) || Boolean(getRifugioName(raw));
+}
+
 function normalizeTags(rawTag, rawFields) {
   const tags = new Set(toArray(rawTag).map((item) => item.toLowerCase()));
   if (rawFields.provincia) tags.add(rawFields.provincia.toLowerCase());
   if (toBoolean(rawFields.anello)) tags.add("anello");
-  if (toBoolean(rawFields.rifugio)) tags.add("rifugio");
+  if (hasRifugio(rawFields)) tags.add("rifugio");
   if (toBoolean(rawFields.acqua)) tags.add("acqua");
   return [...tags].filter(Boolean);
 }
@@ -209,10 +228,11 @@ function buildDescription(raw) {
 
 function toApiShape(raw) {
   const gea = hasGea(raw);
+  const nomeRifugio = getRifugioName(raw);
 
   return {
     data: normalizeDate(raw.data || ""),
-    titolo: raw.titolo || "",
+    titolo: raw.titolo || raw.gita || "",
     luogo: raw.luogo || "",
     km: toNumber(raw.km),
     durata: raw.durata || "",
@@ -224,8 +244,8 @@ function toApiShape(raw) {
     note: raw.note || "",
     provincia: raw.provincia || "",
     acqua: toBoolean(raw.acqua),
-    rifugio: toBoolean(raw.rifugio),
-    nome_rifugio: raw.nome_rifugio || "",
+    rifugio: hasRifugio(raw),
+    nome_rifugio: nomeRifugio,
     anello: toBoolean(raw.anello),
     voto: toNumber(raw.voto),
     slug: raw.slug || "",
