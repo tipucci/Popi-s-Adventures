@@ -1,7 +1,6 @@
 import { h } from "preact";
 import { useEffect, useMemo, useState } from "preact/hooks";
 import CardEscursione from "./CardEscursione.jsx";
-import Mappa from "./Mappa.jsx";
 
 const participantOptions = [
   { value: "meg", label: "Meg" },
@@ -24,16 +23,75 @@ const difficultyOptions = [
 ];
 
 const sortOptions = [
-  { value: "date-desc", label: "PiÃ¹ recenti" },
+  { value: "date-desc", label: "Pi\u00F9 recenti" },
   { value: "date-asc", label: "Meno recenti" },
-  { value: "km-desc", label: "PiÃ¹ lunghe" },
-  { value: "km-asc", label: "PiÃ¹ corte" }
+  { value: "km-desc", label: "Pi\u00F9 lunghe" },
+  { value: "km-asc", label: "Pi\u00F9 corte" }
 ];
 
 const pageSize = 6;
 
+const defaultFilters = {
+  dateFrom: "",
+  dateTo: "",
+  kmMin: "",
+  kmMax: "",
+  difficolta: "",
+  stagione: "",
+  provincia: "",
+  soloRifugio: false,
+  partecipanti: [],
+  sort: "date-desc",
+  page: 1
+};
+
 function parseArrayParam(value) {
-  return value ? value.split(",").filter(Boolean) : [];
+  if (Array.isArray(value)) return value.filter(Boolean);
+  return value ? String(value).split(",").filter(Boolean) : [];
+}
+
+function normalizePage(value) {
+  const page = Number(value || "1");
+  return Number.isFinite(page) && page > 0 ? Math.floor(page) : 1;
+}
+
+function normalizeInitialFilters(input = {}) {
+  return {
+    ...defaultFilters,
+    ...input,
+    dateFrom: input.dateFrom || "",
+    dateTo: input.dateTo || "",
+    kmMin: input.kmMin || "",
+    kmMax: input.kmMax || "",
+    difficolta: input.difficolta || "",
+    stagione: input.stagione || "",
+    provincia: String(input.provincia || input.tag || "").trim(),
+    soloRifugio: input.soloRifugio === true || input.soloRifugio === "1" || input.soloRifugio === 1,
+    partecipanti: parseArrayParam(input.partecipanti),
+    sort: input.sort || "date-desc",
+    page: normalizePage(input.page)
+  };
+}
+
+function parseFiltersFromSearch(search) {
+  const params = new URLSearchParams(search);
+  return normalizeInitialFilters({
+    dateFrom: params.get("dateFrom") || "",
+    dateTo: params.get("dateTo") || "",
+    kmMin: params.get("kmMin") || "",
+    kmMax: params.get("kmMax") || "",
+    difficolta: params.get("difficolta") || "",
+    stagione: params.get("stagione") || "",
+    provincia: params.get("provincia") || params.get("tag") || "",
+    soloRifugio: params.get("soloRifugio") === "1",
+    partecipanti: parseArrayParam(params.get("partecipanti")),
+    sort: params.get("sort") || "date-desc",
+    page: params.get("page") || "1"
+  });
+}
+
+function areFiltersEqual(left, right) {
+  return JSON.stringify(left) === JSON.stringify(right);
 }
 
 function getSeasonFromDate(value) {
@@ -60,37 +118,6 @@ function getDifficultyGroup(value) {
   return "escursioni";
 }
 
-function parseInitialState() {
-  if (typeof window === "undefined") {
-    return {
-      dateFrom: "",
-      dateTo: "",
-      kmMin: "",
-      kmMax: "",
-      difficolta: "",
-      stagione: "",
-      soloRifugio: false,
-      partecipanti: [],
-      sort: "date-desc",
-      page: 1
-    };
-  }
-
-  const params = new URLSearchParams(window.location.search);
-  return {
-    dateFrom: params.get("dateFrom") || "",
-    dateTo: params.get("dateTo") || "",
-    kmMin: params.get("kmMin") || "",
-    kmMax: params.get("kmMax") || "",
-    difficolta: params.get("difficolta") || "",
-    stagione: params.get("stagione") || "",
-    soloRifugio: params.get("soloRifugio") === "1",
-    partecipanti: parseArrayParam(params.get("partecipanti")),
-    sort: params.get("sort") || "date-desc",
-    page: Number(params.get("page") || "1")
-  };
-}
-
 function matchesFilters(item, filters) {
   const date = new Date(item.data).getTime();
   const dateFrom = filters.dateFrom ? new Date(filters.dateFrom).getTime() : null;
@@ -106,6 +133,9 @@ function matchesFilters(item, filters) {
     ? getDifficultyGroup(item.difficolta) === filters.difficolta
     : true;
   const matchSeason = filters.stagione ? getSeasonFromDate(item.data) === filters.stagione : true;
+  const matchProvince = filters.provincia
+    ? String(item.provincia || "").toLowerCase() === filters.provincia.toLowerCase()
+    : true;
   const matchRifugio = filters.soloRifugio ? item.rifugio : true;
   const matchParticipants = filters.partecipanti.length
     ? filters.partecipanti.every((person) => item.partecipanti?.includes(person))
@@ -118,6 +148,7 @@ function matchesFilters(item, filters) {
     matchKmMax &&
     matchDifficulty &&
     matchSeason &&
+    matchProvince &&
     matchRifugio &&
     matchParticipants
   );
@@ -139,8 +170,29 @@ function sortItems(items, sort) {
   }
 }
 
-export default function Filtri({ escursioni = [] }) {
-  const [filters, setFilters] = useState(parseInitialState);
+export default function Filtri({ escursioni = [], initialFilters = defaultFilters }) {
+  const [filters, setFilters] = useState(() => normalizeInitialFilters(initialFilters));
+
+  useEffect(() => {
+    const nextFilters = parseFiltersFromSearch(window.location.search);
+    setFilters((current) => (areFiltersEqual(current, nextFilters) ? current : nextFilters));
+  }, []);
+
+  const provinceOptions = useMemo(() => {
+    const provinces = [
+      ...new Set(
+        escursioni
+          .map((item) => String(item.provincia || "").trim())
+          .filter(Boolean)
+      )
+    ].sort((a, b) => a.localeCompare(b, "it"));
+
+    if (filters.provincia && !provinces.includes(filters.provincia)) {
+      return [filters.provincia, ...provinces].sort((a, b) => a.localeCompare(b, "it"));
+    }
+
+    return provinces;
+  }, [escursioni, filters.provincia]);
 
   const filtered = useMemo(() => {
     return sortItems(
@@ -167,6 +219,7 @@ export default function Filtri({ escursioni = [] }) {
     if (filters.kmMax) params.set("kmMax", filters.kmMax);
     if (filters.difficolta) params.set("difficolta", filters.difficolta);
     if (filters.stagione) params.set("stagione", filters.stagione);
+    if (filters.provincia) params.set("provincia", filters.provincia);
     if (filters.soloRifugio) params.set("soloRifugio", "1");
     if (filters.partecipanti.length) {
       params.set("partecipanti", filters.partecipanti.join(","));
@@ -201,18 +254,7 @@ export default function Filtri({ escursioni = [] }) {
   }
 
   function resetFilters() {
-    setFilters({
-      dateFrom: "",
-      dateTo: "",
-      kmMin: "",
-      kmMax: "",
-      difficolta: "",
-      stagione: "",
-      soloRifugio: false,
-      partecipanti: [],
-      sort: "date-desc",
-      page: 1
-    });
+    setFilters(defaultFilters);
   }
 
   return (
@@ -280,7 +322,7 @@ export default function Filtri({ escursioni = [] }) {
           </label>
 
           <label class="space-y-2 text-sm font-bold text-forest-800">
-            <span>DifficoltÃ </span>
+            <span>Difficolt&agrave;</span>
             <select
               value={filters.difficolta}
               onInput={(event) => updateField("difficolta", event.currentTarget.value)}
@@ -301,6 +343,20 @@ export default function Filtri({ escursioni = [] }) {
             >
               {seasonOptions.map((item) => (
                 <option value={item.value}>{item.label}</option>
+              ))}
+            </select>
+          </label>
+
+          <label class="space-y-2 text-sm font-bold text-forest-800">
+            <span>Provincia</span>
+            <select
+              value={filters.provincia}
+              onInput={(event) => updateField("provincia", event.currentTarget.value)}
+              class="w-full rounded-2xl border border-sand bg-cream px-4 py-3 font-semibold text-forest-800 outline-none transition focus:border-terracotta-400"
+            >
+              <option value="">Tutte</option>
+              {provinceOptions.map((item) => (
+                <option value={item}>{item}</option>
               ))}
             </select>
           </label>
@@ -333,7 +389,7 @@ export default function Filtri({ escursioni = [] }) {
             </button>
           </label>
 
-          <div class="space-y-2 text-sm font-bold text-forest-800 md:col-span-2 xl:col-span-3">
+          <div class="space-y-2 text-sm font-bold text-forest-800 md:col-span-2 xl:col-span-4">
             <span>Compagnia</span>
             <div class="flex flex-wrap gap-2">
               {participantOptions.map((item) => (
@@ -421,20 +477,6 @@ export default function Filtri({ escursioni = [] }) {
             </button>
           </div>
         )}
-      </section>
-
-      <section id="mappa" class="space-y-4 rounded-[2rem] bg-forest-800 px-5 py-6 text-white shadow-card sm:px-6">
-        <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p class="text-sm font-bold uppercase tracking-[0.16em] text-cream/80">Vista mappa</p>
-            <h3 class="text-2xl font-black">Segnaposto Leaflet con coordinate reali</h3>
-          </div>
-          <p class="max-w-xl text-sm text-cream/85">
-            La mappa mostra le escursioni filtrate che contengono `lat` e `lng` nel dataset.
-          </p>
-        </div>
-
-        <Mappa escursioni={filtered} height="430px" />
       </section>
     </div>
   );

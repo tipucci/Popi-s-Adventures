@@ -1,16 +1,9 @@
+import { getHikeImages } from "./imageRegistry.js";
+
 const CSV_URL =
   "https://docs.google.com/spreadsheets/d/e/2PACX-1vT29EGlSwQbCjoc9lnwcS3x7VX8XommgfcI9qrFsrCZzQmlNEjoYqKq5YU1ZKhgHKnidVX8LWTLmTuT/pub?gid=0&single=true&output=csv";
 
 const FETCH_TIMEOUT_MS = 8000;
-
-const fallbackCovers = [
-  "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1521295121783-8a321d551ad2?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1482192596544-9eb780fc7f66?auto=format&fit=crop&w=1200&q=80"
-];
 
 function slugify(value = "") {
   return value
@@ -168,11 +161,6 @@ function parseCsv(text) {
     });
 }
 
-function pickCover(seed = "") {
-  const index = Math.abs(seed.split("").reduce((total, char) => total + char.charCodeAt(0), 0)) % fallbackCovers.length;
-  return fallbackCovers[index];
-}
-
 function hasGea(raw) {
   if (toBoolean(raw.cane) || toBoolean(raw.gea) || toBoolean(raw.con_gea)) {
     return true;
@@ -215,7 +203,7 @@ function normalizeTags(rawTag, rawFields) {
 
 function formatLuogo(raw) {
   const parts = [raw.luogo, raw.provincia].filter(Boolean);
-  return parts.join(", ") || "Localita da definire";
+  return parts.join(", ") || "Localit\u00E0 da definire";
 }
 
 function buildDescription(raw) {
@@ -226,13 +214,29 @@ function buildDescription(raw) {
   return parts.join(" ") || "Escursione importata dal diario condiviso.";
 }
 
-function toApiShape(raw) {
+function buildContentSlug(rawSlug, titolo, index = 0) {
+  return rawSlug ? slugify(rawSlug) : slugify(titolo || `escursione-${index + 1}`);
+}
+
+function buildImageSlug(contentSlug, data) {
+  const normalizedDate = normalizeDate(data);
+  if (!normalizedDate) return contentSlug;
+  if (contentSlug.startsWith(`${normalizedDate}-`)) return contentSlug;
+  return `${normalizedDate}-${contentSlug}`;
+}
+
+function toApiShape(raw, index = 0) {
   const gea = hasGea(raw);
   const nomeRifugio = getRifugioName(raw);
+  const data = normalizeDate(raw.data || "");
+  const titolo = raw.titolo || raw.gita || `Escursione ${index + 1}`;
+  const slug = buildContentSlug(raw.slug || "", titolo, index);
+  const imageSlug = buildImageSlug(slug, data);
+  const images = getHikeImages(imageSlug, titolo);
 
   return {
-    data: normalizeDate(raw.data || ""),
-    titolo: raw.titolo || raw.gita || "",
+    data,
+    titolo,
     luogo: raw.luogo || "",
     km: toNumber(raw.km),
     durata: raw.durata || "",
@@ -248,30 +252,30 @@ function toApiShape(raw) {
     nome_rifugio: nomeRifugio,
     anello: toBoolean(raw.anello),
     voto: toNumber(raw.voto),
-    slug: raw.slug || "",
+    slug,
+    imageSlug,
     lat: toOptionalNumber(raw.lat ?? raw.latitudine),
-    lng: toOptionalNumber(raw.lng ?? raw.longitudine ?? raw.lon ?? raw.long)
+    lng: toOptionalNumber(raw.lng ?? raw.longitudine ?? raw.lon ?? raw.long),
+    cover: images.cover.src,
+    coverAlt: images.cover.alt,
+    gallery: images.gallery,
+    foto: images.gallery.map((item) => item.src)
   };
 }
 
 export function normalizeEscursione(raw, index = 0) {
-  const api = toApiShape(raw);
-  const titolo = api.titolo || `Escursione ${index + 1}`;
+  const api = toApiShape(raw, index);
   const luogoCompleto = formatLuogo(api);
   const tag = normalizeTags(api.tag, api);
   const partecipanti = normalizeParticipants(raw);
-  const cover = pickCover(`${titolo}-${luogoCompleto}`);
 
   return {
     ...api,
-    slug: api.slug ? slugify(api.slug) : slugify(titolo),
     luogo: luogoCompleto,
     descrizione: buildDescription(api),
     durataMinuti: toNumber(api.durata),
     partecipanti,
-    tag,
-    cover,
-    foto: [cover]
+    tag
   };
 }
 
@@ -319,7 +323,7 @@ export async function getEscursioneBySlug(slug) {
 export async function getEscursioniApiData() {
   try {
     const rows = await fetchEscursioniCsv();
-    return rows.map(toApiShape).sort(sortByDateDesc);
+    return rows.map(normalizeEscursione).sort(sortByDateDesc);
   } catch (error) {
     return [];
   }
@@ -328,4 +332,3 @@ export async function getEscursioniApiData() {
 export function getCsvUrl() {
   return CSV_URL;
 }
-

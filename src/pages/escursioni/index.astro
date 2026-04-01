@@ -4,6 +4,21 @@ import Filtri from "../../components/Filtri.jsx";
 import { getEscursioni } from "../../data/escursioni.js";
 
 const escursioni = await getEscursioni();
+const searchParams = Astro.url.searchParams;
+
+const initialFilters = {
+  dateFrom: searchParams.get("dateFrom") || "",
+  dateTo: searchParams.get("dateTo") || "",
+  kmMin: searchParams.get("kmMin") || "",
+  kmMax: searchParams.get("kmMax") || "",
+  difficolta: searchParams.get("difficolta") || "",
+  stagione: searchParams.get("stagione") || "",
+  provincia: searchParams.get("provincia") || searchParams.get("tag") || "",
+  soloRifugio: searchParams.get("soloRifugio") === "1",
+  partecipanti: (searchParams.get("partecipanti") || "").split(",").filter(Boolean),
+  sort: searchParams.get("sort") || "date-desc",
+  page: Number(searchParams.get("page") || "1")
+};
 ---
 
 <Layout
@@ -11,5 +26,5 @@ const escursioni = await getEscursioni();
   description="Elenco filtrabile di tutte le escursioni con ordinamento, paginazione e mappa."
   active="escursioni"
 >
-  <Filtri client:load escursioni={escursioni} />
+  <Filtri client:load escursioni={escursioni} initialFilters={initialFilters} />
 </Layout>

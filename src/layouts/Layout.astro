@@ -2,37 +2,24 @@
 import "../styles/global.css";
 import { withBase } from "../utils/base.js";
 import { getEscursioni } from "../data/escursioni.js";
+import { siteImages } from "../data/imageRegistry.js";
 
 const {
   title = "Popi's Adventures",
   description = "Diario di escursioni tra natura, panorami e camminate con il cane.",
   active = "home",
-  image = "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80"
+  image = siteImages.heroHome.src
 } = Astro.props;
 
 const navItems = [
-  {
-    id: "home",
-    href: withBase("/"),
-    label: "Home",
-    icon: "home"
-  },
-  {
-    id: "escursioni",
-    href: withBase("/escursioni"),
-    label: "Escursioni",
-    icon: "trail"
-  },
-  {
-    id: "mappa",
-    href: `${withBase("/escursioni")}#mappa`,
-    label: "Mappa",
-    icon: "map"
-  }
+  { id: "home", href: withBase("/"), label: "Home", icon: "home" },
+  { id: "escursioni", href: withBase("/escursioni"), label: "Escursioni", icon: "trail" },
+  { id: "mappa", href: withBase("/mappa"), label: "Mappa", icon: "map" }
 ];
 
 function getSeasonFromDate(value) {
   if (!value) return "";
+
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "";
 
@@ -51,9 +38,11 @@ const seasonMeta = [
 ];
 
 const escursioni = await getEscursioni();
+
 const provinceCounts = escursioni.reduce((groups, item) => {
   const provincia = item.provincia?.trim();
   if (!provincia) return groups;
+
   groups[provincia] = (groups[provincia] || 0) + 1;
   return groups;
 }, {});
@@ -61,6 +50,7 @@ const provinceCounts = escursioni.reduce((groups, item) => {
 const seasonCounts = escursioni.reduce((groups, item) => {
   const season = getSeasonFromDate(item.data);
   if (!season) return groups;
+
   groups[season] = (groups[season] || 0) + 1;
   return groups;
 }, {});
@@ -70,10 +60,11 @@ const allProvinceLinks = Object.entries(provinceCounts)
   .map(([name, count]) => ({
     name,
     count,
-    href: `${withBase("/escursioni")}?tag=${encodeURIComponent(name.toLowerCase())}`
+    href: `${withBase("/escursioni")}?provincia=${encodeURIComponent(name)}`
   }));
 
 const provinceLinks = allProvinceLinks.slice(0, 6);
+
 const seasonLinks = seasonMeta.map((item) => ({
   ...item,
   count: seasonCounts[item.slug] || 0,
@@ -82,30 +73,24 @@ const seasonLinks = seasonMeta.map((item) => ({
 
 const footerQuickLinks = [
   { label: "Tutte le escursioni", href: withBase("/escursioni") },
-  { label: "Mappa escursioni", href: `${withBase("/escursioni")}#mappa` },
+  { label: "Mappa escursioni", href: withBase("/mappa") },
   { label: "Escursioni con rifugio", href: `${withBase("/escursioni")}?soloRifugio=1` },
   { label: "Escursioni con Gea", href: `${withBase("/escursioni")}?partecipanti=gea` }
 ];
 
 const iconPaths = {
-  home: [
-    "M3.75 10.5 12 3.75l8.25 6.75",
-    "M5.25 9.75v9h4.5v-6h4.5v6h4.5v-9"
-  ],
+  home: ["M3.75 10.5 12 3.75l8.25 6.75", "M5.25 9.75v9h4.5v-6h4.5v6h4.5v-9"],
   trail: [
     "M8.25 4.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Z",
     "M10.5 20.25 9 14.25l-2.25-2.25-2.25 3",
     "M12.75 9.75 10.5 12l3 2.25 1.5 6",
     "M13.5 9h4.5l2.25-2.25"
   ],
-  map: [
-    "M9 18 15 21l6-3V6l-6 3-6-3-6 3v12l6-3Z",
-    "M9 6v12",
-    "M15 9v12"
-  ]
+  map: ["M9 18 15 21l6-3V6l-6 3-6-3-6 3v12l6-3Z", "M9 6v12", "M15 9v12"]
 };
 
 const canonical = new URL(Astro.url.pathname, Astro.site);
+const socialImage = image.startsWith("http") ? image : new URL(image, Astro.site).href;
 ---
 
 <!doctype html>
@@ -121,15 +106,17 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical.href} />
-    <meta property="og:image" content={image} />
+    <meta property="og:image" content={socialImage} />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content={socialImage} />
     <meta name="theme-color" content="#F5EBDC" />
     <slot name="head" />
   </head>
+
   <body class="min-h-screen bg-cream text-forest-800 antialiased">
     <div class="min-h-screen bg-hero-glow">
       <div class="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 pb-32 pt-4 sm:px-6 md:pb-24 lg:px-8">
-        <header class="mb-6 hidden items-center justify-between rounded-full border border-white/70 bg-white/85 px-4 py-3 shadow-card backdrop-blur md:flex">
+        <header class="sticky top-4 z-50 mb-6 hidden items-center justify-between rounded-full border border-white/70 bg-white/85 px-4 py-3 shadow-card backdrop-blur md:flex">
           <a
             href={withBase("/")}
             aria-label="Torna alla home"
@@ -150,6 +137,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
                 <li>
                   <a
                     href={item.href}
+                    aria-current={active === item.id ? "page" : undefined}
                     class:list={[
                       "inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold transition",
                       active === item.id
@@ -157,8 +145,19 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
                         : "text-forest-700 hover:bg-terracotta-50"
                     ]}
                   >
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 shrink-0" aria-hidden="true">
-                      {iconPaths[item.icon].map((path) => <path d={path}></path>)}
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="h-4 w-4 shrink-0"
+                      aria-hidden="true"
+                    >
+                      {iconPaths[item.icon].map((path) => (
+                        <path d={path}></path>
+                      ))}
                     </svg>
                     <span>{item.label}</span>
                   </a>
@@ -183,7 +182,10 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
             <div class="grid gap-8 pt-6 md:grid-cols-2 xl:grid-cols-3">
               <section aria-labelledby="footer-shortcuts" class="space-y-4">
                 <div>
-                  <p id="footer-shortcuts" class="text-xs font-bold uppercase tracking-[0.22em] text-emerald-100/90">
+                  <p
+                    id="footer-shortcuts"
+                    class="text-xs font-bold uppercase tracking-[0.22em] text-emerald-100/90"
+                  >
                     Scorciatoie
                   </p>
                 </div>
@@ -202,7 +204,10 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
 
               <section aria-labelledby="footer-seasoni" class="space-y-4">
                 <div>
-                  <p id="footer-seasoni" class="text-xs font-bold uppercase tracking-[0.22em] text-emerald-100/90">
+                  <p
+                    id="footer-seasoni"
+                    class="text-xs font-bold uppercase tracking-[0.22em] text-emerald-100/90"
+                  >
                     Per stagione
                   </p>
                 </div>
@@ -214,7 +219,9 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
                       class="rounded-[1.1rem] border border-white/14 bg-white/8 px-4 py-3 transition hover:border-white/28 hover:bg-white/14"
                     >
                       <span class="block font-semibold text-white">{item.label}</span>
-                      <span class="mt-1 block text-xs font-medium text-slate-100/72">{item.count} escursioni</span>
+                      <span class="mt-1 block text-xs font-medium text-slate-100/72">
+                        {item.count} escursioni
+                      </span>
                     </a>
                   ))}
                 </div>
@@ -223,10 +230,14 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
               <section aria-labelledby="footer-province" class="space-y-4 md:col-span-2 xl:col-span-1">
                 <div class="flex items-end justify-between gap-4">
                   <div>
-                    <p id="footer-province" class="text-xs font-bold uppercase tracking-[0.22em] text-emerald-100/90">
+                    <p
+                      id="footer-province"
+                      class="text-xs font-bold uppercase tracking-[0.22em] text-emerald-100/90"
+                    >
                       Per provincia
                     </p>
                   </div>
+
                   {allProvinceLinks.length > provinceLinks.length && (
                     <a
                       href={withBase("/escursioni")}
@@ -250,6 +261,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
                         </span>
                       </a>
                     ))}
+
                     {allProvinceLinks.length > provinceLinks.length && (
                       <a
                         href={withBase("/escursioni")}
@@ -266,6 +278,20 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
                 )}
               </section>
             </div>
+
+            <div class="mt-8 border-t border-white/10 pt-5 text-center text-xs text-slate-100/70 sm:text-sm">
+              <p>
+                Sviluppato con <span aria-hidden="true">&hearts;</span> e un pizzico di AI da {" "}
+                <a
+                  href="https://tipucci.it"
+                  target="_blank"
+                  rel="noreferrer"
+                  class="font-semibold text-emerald-100 transition hover:text-white"
+                >
+                  Tiziano Pucci
+                </a>
+              </p>
+            </div>
           </div>
         </footer>
       </div>
@@ -276,6 +302,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
             <li>
               <a
                 href={item.href}
+                aria-current={active === item.id ? "page" : undefined}
                 class:list={[
                   "flex flex-col items-center gap-1 rounded-full px-3 py-2 text-xs font-bold transition",
                   active === item.id
@@ -283,8 +310,19 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
                     : "text-forest-700 hover:bg-terracotta-50"
                 ]}
               >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5 shrink-0" aria-hidden="true">
-                  {iconPaths[item.icon].map((path) => <path d={path}></path>)}
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="h-5 w-5 shrink-0"
+                  aria-hidden="true"
+                >
+                  {iconPaths[item.icon].map((path) => (
+                    <path d={path}></path>
+                  ))}
                 </svg>
                 <span>{item.label}</span>
               </a>

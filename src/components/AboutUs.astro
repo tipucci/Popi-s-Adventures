@@ -1,0 +1,174 @@
+﻿---
+import { siteImages } from "../data/imageRegistry.js";
+
+const title = "Chi siamo";
+
+const description =
+  "Siamo Tiz, Meg e Gea, una border collie di due anni che non sta mai ferma. &Egrave; un piccolo demonietto pieno di energia e una campionessa in erba nel retrieving: ogni uscita &egrave; anche il suo campo di allenamento.";
+
+const descriptionSecond =
+  "Non siamo alpinisti, ma escursionisti amatoriali. Ci piacciono i sentieri accessibili, le giornate lente all'aria aperta e le soste per mangiare qualcosa di buono lungo il percorso.";
+
+const descriptionThird =
+  "Questo spazio &egrave; il nostro diario: raccoglie le escursioni che ci sono rimaste nel cuore e tutte quelle giornate semplici che finiscono con la stessa sensazione: stanchi, ma felici.";
+
+const imageSrc = siteImages.aboutUs.src;
+const imageAlt = siteImages.aboutUs.alt;
+---
+
+<section class="about-us" aria-labelledby="about-us-title">
+  <div class="about-us__shell">
+    <div class="about-us__layout">
+      <figure class="about-us__figure">
+        <img src={imageSrc} alt={imageAlt} class="about-us__image" loading="lazy" decoding="async" />
+      </figure>
+
+      <div class="about-us__content">
+        <p class="about-us__eyebrow">Chi siamo</p>
+        <h2 id="about-us-title" class="about-us__title">{title}</h2>
+        <p class="about-us__text" set:html={description}></p>
+        <p class="about-us__text">{descriptionSecond}</p>
+        <p class="about-us__text" set:html={descriptionThird}></p>
+      </div>
+    </div>
+  </div>
+
+  <!--
+    Variante narrativa:
+
+    Siamo Tiz, Meg e Gea: lei &egrave; una border collie giovane, instancabile e con
+    una vera passione per il retrieving, quindi ogni camminata diventa anche
+    un piccolo allenamento. Non inseguiamo cime estreme: ci bastano sentieri
+    accessibili, aria buona e una sosta fatta bene. Questo diario tiene
+    insieme le escursioni che ci sono rimaste addosso e quelle giornate
+    semplici che finiscono sempre allo stesso modo, stanchi ma felici.
+  -->
+</section>
+
+<style>
+  .about-us {
+    --about-bg: linear-gradient(180deg, rgba(255, 249, 241, 0.92) 0%, rgba(245, 235, 220, 0.96) 100%);
+    --about-border: rgba(49, 83, 52, 0.1);
+    --about-shadow: 0 18px 40px rgba(95, 44, 29, 0.1);
+    --about-text: #243c26;
+    --about-muted: #5f2c1d;
+    --about-copy: #3f342d;
+    --about-radius: 2rem;
+  }
+
+  .about-us__shell {
+    overflow: hidden;
+    border: 1px solid var(--about-border);
+    border-radius: var(--about-radius);
+    background: var(--about-bg);
+    box-shadow: var(--about-shadow);
+    transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+  }
+
+  .about-us__shell:hover,
+  .about-us__shell:focus-within {
+    transform: translateY(-2px);
+    box-shadow: 0 22px 46px rgba(95, 44, 29, 0.12);
+    border-color: rgba(49, 83, 52, 0.16);
+  }
+
+  .about-us__layout {
+    display: grid;
+    gap: 1.25rem;
+    padding: 1rem;
+  }
+
+  .about-us__figure {
+    margin: 0;
+  }
+
+  .about-us__image {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: 1.5rem;
+    background: linear-gradient(135deg, #d8e8d7 0%, #e8d3ba 100%);
+    box-shadow: 0 14px 28px rgba(36, 60, 38, 0.1);
+    transition: transform 220ms ease, filter 220ms ease;
+  }
+
+  .about-us__shell:hover .about-us__image,
+  .about-us__shell:focus-within .about-us__image {
+    transform: scale(1.015);
+    filter: saturate(1.03);
+  }
+
+  .about-us__content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.85rem;
+    padding: 0.35rem 0.25rem 0.5rem;
+  }
+
+  .about-us__eyebrow {
+    margin: 0;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--about-muted);
+  }
+
+  .about-us__title {
+    margin: 0;
+    color: var(--about-text);
+    font-family: "Fraunces", Georgia, serif;
+    font-size: clamp(1.85rem, 4vw, 2.7rem);
+    line-height: 1.08;
+  }
+
+  .about-us__text {
+    margin: 0;
+    max-width: 34ch;
+    color: var(--about-copy);
+    font-size: 1rem;
+    line-height: 1.8;
+    text-wrap: pretty;
+  }
+
+  @media (min-width: 768px) {
+    .about-us__layout {
+      grid-template-columns: minmax(0, 1.02fr) minmax(0, 0.98fr);
+      gap: 2rem;
+      padding: 1.25rem;
+    }
+
+    .about-us__content {
+      padding: 0.5rem 0.5rem 0.5rem 0.25rem;
+    }
+
+    .about-us__image {
+      height: 100%;
+      min-height: 100%;
+      aspect-ratio: 5 / 4;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .about-us__layout {
+      gap: 2.5rem;
+      padding: 1.5rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .about-us__shell,
+    .about-us__image {
+      transition: none;
+    }
+
+    .about-us__shell:hover,
+    .about-us__shell:focus-within,
+    .about-us__shell:hover .about-us__image,
+    .about-us__shell:focus-within .about-us__image {
+      transform: none;
+      filter: none;
+    }
+  }
+</style>

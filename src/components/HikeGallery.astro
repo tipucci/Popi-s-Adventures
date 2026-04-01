@@ -1,0 +1,23 @@
+---
+const {
+  title = "Galleria",
+  subtitle = "Foto della giornata",
+  images = []
+} = Astro.props;
+---
+
+<section class="space-y-4">
+  <div>
+    <p class="text-sm font-bold uppercase tracking-[0.16em] text-terracotta-600">{title}</p>
+    <h2 class="mt-2 text-3xl font-black text-forest-800">{subtitle}</h2>
+  </div>
+
+  <div class="grid gap-4 md:grid-cols-2">
+    {images.map((image) => (
+      <figure class="overflow-hidden rounded-[1.75rem] bg-white shadow-card">
+        <img src={image.src} alt={image.alt} loading="lazy" class="aspect-[4/3] w-full object-cover" />
+        {image.caption && <figcaption class="px-5 py-4 text-sm text-forest-700">{image.caption}</figcaption>}
+      </figure>
+    ))}
+  </div>
+</section>
