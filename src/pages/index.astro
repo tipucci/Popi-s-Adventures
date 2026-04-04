@@ -1,15 +1,22 @@
 ﻿---
+import { getImage } from "astro:assets";
 import Layout from "../layouts/Layout.astro";
 import Header from "../components/Header.astro";
 import AboutUs from "../components/AboutUs.astro";
 import CardEscursione from "../components/CardEscursione.jsx";
 import { getEscursioni } from "../data/escursioni.js";
+import { siteImages } from "../data/imageRegistry.js";
 import { withBase } from "../utils/base.js";
 import { formatKilometers, formatMeters } from "../utils/format.js";
 
 const escursioni = await getEscursioni();
 const recenti = escursioni.slice(0, 3);
 const hasEscursioni = escursioni.length > 0;
+const [heroPreloadMobile, heroPreloadDesktop] = await Promise.all([
+  getImage({ src: siteImages.heroHome.source, width: 900, format: "webp", quality: 68 }),
+  getImage({ src: siteImages.heroHome.source, width: 1440, format: "webp", quality: 74 })
+]);
+
 
 const stats = {
   uscite: escursioni.length,
@@ -24,6 +31,16 @@ const stats = {
   description="Home del diario di escursioni con ultime uscite, statistiche e storie condivise."
   active="home"
 >
+  <Fragment slot="head">
+    <link
+      rel="preload"
+      as="image"
+      href={heroPreloadDesktop.src}
+      imagesrcset={`${heroPreloadMobile.src} ${heroPreloadMobile.width}w, ${heroPreloadDesktop.src} ${heroPreloadDesktop.width}w`}
+      imagesizes="100vw"
+      fetchpriority="high"
+    />
+  </Fragment>
   <div class="space-y-10">
     <Header />
 

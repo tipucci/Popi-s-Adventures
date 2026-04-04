@@ -1,3 +1,4 @@
+import { getImage } from "astro:assets";
 import { hikeImageMeta } from "./hikeImageMeta.js";
 
 const siteImageModules = import.meta.glob("../assets/images/site/**/*.{jpg,jpeg,png,webp,avif,svg}", {
@@ -10,6 +11,8 @@ const hikeImageModules = import.meta.glob("../assets/images/hikes/**/*.{jpg,jpeg
   import: "default"
 });
 
+const imageExtensionPriority = [".avif", ".webp", ".jpg", ".jpeg", ".png", ".svg"];
+
 function normalizeImageSource(value) {
   if (!value) return "";
   if (typeof value === "string") return value;
@@ -17,25 +20,13 @@ function normalizeImageSource(value) {
   return String(value);
 }
 
-function getImage(modules, key) {
-  const value = modules[key];
-  if (!value) {
-    throw new Error(`Missing local image: ${key}`);
-  }
-  return normalizeImageSource(value);
-}
-
 function getPreferredSingleImage(modules, basePath) {
   for (const extension of imageExtensionPriority) {
     const match = modules[`${basePath}${extension}`];
-    if (match) return normalizeImageSource(match);
+    if (match) return match;
   }
 
   throw new Error(`Missing local image: ${basePath}`);
-}
-
-function sortGalleryEntries([pathA], [pathB]) {
-  return pathA.localeCompare(pathB, "en");
 }
 
 function defaultCoverAlt(title) {
@@ -68,26 +59,16 @@ function createPlaceholderSvg({ title, subtitle }) {
 }
 
 function createPlaceholderImage(title, alt, subtitle) {
+  const src = createPlaceholderSvg({ title, subtitle });
   return {
-    src: createPlaceholderSvg({ title, subtitle }),
+    source: src,
+    src,
     alt,
-    caption: ""
+    caption: "",
+    cardSrc: src,
+    srcSet: ""
   };
 }
-
-const imageExtensionPriority = [".avif", ".webp", ".jpg", ".jpeg", ".png", ".svg"];
-
-export const siteImages = {
-  heroHome: {
-    src: getPreferredSingleImage(siteImageModules, "../assets/images/site/home/hero-home"),
-    alt: "Panorama naturale dal tono caldo usato come hero del sito Popi's Adventures."
-  },
-  aboutUs: {
-    src: getPreferredSingleImage(siteImageModules, "../assets/images/site/about/chi-siamo"),
-    alt: "Foto di noi due insieme a Gea durante una giornata in natura.",
-    caption: "Noi tre, tra sentieri, pause lente e giornate da ricordare."
-  }
-};
 
 function getPreferredImage(modules, folderPrefix, baseName) {
   for (const extension of imageExtensionPriority) {
@@ -98,7 +79,43 @@ function getPreferredImage(modules, folderPrefix, baseName) {
   return null;
 }
 
-export function getHikeImages(slug, title) {
+async function createOptimizedVariant(source, options) {
+  if (!source || typeof source === "string") {
+    return null;
+  }
+
+  return getImage({
+    src: source,
+    format: "webp",
+    ...options
+  });
+}
+
+function buildSrcSet(entries) {
+  return entries
+    .filter((entry) => entry?.src && entry?.width)
+    .map((entry) => `${entry.src} ${entry.width}w`)
+    .join(", ");
+}
+
+const heroHomeSource = getPreferredSingleImage(siteImageModules, "../assets/images/site/home/hero-home");
+const aboutUsSource = getPreferredSingleImage(siteImageModules, "../assets/images/site/about/chi-siamo");
+
+export const siteImages = {
+  heroHome: {
+    source: heroHomeSource,
+    src: normalizeImageSource(heroHomeSource),
+    alt: "Panorama naturale dal tono caldo usato come hero del sito Popi's Adventures."
+  },
+  aboutUs: {
+    source: aboutUsSource,
+    src: normalizeImageSource(aboutUsSource),
+    alt: "Foto di noi due insieme a Gea durante una giornata in natura.",
+    caption: "Noi tre, tra sentieri, pause lente e giornate da ricordare."
+  }
+};
+
+export async function getHikeImages(slug, title) {
   const folderPrefix = `../assets/images/hikes/${slug}/`;
   const meta = hikeImageMeta[slug] || {};
   const cover = getPreferredImage(hikeImageModules, folderPrefix, "cover");
@@ -116,6 +133,7 @@ export function getHikeImages(slug, title) {
       const entry = meta.gallery?.find((item) => item.file.replace(/\.(jpg|jpeg|png|webp|avif|svg)$/i, "") === baseName);
 
       return {
+        source: image.source,
         src: normalizeImageSource(image.source),
         alt: entry?.alt || defaultGalleryAlt(title, index + 1),
         caption: entry?.caption || ""
@@ -124,10 +142,11 @@ export function getHikeImages(slug, title) {
     .filter(Boolean);
 
   const coverImage = cover
-    ? {
+    ? (() => ({
+        source: cover.source,
         src: normalizeImageSource(cover.source),
         alt: meta.coverAlt || defaultCoverAlt(title)
-      }
+      }))()
     : createPlaceholderImage(
         title,
         `${title} - immagine segnaposto in attesa della foto di copertina.`,
@@ -144,8 +163,25 @@ export function getHikeImages(slug, title) {
         )
       ];
 
+  if (!cover || typeof cover.source === "string") {
+    return {
+      cover: coverImage,
+      gallery: galleryImages
+    };
+  }
+
+  const [cardVariant, coverVariant] = await Promise.all([
+    createOptimizedVariant(cover.source, { width: 720, quality: 68 }),
+    createOptimizedVariant(cover.source, { width: 1440, quality: 74 })
+  ]);
+
   return {
-    cover: coverImage,
+    cover: {
+      ...coverImage,
+      src: coverVariant?.src || coverImage.src,
+      cardSrc: cardVariant?.src || coverImage.src,
+      srcSet: buildSrcSet([cardVariant, coverVariant])
+    },
     gallery: galleryImages
   };
 }

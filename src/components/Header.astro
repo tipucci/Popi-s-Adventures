@@ -1,23 +1,45 @@
-﻿---
+---
+import { getImage } from "astro:assets";
 import { withBase } from "../utils/base.js";
 import { siteImages } from "../data/imageRegistry.js";
 
 const {
   title = "Popi's Adventures",
   subtitle = "Un diario, tre popi e un sacco di avventure",
-  image = siteImages.heroHome.src,
+  image = siteImages.heroHome.source,
   imageAlt = siteImages.heroHome.alt
 } = Astro.props;
+
+const imageSource = image || siteImages.heroHome.source;
+const [heroMobile, heroDesktop] = typeof imageSource === "string"
+  ? [null, null]
+  : await Promise.all([
+      getImage({ src: imageSource, width: 900, format: "webp", quality: 68 }),
+      getImage({ src: imageSource, width: 1440, format: "webp", quality: 74 })
+    ]);
+
+const heroFallbackSrc = heroDesktop?.src || heroMobile?.src || siteImages.heroHome.src;
+const heroWidth = heroDesktop?.width || heroMobile?.width || 1440;
+const heroHeight = heroDesktop?.height || heroMobile?.height || 905;
 ---
 
 <section class="relative overflow-hidden rounded-[2rem] bg-forest-800 text-white shadow-card">
   <div class="absolute inset-0">
-    <img
-      src={image}
-      alt={imageAlt}
-      class="h-full w-full object-cover opacity-55"
-      loading="eager"
-    />
+    <picture>
+      {heroMobile && <source media="(max-width: 767px)" srcset={heroMobile.src} />}
+      {heroDesktop && <source media="(min-width: 768px)" srcset={heroDesktop.src} />}
+      <img
+        src={heroFallbackSrc}
+        alt={imageAlt}
+        width={heroWidth}
+        height={heroHeight}
+        sizes="100vw"
+        fetchpriority="high"
+        loading="eager"
+        decoding="async"
+        class="h-full w-full object-cover opacity-55"
+      />
+    </picture>
     <div class="absolute inset-0 bg-gradient-to-t from-forest-800 via-forest-800/55 to-transparent"></div>
   </div>
 

@@ -225,14 +225,14 @@ function buildImageSlug(contentSlug, data) {
   return `${normalizedDate}-${contentSlug}`;
 }
 
-function toApiShape(raw, index = 0) {
+async function toApiShape(raw, index = 0) {
   const gea = hasGea(raw);
   const nomeRifugio = getRifugioName(raw);
   const data = normalizeDate(raw.data || "");
   const titolo = raw.titolo || raw.gita || `Escursione ${index + 1}`;
   const slug = buildContentSlug(raw.slug || "", titolo, index);
   const imageSlug = buildImageSlug(slug, data);
-  const images = getHikeImages(imageSlug, titolo);
+  const images = await getHikeImages(imageSlug, titolo);
 
   return {
     data,
@@ -257,14 +257,16 @@ function toApiShape(raw, index = 0) {
     lat: toOptionalNumber(raw.lat ?? raw.latitudine),
     lng: toOptionalNumber(raw.lng ?? raw.longitudine ?? raw.lon ?? raw.long),
     cover: images.cover.src,
+    coverCard: images.cover.cardSrc || images.cover.src,
+    coverSrcSet: images.cover.srcSet || "",
     coverAlt: images.cover.alt,
     gallery: images.gallery,
     foto: images.gallery.map((item) => item.src)
   };
 }
 
-export function normalizeEscursione(raw, index = 0) {
-  const api = toApiShape(raw, index);
+export async function normalizeEscursione(raw, index = 0) {
+  const api = await toApiShape(raw, index);
   const luogoCompleto = formatLuogo(api);
   const tag = normalizeTags(api.tag, api);
   const partecipanti = normalizeParticipants(raw);
@@ -289,19 +291,21 @@ function describeEscursioneRow(raw, index) {
   return date ? `${title} (${date})` : title;
 }
 
-function normalizeEscursioniRows(rows) {
-  return rows
-    .flatMap((row, index) => {
+async function normalizeEscursioniRows(rows) {
+  const normalized = await Promise.all(
+    rows.map(async (row, index) => {
       try {
-        return [normalizeEscursione(row, index)];
+        return await normalizeEscursione(row, index);
       } catch (error) {
         console.warn(
           `[escursioni] Escursione ignorata: ${describeEscursioneRow(row, index)}. ${error instanceof Error ? error.message : error}`
         );
-        return [];
+        return null;
       }
     })
-    .sort(sortByDateDesc);
+  );
+
+  return normalized.filter(Boolean).sort(sortByDateDesc);
 }
 
 export async function fetchEscursioniCsv() {
@@ -330,7 +334,7 @@ export async function fetchEscursioniCsv() {
 export async function getEscursioni() {
   try {
     const rows = await fetchEscursioniCsv();
-    return normalizeEscursioniRows(rows);
+    return await normalizeEscursioniRows(rows);
   } catch (error) {
     console.warn(
       `[escursioni] Impossibile caricare il CSV: ${error instanceof Error ? error.message : error}`
@@ -347,7 +351,7 @@ export async function getEscursioneBySlug(slug) {
 export async function getEscursioniApiData() {
   try {
     const rows = await fetchEscursioniCsv();
-    return normalizeEscursioniRows(rows);
+    return await normalizeEscursioniRows(rows);
   } catch (error) {
     console.warn(
       `[escursioni] Impossibile caricare i dati API dal CSV: ${error instanceof Error ? error.message : error}`

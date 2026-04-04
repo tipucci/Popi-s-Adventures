@@ -53,7 +53,7 @@ export default function CardEscursione({ escursione, hrefBase = "/escursioni" })
     <article class="group overflow-hidden rounded-[1.75rem] border border-white/70 bg-white shadow-card transition hover:-translate-y-1 hover:shadow-2xl">
       <a href={withBase(`${hrefBase}/${escursione.slug}`)} class="block">
         <div class="relative aspect-[4/3] overflow-hidden">
-          <img src={escursione.cover} alt={escursione.coverAlt || escursione.titolo} loading="lazy" class="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+          <img src={escursione.coverCard || escursione.cover} srcSet={escursione.coverSrcSet || undefined} sizes="(min-width: 1280px) 31vw, (min-width: 768px) 47vw, 96vw" alt={escursione.coverAlt || escursione.titolo} width="720" height="540" loading="lazy" decoding="async" class="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
           {escursione.difficolta && <div class="absolute left-4 top-4 rounded-full bg-forest-800/85 px-3 py-1 text-xs font-bold text-cream">{escursione.difficolta}</div>}
         </div>
 
