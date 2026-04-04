@@ -2,6 +2,7 @@
 import Layout from "../../layouts/Layout.astro";
 import HikeGallery from "../../components/HikeGallery.astro";
 import Mappa from "../../components/Mappa.jsx";
+import { Star, StarHalf } from "@lucide/astro";
 import { getEscursioni } from "../../data/escursioni.js";
 import { withBase } from "../../utils/base.js";
 import { formatKilometers, formatMeters } from "../../utils/format.js";
@@ -21,6 +22,36 @@ function formatDate(value) {
   return new Intl.DateTimeFormat("it-IT", { day: "2-digit", month: "short", year: "numeric" }).format(parsed);
 }
 
+function formatMetricValue(value, formatter, suffix = "") {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric) || numeric <= 0) return "Non disponibile";
+  return `${formatter(numeric)}${suffix}`;
+}
+
+function formatDurationValue(value) {
+  const normalized = String(value || "").trim();
+  if (!normalized || normalized === "0" || normalized === "0:00" || normalized === "00:00") {
+    return "Non disponibile";
+  }
+  return normalized;
+}
+
+function getGeaRatingValue(item) {
+  const rawCandidates = [item.gea_rating, item.geaRating, item.rating_gea, item.voto];
+  const rawValue = rawCandidates.find((candidate) => candidate !== undefined && candidate !== null && candidate !== "");
+  const numeric = Number(rawValue);
+  if (!Number.isFinite(numeric)) return 0;
+  return Math.max(0, Math.min(5, Math.round(numeric * 2) / 2));
+}
+
+const geaRating = getGeaRatingValue(escursione);
+const geaStars = Array.from({ length: 5 }, (_, index) => {
+  const slot = index + 1;
+  if (geaRating >= slot) return "full";
+  if (geaRating >= slot - 0.5) return "half";
+  return "empty";
+});
+const heroDescription = String(escursione.note || "").trim();
 const jsonLdImages = [escursione.cover, ...escursione.gallery.map((image) => image.src)].map((src) => new URL(src, Astro.site).href);
 const jsonLd = {
   "@context": "https://schema.org",
@@ -37,14 +68,24 @@ const jsonLd = {
 
   <article class="space-y-8">
     <section class="overflow-hidden rounded-[2rem] bg-white shadow-card">
-      <div class="relative aspect-[16/9]">
+      <div class="relative aspect-[16/6]">
         <img src={escursione.cover} alt={escursione.coverAlt || escursione.titolo} class="h-full w-full object-cover" loading="eager" />
         <div class="absolute inset-0 bg-gradient-to-t from-forest-800 via-forest-800/30 to-transparent"></div>
+        <div class="absolute left-6 top-6 z-10 sm:left-8 sm:top-8">
+          <nav aria-label="Breadcrumb">
+            <ol class="flex flex-wrap items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-cream backdrop-blur">
+              <li>
+                <a href={withBase("/escursioni")} class="transition hover:text-white">Escursioni</a>
+              </li>
+              <li aria-hidden="true" class="text-cream/70">/</li>
+              <li class="text-white">{escursione.titolo}</li>
+            </ol>
+          </nav>
+        </div>
         <div class="absolute inset-x-0 bottom-0 p-6 text-white sm:p-8">
-          <a href={withBase("/escursioni")} class="mb-4 inline-flex rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-cream">Torna all'archivio</a>
           <p class="text-sm font-bold uppercase tracking-[0.16em] text-cream/80">{escursione.luogo}</p>
           <h1 class="mt-2 font-display text-4xl sm:text-5xl">{escursione.titolo}</h1>
-          <p class="mt-3 max-w-3xl text-sm text-cream/90 sm:text-base">{escursione.descrizione}</p>
+          {heroDescription && <p class="mt-3 max-w-3xl text-sm text-cream/90 sm:text-base">{heroDescription}</p>}
         </div>
       </div>
     </section>
@@ -52,9 +93,9 @@ const jsonLd = {
     <section class="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
       <div class="grid gap-4 sm:grid-cols-2">
         <article class="rounded-[1.75rem] bg-white p-5 shadow-card"><p class="text-xs uppercase tracking-[0.16em] text-terracotta-600">Data</p><p class="mt-2 text-2xl font-black text-forest-800">{formatDate(escursione.data)}</p></article>
-        <article class="rounded-[1.75rem] bg-white p-5 shadow-card"><p class="text-xs uppercase tracking-[0.16em] text-terracotta-600">Distanza</p><p class="mt-2 text-2xl font-black text-forest-800">{formatKilometers(escursione.km)} km</p></article>
-        <article class="rounded-[1.75rem] bg-white p-5 shadow-card"><p class="text-xs uppercase tracking-[0.16em] text-terracotta-600">Durata</p><p class="mt-2 text-2xl font-black text-forest-800">{escursione.durata}</p></article>
-        <article class="rounded-[1.75rem] bg-white p-5 shadow-card"><p class="text-xs uppercase tracking-[0.16em] text-terracotta-600">Dislivello</p><p class="mt-2 text-2xl font-black text-forest-800">{formatMeters(escursione.dislivello)} m</p></article>
+        <article class="rounded-[1.75rem] bg-white p-5 shadow-card"><p class="text-xs uppercase tracking-[0.16em] text-terracotta-600">Distanza</p><p class="mt-2 text-2xl font-black text-forest-800">{formatMetricValue(escursione.km, formatKilometers, " km")}</p></article>
+        <article class="rounded-[1.75rem] bg-white p-5 shadow-card"><p class="text-xs uppercase tracking-[0.16em] text-terracotta-600">Durata</p><p class="mt-2 text-2xl font-black text-forest-800">{formatDurationValue(escursione.durata)}</p></article>
+        <article class="rounded-[1.75rem] bg-white p-5 shadow-card"><p class="text-xs uppercase tracking-[0.16em] text-terracotta-600">Dislivello</p><p class="mt-2 text-2xl font-black text-forest-800">{formatMetricValue(escursione.dislivello, formatMeters, " m")}</p></article>
       </div>
 
       <div class="space-y-4 rounded-[2rem] bg-white p-6 shadow-card">
@@ -65,28 +106,49 @@ const jsonLd = {
           </div>
         </div>
 
-        <div>
-          <p class="text-sm font-bold uppercase tracking-[0.16em] text-terracotta-600">Tag</p>
-          <div class="mt-3 flex flex-wrap gap-2">
-            {escursione.tag.map((item) => <span class="rounded-full border border-terracotta-200 px-4 py-2 text-sm font-semibold text-terracotta-700">#{item}</span>)}
-          </div>
-        </div>
+        <div class="grid gap-4 lg:grid-cols-2">
+          {escursione.nome_rifugio && (
+            <div class="rounded-[1.5rem] bg-forest-50 p-5">
+              <p class="text-sm font-bold uppercase tracking-[0.16em] text-terracotta-600">Rifugio</p>
+              <p class="mt-2 text-2xl font-black text-forest-800">{escursione.nome_rifugio}</p>
+            </div>
+          )}
 
-        <div class="rounded-[1.5rem] bg-forest-50 p-5">
-          <p class="text-sm font-bold uppercase tracking-[0.16em] text-forest-600">Difficolt&agrave;</p>
-          <p class="mt-2 text-2xl font-black text-forest-800">{escursione.difficolta}</p>
+          <div class="rounded-[1.5rem] bg-forest-50 p-5">
+            <p class="text-sm font-bold uppercase tracking-[0.16em] text-terracotta-600">Gea Rating</p>
+            <div class="mt-3 flex items-center gap-2" aria-label={`Gea Rating: ${geaRating} su 5`}>
+              {geaStars.map((starType) => (
+                starType === "full" ? (
+                  <Star
+                    size={28}
+                    strokeWidth={2}
+                    class="text-terracotta-500 fill-terracotta-500"
+                    aria-hidden="true"
+                  />
+                ) : starType === "half" ? (
+                  <StarHalf
+                    size={28}
+                    strokeWidth={2}
+                    class="text-terracotta-500 fill-terracotta-500"
+                    aria-hidden="true"
+                  />
+                ) : (
+                  <Star
+                    size={28}
+                    strokeWidth={2}
+                    class="text-forest-200"
+                    aria-hidden="true"
+                  />
+                )
+              ))}
+              </div>
+          </div>
         </div>
       </div>
     </section>
 
-    <section class="space-y-4 rounded-[2rem] bg-forest-800 p-6 text-white shadow-card">
-      <div>
-        <p class="text-sm font-bold uppercase tracking-[0.16em] text-cream/80">Percorso</p>
-        <h2 class="mt-2 text-3xl font-black">Mappa interattiva</h2>
-      </div>
-
-      {escursione.nome_rifugio && <div class="rounded-[1.5rem] border border-white/15 bg-white/10 p-5 backdrop-blur"><p class="text-xs font-bold uppercase tracking-[0.16em] text-cream/80">Rifugio</p><p class="mt-2 text-xl font-black text-white">{escursione.nome_rifugio}</p></div>}
-      <Mappa client:visible escursioni={[escursione]} height="420px" />
+    <section class="rounded-[2rem] border border-sand bg-white p-3 shadow-card sm:p-4">
+      <Mappa client:load escursioni={[escursione]} height="420px" />
     </section>
 
     <HikeGallery images={escursione.gallery} />

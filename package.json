@@ -12,8 +12,10 @@
   "dependencies": {
     "@astrojs/preact": "^3.3.0",
     "@astrojs/tailwind": "^5.1.0",
+    "@lucide/astro": "^1.7.0",
     "astro": "^4.16.18",
     "leaflet": "^1.9.4",
+    "lucide-preact": "^1.7.0",
     "preact": "^10.26.4"
   },
   "devDependencies": {

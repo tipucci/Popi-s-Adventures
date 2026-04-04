@@ -3,6 +3,7 @@ import "../styles/global.css";
 import { withBase } from "../utils/base.js";
 import { getEscursioni } from "../data/escursioni.js";
 import { siteImages } from "../data/imageRegistry.js";
+import { Footprints, House, Map } from "@lucide/astro";
 
 const {
   title = "Popi's Adventures",
@@ -12,9 +13,9 @@ const {
 } = Astro.props;
 
 const navItems = [
-  { id: "home", href: withBase("/"), label: "Home", icon: "home" },
-  { id: "escursioni", href: withBase("/escursioni"), label: "Escursioni", icon: "trail" },
-  { id: "mappa", href: withBase("/mappa"), label: "Mappa", icon: "map" }
+  { id: "home", href: withBase("/"), label: "Home", Icon: House },
+  { id: "escursioni", href: withBase("/escursioni"), label: "Escursioni", Icon: Footprints },
+  { id: "mappa", href: withBase("/mappa"), label: "Mappa", Icon: Map }
 ];
 
 function getSeasonFromDate(value) {
@@ -78,17 +79,6 @@ const footerQuickLinks = [
   { label: "Escursioni con Gea", href: `${withBase("/escursioni")}?partecipanti=gea` }
 ];
 
-const iconPaths = {
-  home: ["M3.75 10.5 12 3.75l8.25 6.75", "M5.25 9.75v9h4.5v-6h4.5v6h4.5v-9"],
-  trail: [
-    "M8.25 4.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Z",
-    "M10.5 20.25 9 14.25l-2.25-2.25-2.25 3",
-    "M12.75 9.75 10.5 12l3 2.25 1.5 6",
-    "M13.5 9h4.5l2.25-2.25"
-  ],
-  map: ["M9 18 15 21l6-3V6l-6 3-6-3-6 3v12l6-3Z", "M9 6v12", "M15 9v12"]
-};
-
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const socialImage = image.startsWith("http") ? image : new URL(image, Astro.site).href;
 ---
@@ -116,7 +106,7 @@ const socialImage = image.startsWith("http") ? image : new URL(image, Astro.site
   <body class="min-h-screen bg-cream text-forest-800 antialiased">
     <div class="min-h-screen bg-hero-glow">
       <div class="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 pb-32 pt-4 sm:px-6 md:pb-24 lg:px-8">
-        <header class="sticky top-4 z-50 mb-6 hidden items-center justify-between rounded-full border border-white/70 bg-white/85 px-4 py-3 shadow-card backdrop-blur md:flex">
+        <header class="z-50 mb-6 hidden items-center justify-between rounded-full border border-white/70 bg-white/85 px-4 py-3 shadow-card backdrop-blur md:flex">
           <a
             href={withBase("/")}
             aria-label="Torna alla home"
@@ -145,20 +135,7 @@ const socialImage = image.startsWith("http") ? image : new URL(image, Astro.site
                         : "text-forest-700 hover:bg-terracotta-50"
                     ]}
                   >
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="1.8"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      class="h-4 w-4 shrink-0"
-                      aria-hidden="true"
-                    >
-                      {iconPaths[item.icon].map((path) => (
-                        <path d={path}></path>
-                      ))}
-                    </svg>
+<item.Icon class="h-4 w-4 shrink-0" stroke-width={2} aria-hidden="true" />
                     <span>{item.label}</span>
                   </a>
                 </li>
@@ -310,20 +287,7 @@ const socialImage = image.startsWith("http") ? image : new URL(image, Astro.site
                     : "text-forest-700 hover:bg-terracotta-50"
                 ]}
               >
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  class="h-5 w-5 shrink-0"
-                  aria-hidden="true"
-                >
-                  {iconPaths[item.icon].map((path) => (
-                    <path d={path}></path>
-                  ))}
-                </svg>
+<item.Icon class="h-5 w-5 shrink-0" stroke-width={2} aria-hidden="true" />
                 <span>{item.label}</span>
               </a>
             </li>

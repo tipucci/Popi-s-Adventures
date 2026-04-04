@@ -1,16 +1,15 @@
 ﻿---
 import { siteImages } from "../data/imageRegistry.js";
 
-const title = "Chi siamo";
+const title = "Tizi, Meg e Gea";
 
 const description =
-  "Siamo Tiz, Meg e Gea, una border collie di due anni che non sta mai ferma. &Egrave; un piccolo demonietto pieno di energia e una campionessa in erba nel retrieving: ogni uscita &egrave; anche il suo campo di allenamento.";
+  "Ci piacciono le giornate all'aria aperta, un bel sentiero e le soste per mangiare qualcosa di buono lungo il percorso. La vera protagonista ? Gea, una border collie di due anni. ? un piccolo demonio pieno di energia e futura Fetch Queen: ogni prato o bosco ? il suo campo di allenamento.";
 
 const descriptionSecond =
-  "Non siamo alpinisti, ma escursionisti amatoriali. Ci piacciono i sentieri accessibili, le giornate lente all'aria aperta e le soste per mangiare qualcosa di buono lungo il percorso.";
+  "Questo spazio è il diario delle nostre escursioni. Tiene traccia di tutte le giornate semplici che ci lasciano stanchi ma felici.";
 
-const descriptionThird =
-  "Questo spazio &egrave; il nostro diario: raccoglie le escursioni che ci sono rimaste nel cuore e tutte quelle giornate semplici che finiscono con la stessa sensazione: stanchi, ma felici.";
+const descriptionThird = "";
 
 const imageSrc = siteImages.aboutUs.src;
 const imageAlt = siteImages.aboutUs.alt;
@@ -26,9 +25,9 @@ const imageAlt = siteImages.aboutUs.alt;
       <div class="about-us__content">
         <p class="about-us__eyebrow">Chi siamo</p>
         <h2 id="about-us-title" class="about-us__title">{title}</h2>
-        <p class="about-us__text" set:html={description}></p>
+        <p class="about-us__text">{description}</p>
         <p class="about-us__text">{descriptionSecond}</p>
-        <p class="about-us__text" set:html={descriptionThird}></p>
+        {descriptionThird && <p class="about-us__text">{descriptionThird}</p>}
       </div>
     </div>
   </div>
@@ -125,7 +124,6 @@ const imageAlt = siteImages.aboutUs.alt;
 
   .about-us__text {
     margin: 0;
-    max-width: 34ch;
     color: var(--about-copy);
     font-size: 1rem;
     line-height: 1.8;

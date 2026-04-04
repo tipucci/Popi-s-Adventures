@@ -283,6 +283,27 @@ export function sortByDateDesc(a, b) {
   return dateToTime(b.data) - dateToTime(a.data);
 }
 
+function describeEscursioneRow(raw, index) {
+  const title = raw?.titolo || raw?.gita || `Escursione ${index + 1}`;
+  const date = normalizeDate(raw?.data || "");
+  return date ? `${title} (${date})` : title;
+}
+
+function normalizeEscursioniRows(rows) {
+  return rows
+    .flatMap((row, index) => {
+      try {
+        return [normalizeEscursione(row, index)];
+      } catch (error) {
+        console.warn(
+          `[escursioni] Escursione ignorata: ${describeEscursioneRow(row, index)}. ${error instanceof Error ? error.message : error}`
+        );
+        return [];
+      }
+    })
+    .sort(sortByDateDesc);
+}
+
 export async function fetchEscursioniCsv() {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
@@ -309,8 +330,11 @@ export async function fetchEscursioniCsv() {
 export async function getEscursioni() {
   try {
     const rows = await fetchEscursioniCsv();
-    return rows.map(normalizeEscursione).sort(sortByDateDesc);
+    return normalizeEscursioniRows(rows);
   } catch (error) {
+    console.warn(
+      `[escursioni] Impossibile caricare il CSV: ${error instanceof Error ? error.message : error}`
+    );
     return [];
   }
 }
@@ -323,8 +347,11 @@ export async function getEscursioneBySlug(slug) {
 export async function getEscursioniApiData() {
   try {
     const rows = await fetchEscursioniCsv();
-    return rows.map(normalizeEscursione).sort(sortByDateDesc);
+    return normalizeEscursioniRows(rows);
   } catch (error) {
+    console.warn(
+      `[escursioni] Impossibile caricare i dati API dal CSV: ${error instanceof Error ? error.message : error}`
+    );
     return [];
   }
 }

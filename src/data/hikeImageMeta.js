@@ -23,12 +23,12 @@ export const hikeImageMeta = Object.fromEntries(
         {
           file: "gallery-01.jpg",
           alt: `${title} - primo scatto della galleria dell'escursione.`,
-          caption: "Primo placeholder locale, facile da sostituire con la foto definitiva."
+          caption: ""
         },
         {
           file: "gallery-02.jpg",
           alt: `${title} - secondo scatto della galleria dell'escursione.`,
-          caption: "Secondo placeholder locale, pronto per una futura immagine reale."
+          caption: ""
         }
       ]
     }

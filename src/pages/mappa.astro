@@ -11,27 +11,7 @@ const escursioni = await getEscursioni();
   description="Mappa dedicata con tutte le escursioni del diario che hanno coordinate disponibili."
   active="mappa"
 >
-  <section class="space-y-6">
-    <div class="rounded-[2rem] bg-white/85 p-6 shadow-card backdrop-blur sm:p-8">
-      <p class="text-sm font-bold uppercase tracking-[0.16em] text-terracotta-600">Mappa</p>
-      <h1 class="mt-2 font-display text-4xl text-forest-800 sm:text-5xl">Dove siamo stati</h1>
-      <p class="mt-4 max-w-3xl text-sm text-forest-700 sm:text-base">
-        Una pagina dedicata per vedere tutte le escursioni geolocalizzate del diario in un unico colpo d'occhio.
-      </p>
-    </div>
-
-    <section class="space-y-4 rounded-[2rem] bg-forest-800 p-4 text-white shadow-card sm:p-6">
-      <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p class="text-sm font-bold uppercase tracking-[0.16em] text-cream/80">Vista mappa</p>
-          <h2 class="text-3xl font-black">Escursioni geolocalizzate</h2>
-        </div>
-        <p class="max-w-xl text-sm text-cream/85">
-          La mappa mostra solo le escursioni che hanno coordinate reali nel dataset.
-        </p>
-      </div>
-
-      <Mappa client:visible escursioni={escursioni} height="560px" />
-    </section>
+  <section class="rounded-[2rem] border border-sand bg-white p-3 shadow-card sm:p-4">
+    <Mappa client:load escursioni={escursioni} height="560px" />
   </section>
 </Layout>
