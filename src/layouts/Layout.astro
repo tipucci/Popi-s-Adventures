@@ -3,13 +3,16 @@ import "../styles/global.css";
 import { withBase } from "../utils/base.js";
 import { getEscursioni } from "../data/escursioni.js";
 import { siteImages } from "../data/imageRegistry.js";
-import { Footprints, House, Map } from "@lucide/astro";
+import { ArrowLeft, Footprints, House, Map } from "@lucide/astro";
+import siteLogo from "../assets/images/site/logo/logo-popi.png";
 
 const {
   title = "Popi's Adventures",
   description = "Diario di escursioni tra natura, panorami e camminate con il cane.",
   active = "home",
-  image = siteImages.heroHome.src
+  image = siteImages.heroHome.src,
+  mobileBackHref = "",
+  mobileBackLabel = ""
 } = Astro.props;
 
 const navItems = [
@@ -76,7 +79,7 @@ const footerQuickLinks = [
   { label: "Tutte le escursioni", href: withBase("/escursioni") },
   { label: "Mappa escursioni", href: withBase("/mappa") },
   { label: "Escursioni con rifugio", href: `${withBase("/escursioni")}?soloRifugio=1` },
-  { label: "Escursioni con Gea", href: `${withBase("/escursioni")}?partecipanti=gea` }
+  { label: "Escursioni con Gea", href: `${withBase("/escursioni")}?soloGea=1` }
 ];
 
 const canonical = new URL(Astro.url.pathname, Astro.site);
@@ -106,18 +109,51 @@ const socialImage = image.startsWith("http") ? image : new URL(image, Astro.site
   <body class="min-h-screen bg-cream text-forest-800 antialiased">
     <div class="min-h-screen bg-hero-glow">
       <div class="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 pb-32 pt-4 sm:px-6 md:pb-24 lg:px-8">
+      <div class="mb-4 flex items-center justify-between gap-4 md:hidden">
+        <a
+          href={withBase("/")}
+          aria-label="Torna alla home"
+          class="inline-flex items-center justify-center rounded-full p-1 transition"
+        >
+          <span class="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full shadow-sm">
+            <img
+              src={siteLogo.src}
+              alt="Logo di Popi's Adventures"
+              width={siteLogo.width}
+              height={siteLogo.height}
+              loading="eager"
+              decoding="async"
+              class="h-full w-full object-cover"
+            />
+          </span>
+        </a>
+
+        {mobileBackHref && mobileBackLabel && (
+          <a
+            href={mobileBackHref}
+            class="inline-flex items-center justify-center gap-2 rounded-full bg-forest-700 px-4 py-2 text-sm font-bold text-white shadow-card transition hover:bg-forest-600"
+          >
+            <ArrowLeft class="h-4 w-4 shrink-0" stroke-width={2.2} aria-hidden="true" />
+            <span>{mobileBackLabel}</span>
+          </a>
+        )}
+      </div>
         <header class="z-50 mb-6 hidden items-center justify-between rounded-full border border-white/70 bg-white/85 px-4 py-3 shadow-card backdrop-blur md:flex">
           <a
             href={withBase("/")}
             aria-label="Torna alla home"
             class="inline-flex items-center justify-center rounded-full p-1 transition hover:bg-terracotta-50"
           >
-            <span class="flex h-12 w-12 items-center justify-center rounded-full bg-forest-800 shadow-sm">
-              <svg viewBox="0 0 48 48" class="h-8 w-8" aria-hidden="true">
-                <circle cx="24" cy="24" r="23" fill="#355347"></circle>
-                <path d="M24 10 34 24 24 38 14 24Z" fill="#F26A3D" opacity="0.92"></path>
-                <circle cx="24" cy="24" r="6.5" fill="#F5EBDC"></circle>
-              </svg>
+            <span class="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full shadow-sm">
+              <img
+                src={siteLogo.src}
+                alt="Logo di Popi's Adventures"
+                width={siteLogo.width}
+                height={siteLogo.height}
+                loading="eager"
+                decoding="async"
+                class="h-full w-full object-cover"
+              />
             </span>
           </a>
 

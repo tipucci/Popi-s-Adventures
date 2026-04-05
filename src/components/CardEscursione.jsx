@@ -24,30 +24,52 @@ function hasFeature(escursione, key) {
 
 export default function CardEscursione({ escursione, hrefBase = "/escursioni" }) {
   const partecipanti = (escursione.partecipanti || []).filter((item) => item === "gea");
-  const features = featureBadges.filter((item) => item.key === "gea" ? partecipanti.includes("gea") : hasFeature(escursione, item.key));
+  const featureStates = featureBadges.map((item) => ({
+    ...item,
+    active: item.key === "gea" ? partecipanti.includes("gea") : hasFeature(escursione, item.key)
+  }));
+
   const stats = [
     escursione.km > 0
       ? {
           label: "Km",
           value: formatKilometers(escursione.km),
-          className: "bg-terracotta-50 text-terracotta-600"
+          className: "bg-terracotta-50 text-terracotta-600",
+          active: true
         }
-      : null,
+      : {
+          label: "Km",
+          value: "--",
+          className: "bg-slate-100 text-slate-400",
+          active: false
+        },
     escursione.durata
       ? {
           label: "Durata",
           value: escursione.durata,
-          className: "bg-forest-50 text-forest-600"
+          className: "bg-forest-50 text-forest-600",
+          active: true
         }
-      : null,
+      : {
+          label: "Durata",
+          value: "--",
+          className: "bg-slate-100 text-slate-400",
+          active: false
+        },
     escursione.dislivello > 0
       ? {
           label: "D+",
           value: `${formatMeters(escursione.dislivello)} m`,
-          className: "bg-sand text-forest-700"
+          className: "bg-sand text-forest-700",
+          active: true
         }
-      : null
-  ].filter(Boolean);
+      : {
+          label: "D+",
+          value: "--",
+          className: "bg-slate-100 text-slate-400",
+          active: false
+        }
+  ];
 
   return (
     <article class="group overflow-hidden rounded-[1.75rem] border border-white/70 bg-white shadow-card transition hover:-translate-y-1 hover:shadow-2xl">
@@ -66,29 +88,33 @@ export default function CardEscursione({ escursione, hrefBase = "/escursioni" })
             </div>
           </div>
 
-          {stats.length > 0 && (
-            <div class={`grid gap-3 text-sm text-forest-700 ${stats.length === 1 ? "grid-cols-1" : stats.length === 2 ? "grid-cols-2" : "grid-cols-3"}`}>
-              {stats.map((stat) => {
-                const [bgClass, labelClass] = stat.className.split(" ");
-                return (
-                  <div class={`rounded-2xl px-3 py-2 ${bgClass}`}>
-                    <p class={`text-xs uppercase tracking-wide ${labelClass}`}>{stat.label}</p>
-                    <p class="font-bold text-forest-800">{stat.value}</p>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+          <div class="grid min-h-[4.9rem] grid-cols-3 gap-3 text-sm text-forest-700">
+            {stats.map((stat) => {
+              const [bgClass, labelClass] = stat.className.split(" ");
+              return (
+                <div key={stat.label} class={`rounded-2xl px-3 py-2 ${bgClass} ${stat.active ? "" : "opacity-60"}`}>
+                  <p class={`text-xs uppercase tracking-wide ${labelClass}`}>{stat.label}</p>
+                  <p class={`font-bold ${stat.active ? "text-forest-800" : "text-slate-400"}`}>{stat.value}</p>
+                </div>
+              );
+            })}
+          </div>
 
-          {features.length > 0 && (
-            <div class="flex flex-wrap gap-2">
-              {features.map((item) => (
-                <span class="inline-flex h-12 w-12 items-center justify-center rounded-full border border-terracotta-300/80 bg-white text-terracotta-800 shadow-sm" title={item.label} aria-label={item.label}>
-                  <item.Icon size={18} strokeWidth={2} class="shrink-0" aria-hidden="true" />
-                </span>
-              ))}
-            </div>
-          )}
+          <div class="flex flex-wrap gap-2">
+            {featureStates.map((item) => (
+              <span
+                class={`inline-flex h-12 w-12 items-center justify-center rounded-full border shadow-sm transition ${
+                  item.active
+                    ? "border-terracotta-300/80 bg-white text-terracotta-800"
+                    : "border-terracotta-200/60 bg-white/55 text-terracotta-800/35 opacity-55"
+                }`}
+                title={item.label}
+                aria-label={`${item.label}${item.active ? " disponibile" : " non disponibile"}`}
+              >
+                <item.Icon size={18} strokeWidth={2} class="shrink-0" aria-hidden="true" />
+              </span>
+            ))}
+          </div>
         </div>
       </a>
     </article>

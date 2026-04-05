@@ -17,10 +17,11 @@ const difficultyOptions = [
 ];
 
 const sortOptions = [
-  { value: "date-desc", label: "Pi\u00F9 recenti" },
+  { value: "date-desc", label: "Più recenti" },
   { value: "date-asc", label: "Meno recenti" },
-  { value: "km-desc", label: "Pi\u00F9 lunghe" },
-  { value: "km-asc", label: "Pi\u00F9 corte" }
+  { value: "km-desc", label: "Più lunghe" },
+  { value: "km-asc", label: "Più corte" },
+  { value: "gea-rating", label: "Gea Rating" }
 ];
 
 const periodOptions = [
@@ -103,18 +104,37 @@ function getSeasonFromDate(value) {
   return "autunno";
 }
 
-function getDifficultyGroup(value) {
-  const normalized = String(value || "")
+function parseDurationMinutes(value) {
+  const normalized = String(value || "").trim();
+  if (!normalized) return 0;
+
+  const match = normalized.match(/^(\d{1,2}):(\d{2})$/);
+  if (match) {
+    return Number(match[1]) * 60 + Number(match[2]);
+  }
+
+  const numeric = Number(normalized);
+  return Number.isFinite(numeric) ? numeric : 0;
+}
+
+function getDifficultyGroup(item) {
+  const normalized = String(item?.difficolta || "")
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .trim();
 
-  if (!normalized) return "";
   if (normalized.includes("passegg")) return "passeggiate";
-  return "escursioni";
-}
+  if (normalized) return "escursioni";
 
+  const km = Number(item?.km) || 0;
+  const dislivello = Number(item?.dislivello) || 0;
+  const durataMinuti = Number(item?.durataMinuti) || parseDurationMinutes(item?.durata);
+
+  if (km === 0 && dislivello === 0 && durataMinuti === 0) return "";
+  if (dislivello >= 200 || km >= 6.5 || durataMinuti >= 100) return "escursioni";
+  return "passeggiate";
+}
 function getPeriodStart(period) {
   const now = new Date();
   now.setHours(0, 0, 0, 0);
@@ -132,6 +152,12 @@ function getPeriodStart(period) {
   return null;
 }
 
+function getGeaRatingValue(item) {
+  const rawCandidates = [item?.gea_rating, item?.geaRating, item?.rating_gea, item?.voto];
+  const rawValue = rawCandidates.find((candidate) => candidate !== undefined && candidate !== null && candidate !== "");
+  const numeric = Number(rawValue);
+  return Number.isFinite(numeric) ? numeric : 0;
+}
 function formatKilometerLabel(value) {
   return new Intl.NumberFormat("it-IT", {
     minimumFractionDigits: 1,
@@ -149,7 +175,7 @@ function matchesFilters(item, filters) {
   const matchKmMin = kmMin !== null ? item.km >= kmMin : true;
   const matchKmMax = kmMax !== null ? item.km <= kmMax : true;
   const matchDifficulty = filters.difficolta
-    ? getDifficultyGroup(item.difficolta) === filters.difficolta
+    ? getDifficultyGroup(item) === filters.difficolta
     : true;
   const matchSeason = filters.stagione ? getSeasonFromDate(item.data) === filters.stagione : true;
   const matchProvince = filters.provincia
@@ -180,12 +206,13 @@ function sortItems(items, sort) {
       return list.sort((a, b) => b.km - a.km);
     case "km-asc":
       return list.sort((a, b) => a.km - b.km);
+    case "gea-rating":
+      return list.sort((a, b) => getGeaRatingValue(b) - getGeaRatingValue(a) || new Date(b.data) - new Date(a.data));
     case "date-desc":
     default:
       return list.sort((a, b) => new Date(b.data) - new Date(a.data));
   }
 }
-
 export default function Filtri({ escursioni = [], initialFilters = defaultFilters }) {
   const [filters, setFilters] = useState(() => normalizeInitialFilters(initialFilters));
 
@@ -337,20 +364,15 @@ export default function Filtri({ escursioni = [], initialFilters = defaultFilter
           cursor: pointer;
         }
       `}</style>
-      <details class="group rounded-[2rem] border border-white/70 bg-white/85 shadow-card backdrop-blur open:p-5 sm:open:p-6">
-        <summary class="flex cursor-pointer list-none items-center justify-between gap-4 rounded-[2rem] px-5 py-4 text-left marker:hidden sm:px-6 sm:py-5">
+      <details class="group overflow-hidden rounded-[2rem] border border-white/70 bg-white/85 shadow-card backdrop-blur">
+        <summary class="flex min-h-[5.5rem] cursor-pointer list-none items-center justify-between gap-4 rounded-[2rem] px-5 py-4 text-left marker:hidden sm:min-h-[5.75rem] sm:px-6 sm:py-4">
           <span class="text-lg font-black text-forest-800 sm:text-xl">Filtra le escursioni</span>
-          <span class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-sand bg-cream text-xl font-semibold leading-none text-forest-700 transition group-open:rotate-45">
+          <span class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-sand bg-cream text-xl font-semibold leading-none text-forest-700 transition group-open:rotate-45">
             +
           </span>
         </summary>
 
-        <div class="flex flex-col gap-4 px-5 pb-5 sm:px-6 sm:pb-6 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <p class="text-sm font-semibold text-forest-700">
-              Usa i filtri per restringere l'archivio e lasciare pi&ugrave; spazio alle escursioni.
-            </p>
-          </div>
+        <div class="flex justify-end px-5 pb-5 sm:px-6 sm:pb-6">
           <button
             type="button"
             onClick={resetFilters}

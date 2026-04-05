@@ -63,15 +63,15 @@ const jsonLd = {
 };
 ---
 
-<Layout title={`${escursione.titolo} | Popi's Adventures`} description={escursione.descrizione} image={escursione.cover} active="escursioni">
+<Layout title={`${escursione.titolo} | Popi's Adventures`} description={escursione.descrizione} image={escursione.cover} active="escursioni" mobileBackHref={withBase("/escursioni")} mobileBackLabel="Torna indietro">
   <script slot="head" type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
 
   <article class="space-y-8">
     <section class="overflow-hidden rounded-[2rem] bg-white shadow-card">
-      <div class="relative aspect-[16/6]">
+      <div class="relative aspect-[4/4.8] sm:aspect-[16/6]">
         <img src={escursione.cover} alt={escursione.coverAlt || escursione.titolo} class="h-full w-full object-cover" loading="eager" />
         <div class="absolute inset-0 bg-gradient-to-t from-forest-800 via-forest-800/30 to-transparent"></div>
-        <div class="absolute left-6 top-6 z-10 sm:left-8 sm:top-8">
+        <div class="absolute left-6 top-6 z-10 hidden sm:block sm:left-8 sm:top-8">
           <nav aria-label="Breadcrumb">
             <ol class="flex flex-wrap items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-cream backdrop-blur">
               <li>
@@ -100,7 +100,7 @@ const jsonLd = {
 
       <div class="space-y-4 rounded-[2rem] bg-white p-6 shadow-card">
         <div>
-          <p class="text-sm font-bold uppercase tracking-[0.16em] text-terracotta-600">Compagnia</p>
+          <p class="text-xs font-bold uppercase tracking-[0.16em] text-terracotta-600">Compagnia</p>
           <div class="mt-3 flex flex-wrap gap-2">
             {escursione.partecipanti.map((item) => <span class="rounded-full bg-cream px-4 py-2 text-sm font-bold text-forest-700">{partecipantiLabels[item] || item}</span>)}
           </div>
@@ -109,13 +109,13 @@ const jsonLd = {
         <div class="grid gap-4 lg:grid-cols-2">
           {escursione.nome_rifugio && (
             <div class="rounded-[1.5rem] bg-forest-50 p-5">
-              <p class="text-sm font-bold uppercase tracking-[0.16em] text-terracotta-600">Rifugio</p>
+              <p class="text-xs font-bold uppercase tracking-[0.16em] text-terracotta-600">Rifugio</p>
               <p class="mt-2 text-2xl font-black text-forest-800">{escursione.nome_rifugio}</p>
             </div>
           )}
 
           <div class="rounded-[1.5rem] bg-forest-50 p-5">
-            <p class="text-sm font-bold uppercase tracking-[0.16em] text-terracotta-600">Gea Rating</p>
+            <p class="text-xs font-bold uppercase tracking-[0.16em] text-terracotta-600">Gea Rating</p>
             <div class="mt-3 flex items-center gap-2" aria-label={`Gea Rating: ${geaRating} su 5`}>
               {geaStars.map((starType) => (
                 starType === "full" ? (
