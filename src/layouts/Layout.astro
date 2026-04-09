@@ -4,6 +4,7 @@ import { withBase } from "../utils/base.js";
 import { getEscursioni } from "../data/escursioni.js";
 import { siteImages } from "../data/imageRegistry.js";
 import { ArrowLeft, Footprints, House, Map } from "@lucide/astro";
+import SpeedInsights from "@vercel/speed-insights/astro";
 import siteLogo from "../assets/images/site/logo/logo-popi.png";
 
 const {
@@ -338,6 +339,9 @@ const socialImage = image.startsWith("http") ? image : new URL(image, Astro.site
           ))}
         </ul>
       </nav>
+      <SpeedInsights />
     </div>
   </body>
 </html>
+
+
