@@ -37,29 +37,33 @@ function defaultGalleryAlt(title, index) {
   return `${title} - foto ${String(index).padStart(2, "0")} della galleria.`;
 }
 
-function createPlaceholderSvg({ title, subtitle }) {
+function createPlaceholderSvg({ title }) {
   const svg = `
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-label="${title}">
       <defs>
-        <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#315f3d" />
-          <stop offset="100%" stop-color="#5d8a55" />
+        <linearGradient id="sky" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#f4efe4" />
+          <stop offset="100%" stop-color="#e2d7be" />
+        </linearGradient>
+        <linearGradient id="ridge" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#6f8a63" />
+          <stop offset="100%" stop-color="#51684a" />
         </linearGradient>
       </defs>
-      <rect width="1600" height="900" fill="url(#bg)" />
-      <circle cx="1280" cy="160" r="110" fill="rgba(255,255,255,0.08)" />
-      <path d="M0 720 L320 520 L560 660 L880 420 L1180 640 L1440 500 L1600 620 L1600 900 L0 900 Z" fill="rgba(14,37,22,0.28)" />
-      <path d="M0 790 L250 620 L480 760 L760 560 L1010 740 L1320 590 L1600 760 L1600 900 L0 900 Z" fill="rgba(14,37,22,0.42)" />
-      <text x="120" y="650" fill="#f6f0e1" font-family="Georgia, serif" font-size="84" font-weight="700">${title}</text>
-      <text x="120" y="730" fill="rgba(246,240,225,0.85)" font-family="Arial, sans-serif" font-size="32">${subtitle}</text>
+      <rect width="1600" height="900" fill="url(#sky)" />
+      <circle cx="1260" cy="180" r="96" fill="rgba(255,255,255,0.45)" />
+      <path d="M0 620 L220 520 L430 560 L660 430 L900 540 L1120 410 L1370 530 L1600 460 L1600 900 L0 900 Z" fill="rgba(93,117,79,0.24)" />
+      <path d="M0 700 L280 500 L510 640 L760 470 L1010 650 L1280 520 L1600 670 L1600 900 L0 900 Z" fill="rgba(58,82,51,0.2)" />
+      <path d="M0 770 L210 690 L400 730 L690 590 L930 760 L1180 640 L1440 720 L1600 680 L1600 900 L0 900 Z" fill="url(#ridge)" />
+      <rect x="0" y="790" width="1600" height="110" fill="rgba(240,233,219,0.36)" />
     </svg>
   `;
 
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg.replace(/\s+/g, " ").trim())}`;
 }
 
-function createPlaceholderImage(title, alt, subtitle) {
-  const src = createPlaceholderSvg({ title, subtitle });
+function createPlaceholderImage(title, alt) {
+  const src = createPlaceholderSvg({ title });
   return {
     source: src,
     src,
@@ -98,7 +102,7 @@ function buildSrcSet(entries) {
     .join(", ");
 }
 
-const heroHomeSource = getPreferredSingleImage(siteImageModules, "../assets/images/site/home/hero-home");
+const heroHomeSource = getPreferredSingleImage(siteImageModules, "../assets/images/site/home/popi-hero-desktop");
 const aboutUsSource = getPreferredSingleImage(siteImageModules, "../assets/images/site/about/chi-siamo");
 
 export const siteImages = {
@@ -149,8 +153,7 @@ export async function getHikeImages(slug, title) {
       }))()
     : createPlaceholderImage(
         title,
-        `${title} - immagine segnaposto in attesa della foto di copertina.`,
-        "Immagine in arrivo"
+        `${title} - immagine segnaposto in attesa della foto di copertina.`
       );
 
   const galleryImages = gallery.length
@@ -158,8 +161,7 @@ export async function getHikeImages(slug, title) {
     : [
         createPlaceholderImage(
           title,
-          `${title} - immagine segnaposto della galleria.`,
-          "Galleria in arrivo"
+          `${title} - immagine segnaposto della galleria.`
         )
       ];
 

@@ -1,0 +1,197 @@
+# Popi's Adventures
+
+Diario personale di escursioni costruito con Astro. Il progetto pubblica un sito statico con homepage, archivio delle uscite, pagine di dettaglio, sezione "Chi siamo" e vista mappa alimentata da un dataset esterno su Google Sheets.
+
+## Panoramica
+
+Questo repository contiene il codice sorgente di un diario escursionistico personale, pensato per presentare in modo semplice e leggibile uscite, fotografie e metadati dei percorsi.
+
+Il sito include:
+
+- una homepage con hero, highlights e uscite recenti
+- una pagina archivio con filtri lato client
+- una pagina dedicata per ogni escursione
+- una pagina mappa per le escursioni con coordinate
+- un endpoint JSON generato in fase di build
+
+I contenuti arrivano da una combinazione di:
+
+- dati strutturati esterni pubblicati tramite Google Sheets
+- immagini locali versionate nel repository
+- testi e contenuti UI definiti direttamente nei componenti Astro e JSX
+
+## Stack
+
+- Astro 4
+- Preact per i componenti interattivi
+- Tailwind CSS per lo styling
+- Leaflet per la mappa
+- `astro:assets` per la gestione delle immagini locali
+
+## Funzionalità principali
+
+- generazione statica di pagine ed endpoint API
+- archivio escursioni con filtri per periodo, distanza, dislivello, difficoltà, tag e partecipanti
+- pagine di dettaglio generate a partire da dati CSV esterni
+- copertine e gallerie immagini locali per ogni escursione
+- pagina mappa con marker per le escursioni che hanno coordinate disponibili
+- endpoint pre-renderizzato in `/api/escursioni.json`
+
+## Struttura del progetto
+
+```text
+.
+|-- public/
+|   `-- leaflet/               # Asset marker di Leaflet
+|-- src/
+|   |-- assets/images/
+|   |   |-- site/              # Immagini di sito (home, about, logo)
+|   |   `-- hikes/             # Una cartella per ogni escursione
+|   |-- components/            # Componenti UI Astro e Preact
+|   |-- data/                  # Caricamento dati, registry immagini, metadata immagini
+|   |-- layouts/               # Layout condivisi
+|   |-- pages/                 # Route Astro
+|   |   |-- api/               # Endpoint API statico
+|   |   `-- escursioni/        # Archivio e pagine dettaglio escursioni
+|   |-- styles/                # Stili globali
+|   `-- utils/                 # Utility piccole e riusabili
+|-- astro.config.mjs
+|-- tailwind.config.js
+`-- package.json
+```
+
+## Setup locale
+
+### Requisiti
+
+- Node.js 18 o superiore
+- npm
+
+### Avvio
+
+```bash
+npm install
+npm run dev
+```
+
+Il server locale parte sulla porta predefinita di Astro. Per generare una build di produzione:
+
+```bash
+npm run build
+npm run preview
+```
+
+## Variabili e configurazione
+
+Il progetto usa due variabili di configurazione runtime definite in `astro.config.mjs`:
+
+- `SITE_URL`
+  Serve per costruire URL assoluti in metadata e dati strutturati. Il fallback attuale è `https://example.com`.
+- `BASE_PATH`
+  Base path opzionale per deploy sotto una sottocartella. Il fallback attuale è `/`.
+
+Esempio:
+
+```bash
+SITE_URL=https://your-domain.example BASE_PATH=/ npm run build
+```
+
+Non è richiesto un file `.env` locale per avviare il progetto, ma le variabili possono essere passate dalla shell o dalla piattaforma di deploy.
+
+## Dati e aggiornamento contenuti
+
+### Sorgente dati esterna
+
+Il dataset delle escursioni viene caricato da un CSV pubblicato su Google Sheets, definito in `src/data/escursioni.js`.
+
+Caratteristiche attuali della sorgente:
+
+- CSV pubblicato da Google Sheets
+- scaricato durante la build e durante lo sviluppo locale
+- normalizzato in campi utili al sito come `slug`, `cover`, `gallery`, `lat`, `lng`, tag e metadati derivati
+
+Implicazioni importanti:
+
+- la build dipende dalla raggiungibilità del CSV esterno
+- se il CSV non è disponibile, il codice attuale restituisce una lista vuota invece di fallire la build
+- la route `/api/escursioni.json` espone i dati normalizzati e anche l'URL sorgente
+
+### Immagini e contenuti locali
+
+Le immagini sono archiviate localmente nel repository e risolte tramite `import.meta.glob` in `src/data/imageRegistry.js`.
+
+Struttura prevista:
+
+```text
+src/assets/images/
+  site/
+    home/
+    about/
+    logo/
+  hikes/
+    <yyyy-mm-dd-slug>/
+      cover.jpg|webp
+      gallery-01.jpg|webp
+      gallery-02.jpg|webp
+      ...
+```
+
+Note operative:
+
+- le immagini di sito vengono usate per hero homepage, sezione about e logo
+- ogni escursione può avere una cover e una galleria
+- alt text e metadata galleria sono configurati in `src/data/hikeImageMeta.js`
+- se le immagini locali mancano, il progetto genera placeholder per evitare rotture di layout
+
+Quando aggiungi una nuova escursione:
+
+1. aggiungi la riga dati nella sorgente Google Sheet
+2. verifica che lo slug generato corrisponda al nome della cartella immagini
+3. aggiungi le immagini locali sotto `src/assets/images/hikes/<yyyy-mm-dd-slug>/`
+4. aggiorna facoltativamente `src/data/hikeImageMeta.js` con alt text e caption
+
+## Dipendenze esterne
+
+Il progetto dipende da alcuni servizi e risorse esterne:
+
+- Google Sheets
+  Sorgente del dataset escursioni tramite CSV pubblicato.
+- Google Fonts
+  Font caricati in `src/styles/global.css`.
+- OpenStreetMap
+  Tile usate da Leaflet come sfondo della mappa.
+- Google Maps
+  Usato per i link esterni di ricerca/indicazioni dai popup mappa.
+
+Queste dipendenze sono rilevanti per privacy, performance e manutenzione. Se il progetto viene irrigidito per una produzione più solida, sono i primi punti da valutare per self-hosting o fallback migliori.
+
+## Deploy
+
+La configurazione Astro usa `output: "static"`, quindi il sito può essere pubblicato su qualunque hosting statico.
+
+Prima del deploy:
+
+1. imposta `SITE_URL` con il dominio pubblico finale
+2. imposta `BASE_PATH` solo se il sito non viene servito dalla root del dominio
+3. esegui `npm run build`
+4. verifica che il CSV esterno sia raggiungibile durante la build
+
+Il repository ignora la cartella locale `.vercel/`, segno che Vercel può essere usato in sviluppo o deploy, ma il progetto non dipende in modo esclusivo da funzionalità proprietarie della piattaforma.
+
+## Roadmap breve
+
+- spostare più contenuti pubblici in file o collezioni dedicate
+- ridurre l'accoppiamento diretto con Google Sheets come unica sorgente dati
+- migliorare la documentazione del flusso immagini e manutenzione contenuti
+- aggiungere controlli automatici per coerenza build e asset mancanti
+
+## Licenza
+
+Il codice sorgente di questo repository è distribuito con licenza MIT. Vedi `LICENSE`.
+
+Immagini, fotografie personali, testi editoriali, contenuti del diario, branding e altri asset creativi non sono automaticamente inclusi nella licenza del software, salvo dove esplicitamente indicato. Vedi `NOTICE`.
+
+In pratica:
+
+- il codice può essere riutilizzato secondo i termini della licenza MIT
+- foto, immagini, contenuti personali e branding non devono essere considerati riutilizzabili agli stessi termini

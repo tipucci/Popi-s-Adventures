@@ -7,16 +7,23 @@ const {
   title = "Popi's Adventures",
   subtitle = "Un diario, tre popi e un sacco di avventure",
   image = siteImages.heroHome.source,
+  imageMobile = null,
+  imageDesktop = null,
   imageAlt = siteImages.heroHome.alt
 } = Astro.props;
 
-const imageSource = image || siteImages.heroHome.source;
-const [heroMobile, heroDesktop] = typeof imageSource === "string"
-  ? [null, null]
-  : await Promise.all([
-      getImage({ src: imageSource, width: 900, format: "webp", quality: 68 }),
-      getImage({ src: imageSource, width: 1440, format: "webp", quality: 74 })
-    ]);
+const fallbackSource = image || imageDesktop || imageMobile || siteImages.heroHome.source;
+const mobileSource = imageMobile || image || fallbackSource;
+const desktopSource = imageDesktop || image || fallbackSource;
+
+const [heroMobile, heroDesktop] = await Promise.all([
+  typeof mobileSource === "string"
+    ? null
+    : getImage({ src: mobileSource, width: 900, format: "webp", quality: 68 }),
+  typeof desktopSource === "string"
+    ? null
+    : getImage({ src: desktopSource, width: 1440, format: "webp", quality: 74 })
+]);
 
 const heroFallbackSrc = heroDesktop?.src || heroMobile?.src || siteImages.heroHome.src;
 const heroWidth = heroDesktop?.width || heroMobile?.width || 1440;

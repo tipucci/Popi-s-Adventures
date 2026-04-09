@@ -6,6 +6,8 @@ import AboutUs from "../components/AboutUs.astro";
 import CardEscursione from "../components/CardEscursione.jsx";
 import { getEscursioni } from "../data/escursioni.js";
 import { siteImages } from "../data/imageRegistry.js";
+import heroHomeMobile from "../assets/images/site/home/popi-hero-mobile.webp";
+import heroHomeDesktop from "../assets/images/site/home/popi-hero-desktop.webp";
 import { withBase } from "../utils/base.js";
 import { formatKilometers, formatMeters } from "../utils/format.js";
 
@@ -13,8 +15,8 @@ const escursioni = await getEscursioni();
 const recenti = escursioni.slice(0, 3);
 const hasEscursioni = escursioni.length > 0;
 const [heroPreloadMobile, heroPreloadDesktop] = await Promise.all([
-  getImage({ src: siteImages.heroHome.source, width: 900, format: "webp", quality: 68 }),
-  getImage({ src: siteImages.heroHome.source, width: 1440, format: "webp", quality: 74 })
+  getImage({ src: heroHomeMobile, width: 900, format: "webp", quality: 68 }),
+  getImage({ src: heroHomeDesktop, width: 1440, format: "webp", quality: 74 })
 ]);
 
 
@@ -27,7 +29,7 @@ const stats = {
 ---
 
 <Layout
-  title="Popi's Adventures | Diario di escursioni"
+  title="Popi's Adventures | Un diario, tre popi e un sacco di avventure"
   description="Home del diario di escursioni con ultime uscite, statistiche e storie condivise."
   active="home"
 >
@@ -42,7 +44,7 @@ const stats = {
     />
   </Fragment>
   <div class="space-y-10">
-    <Header />
+    <Header imageMobile={heroHomeMobile} imageDesktop={heroHomeDesktop} />
 
     <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       <article class="rounded-[1.75rem] bg-white p-5 shadow-card">
