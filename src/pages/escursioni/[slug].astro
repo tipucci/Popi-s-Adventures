@@ -52,7 +52,16 @@ const geaStars = Array.from({ length: 5 }, (_, index) => {
   return "empty";
 });
 const heroDescription = String(escursione.note || "").trim();
-const jsonLdImages = [escursione.cover, ...escursione.gallery.map((image) => image.src)].map((src) => new URL(src, Astro.site).href);
+const hasRealCover = typeof escursione.cover === "string" && !escursione.cover.startsWith("data:image/svg+xml");
+const hasRealGallery = Array.isArray(escursione.gallery)
+  && escursione.gallery.some((image) => typeof image?.src === "string" && !image.src.startsWith("data:image/svg+xml"));
+const galleryImages = hasRealGallery ? escursione.gallery : [];
+const detailGalleryImages = hasRealCover
+  ? [{ src: escursione.cover, alt: escursione.coverAlt || escursione.titolo, caption: "" }, ...galleryImages]
+  : galleryImages;
+const jsonLdImages = [escursione.cover, ...galleryImages.map((image) => image.src)]
+  .filter((src) => typeof src === "string" && !src.startsWith("data:image/svg+xml"))
+  .map((src) => new URL(src, Astro.site).href);
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "SportsActivityLocation",
@@ -71,17 +80,7 @@ const jsonLd = {
       <div class="relative aspect-[4/4.8] sm:aspect-[16/6]">
         <img src={escursione.cover} alt={escursione.coverAlt || escursione.titolo} class="h-full w-full object-cover" loading="eager" />
         <div class="absolute inset-0 bg-gradient-to-t from-forest-800 via-forest-800/30 to-transparent"></div>
-        <div class="absolute left-6 top-6 z-10 hidden sm:block sm:left-8 sm:top-8">
-          <nav aria-label="Breadcrumb">
-            <ol class="flex flex-wrap items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-cream backdrop-blur">
-              <li>
-                <a href={withBase("/escursioni")} class="transition hover:text-white">Escursioni</a>
-              </li>
-              <li aria-hidden="true" class="text-cream/70">/</li>
-              <li class="text-white">{escursione.titolo}</li>
-            </ol>
-          </nav>
-        </div>
+
         <div class="absolute inset-x-0 bottom-0 p-6 text-white sm:p-8">
           <p class="text-sm font-bold uppercase tracking-[0.16em] text-cream/80">{escursione.luogo}</p>
           <h1 class="mt-2 font-display text-4xl sm:text-5xl">{escursione.titolo}</h1>
@@ -147,10 +146,12 @@ const jsonLd = {
       </div>
     </section>
 
-    <section class="rounded-[2rem] border border-sand bg-white p-3 shadow-card sm:p-4">
+    <section class="rounded-[2rem] border border-forest-950 bg-[#173328] p-3 shadow-card sm:p-4">
       <Mappa client:load escursioni={[escursione]} height="420px" />
     </section>
 
-    <HikeGallery images={escursione.gallery} />
+    {detailGalleryImages.length > 0 && <HikeGallery images={detailGalleryImages} />}
   </article>
 </Layout>
+
+
