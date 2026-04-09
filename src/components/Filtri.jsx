@@ -1,5 +1,5 @@
 import { h } from "preact";
-import { useEffect, useMemo, useState } from "preact/hooks";
+import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import CardEscursione from "./CardEscursione.jsx";
 
 const seasonOptions = [
@@ -33,6 +33,7 @@ const periodOptions = [
 const pageSize = 6;
 
 const defaultFilters = {
+  search: "",
   period: "",
   kmMin: "",
   kmMax: "",
@@ -59,6 +60,7 @@ function normalizeInitialFilters(input = {}) {
   return {
     ...defaultFilters,
     ...input,
+    search: String(input.search || input.q || "").trim(),
     period: input.period || "",
     kmMin: input.kmMin || "",
     kmMax: input.kmMax || "",
@@ -75,6 +77,7 @@ function normalizeInitialFilters(input = {}) {
 function parseFiltersFromSearch(search) {
   const params = new URLSearchParams(search);
   return normalizeInitialFilters({
+    search: params.get("q") || "",
     period: params.get("period") || "",
     kmMin: params.get("kmMin") || "",
     kmMax: params.get("kmMax") || "",
@@ -158,6 +161,29 @@ function getGeaRatingValue(item) {
   const numeric = Number(rawValue);
   return Number.isFinite(numeric) ? numeric : 0;
 }
+function normalizeSearchText(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+function getSearchableText(item) {
+  const values = [
+    item?.titolo,
+    item?.luogo,
+    item?.provincia,
+    item?.descrizione,
+    item?.note,
+    item?.nome_rifugio,
+    Array.isArray(item?.tag) ? item.tag.join(" ") : item?.tag,
+    Array.isArray(item?.partecipanti) ? item.partecipanti.join(" ") : item?.partecipanti
+  ];
+
+  return normalizeSearchText(values.filter(Boolean).join(" "));
+}
+
 function formatKilometerLabel(value) {
   return new Intl.NumberFormat("it-IT", {
     minimumFractionDigits: 1,
@@ -171,6 +197,11 @@ function matchesFilters(item, filters) {
   const kmMin = filters.kmMin ? Number(filters.kmMin) : null;
   const kmMax = filters.kmMax ? Number(filters.kmMax) : null;
 
+  const normalizedSearch = normalizeSearchText(filters.search);
+
+  const matchSearch = normalizedSearch
+    ? getSearchableText(item).includes(normalizedSearch)
+    : true;
   const matchPeriod = periodStart ? date >= periodStart : true;
   const matchKmMin = kmMin !== null ? item.km >= kmMin : true;
   const matchKmMax = kmMax !== null ? item.km <= kmMax : true;
@@ -185,6 +216,7 @@ function matchesFilters(item, filters) {
   const matchGea = filters.soloGea ? item.cane : true;
 
   return (
+    matchSearch &&
     matchPeriod &&
     matchKmMin &&
     matchKmMax &&
@@ -215,10 +247,23 @@ function sortItems(items, sort) {
 }
 export default function Filtri({ escursioni = [], initialFilters = defaultFilters }) {
   const [filters, setFilters] = useState(() => normalizeInitialFilters(initialFilters));
+  const resultsHeadingRef = useRef(null);
+  const shouldFocusResultsRef = useRef(false);
 
   useEffect(() => {
-    const nextFilters = parseFiltersFromSearch(window.location.search);
-    setFilters((current) => (areFiltersEqual(current, nextFilters) ? current : nextFilters));
+    const syncFilters = () => {
+      const nextFilters = parseFiltersFromSearch(window.location.search);
+      setFilters((current) => (areFiltersEqual(current, nextFilters) ? current : nextFilters));
+    };
+
+    syncFilters();
+    window.addEventListener("popstate", syncFilters);
+    window.addEventListener("escursioni:filters-sync", syncFilters);
+
+    return () => {
+      window.removeEventListener("popstate", syncFilters);
+      window.removeEventListener("escursioni:filters-sync", syncFilters);
+    };
   }, []);
 
   const provinceOptions = useMemo(() => {
@@ -268,6 +313,7 @@ export default function Filtri({ escursioni = [], initialFilters = defaultFilter
 
   function buildPaginationUrl(page) {
     const params = new URLSearchParams();
+    if (filters.search) params.set("q", filters.search);
     if (filters.period) params.set("period", filters.period);
     if (filters.kmMin) params.set("kmMin", filters.kmMin);
     if (filters.kmMax) params.set("kmMax", filters.kmMax);
@@ -289,6 +335,19 @@ export default function Filtri({ escursioni = [], initialFilters = defaultFilter
     const nextUrl = buildPaginationUrl(currentPage);
     window.history.replaceState({}, "", nextUrl);
   }, [filters, currentPage]);
+
+  useEffect(() => {
+    if (!shouldFocusResultsRef.current || !resultsHeadingRef.current) return;
+
+    shouldFocusResultsRef.current = false;
+    resultsHeadingRef.current.focus({ preventScroll: true });
+    resultsHeadingRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [currentPage]);
+
+  function goToPage(page) {
+    shouldFocusResultsRef.current = true;
+    setFilters((current) => ({ ...current, page }));
+  }
 
   function updateField(key, value) {
     setFilters((current) => ({
@@ -533,7 +592,7 @@ export default function Filtri({ escursioni = [], initialFilters = defaultFilter
       <section class="space-y-4">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h3 class="text-2xl font-black text-forest-800">Risultati ({filtered.length})</h3>
+            <h3 ref={resultsHeadingRef} tabindex="-1" class="text-2xl font-black text-forest-800 outline-none">Risultati ({filtered.length})</h3>
           </div>
           <div class="sm:min-w-[240px]">
             <select
@@ -572,7 +631,7 @@ export default function Filtri({ escursioni = [], initialFilters = defaultFilter
                 href={buildPaginationUrl(currentPage - 1)}
                 onClick={(event) => {
                   event.preventDefault();
-                  setFilters((current) => ({ ...current, page: currentPage - 1 }));
+                  goToPage(currentPage - 1);
                 }}
                 class="rounded-full border border-sand px-4 py-2 text-sm font-bold text-forest-700 transition hover:bg-white"
               >
@@ -585,7 +644,7 @@ export default function Filtri({ escursioni = [], initialFilters = defaultFilter
                 href={buildPaginationUrl(page)}
                 onClick={(event) => {
                   event.preventDefault();
-                  setFilters((current) => ({ ...current, page }));
+                  goToPage(page);
                 }}
                 aria-current={page === currentPage ? "page" : undefined}
                 class={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold transition ${
@@ -607,7 +666,7 @@ export default function Filtri({ escursioni = [], initialFilters = defaultFilter
                 href={buildPaginationUrl(currentPage + 1)}
                 onClick={(event) => {
                   event.preventDefault();
-                  setFilters((current) => ({ ...current, page: currentPage + 1 }));
+                  goToPage(currentPage + 1);
                 }}
                 class="rounded-full border border-sand px-4 py-2 text-sm font-bold text-forest-700 transition hover:bg-white"
               >
@@ -620,3 +679,4 @@ export default function Filtri({ escursioni = [], initialFilters = defaultFilter
     </div>
   );
 }
+
