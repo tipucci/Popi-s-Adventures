@@ -6,6 +6,35 @@ const markerIconRetinaUrl = withBase("/leaflet/marker-icon-2x.png");
 const markerIconUrl = withBase("/leaflet/marker-icon.png");
 const markerShadowUrl = withBase("/leaflet/marker-shadow.png");
 
+function escapeHtml(value = "") {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function getDirectionsUrl(item) {
+  if (Number.isFinite(item.lat) && Number.isFinite(item.lng)) {
+    return `https://www.google.com/maps/dir/?api=1&destination=${item.lat},${item.lng}`;
+  }
+
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.luogo || item.titolo || "")}`;
+}
+
+function createPopupContent(item) {
+  const detailUrl = withBase(`/escursioni/${item.slug}`);
+  const directionsUrl = getDirectionsUrl(item);
+
+  return `
+    <strong>${escapeHtml(item.titolo)}</strong><br/>
+    ${escapeHtml(item.luogo)}<br/>
+    <a href="${detailUrl}">Apri dettaglio</a><br/>
+    <a href="${directionsUrl}" target="_blank" rel="noreferrer noopener">Indicazioni stradali</a>
+  `;
+}
+
 export default function Mappa({ escursioni = [], height = "420px" }) {
   const mapElement = useRef(null);
   const mapInstance = useRef(null);
@@ -36,7 +65,7 @@ export default function Mappa({ escursioni = [], height = "420px" }) {
         const bounds = [];
         points.forEach((item) => {
           const marker = L.marker([item.lat, item.lng]).addTo(map);
-          marker.bindPopup(`<strong>${item.titolo}</strong><br/>${item.luogo}<br/><a href="${withBase(`/escursioni/${item.slug}`)}">Apri dettaglio</a>`);
+          marker.bindPopup(createPopupContent(item));
           bounds.push([item.lat, item.lng]);
         });
 
