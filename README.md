@@ -1,6 +1,6 @@
 # Popi's Adventures
 
-Diario personale di escursioni costruito con Astro. Il progetto pubblica un sito statico con homepage, archivio delle uscite, pagine di dettaglio, sezione "Chi siamo" e vista mappa alimentata da un dataset esterno su Google Sheets.
+Diario personale di escursioni costruito con Astro. Il progetto genera un sito statico con homepage, archivio delle uscite, pagine di dettaglio, sezione "Chi siamo" e vista mappa alimentata da un dataset esterno pubblicato su Google Sheets.
 
 ## Panoramica
 
@@ -8,11 +8,11 @@ Questo repository contiene il codice sorgente di un diario escursionistico perso
 
 Il sito include:
 
-- una homepage con hero, highlights e uscite recenti
-- una pagina archivio con filtri lato client
+- homepage con hero, highlights e uscite recenti
+- archivio escursioni con ricerca e filtri lato client
 - una pagina dedicata per ogni escursione
 - una pagina mappa per le escursioni con coordinate
-- un endpoint JSON generato in fase di build
+- un endpoint JSON statico generato in fase di build
 
 I contenuti arrivano da una combinazione di:
 
@@ -22,18 +22,20 @@ I contenuti arrivano da una combinazione di:
 
 ## Stack
 
-- Astro 4
+- Astro 6
 - Preact per i componenti interattivi
-- Tailwind CSS per lo styling
+- Tailwind CSS 4 per lo styling
 - Leaflet per la mappa
 - `astro:assets` per la gestione delle immagini locali
+- Vercel Speed Insights per la telemetria prestazionale lato client
 
 ## Funzionalità principali
 
 - generazione statica di pagine ed endpoint API
-- archivio escursioni con filtri per periodo, distanza, dislivello, difficoltà, tag e partecipanti
+- archivio escursioni con ricerca, filtri e sincronizzazione con l'URL
 - pagine di dettaglio generate a partire da dati CSV esterni
 - copertine e gallerie immagini locali per ogni escursione
+- lightbox galleria nelle pagine di dettaglio
 - pagina mappa con marker per le escursioni che hanno coordinate disponibili
 - endpoint pre-renderizzato in `/api/escursioni.json`
 
@@ -64,7 +66,7 @@ I contenuti arrivano da una combinazione di:
 
 ### Requisiti
 
-- Node.js 18 o superiore
+- Node.js 20 o superiore
 - npm
 
 ### Avvio
@@ -74,7 +76,7 @@ npm install
 npm run dev
 ```
 
-Il server locale parte sulla porta predefinita di Astro. Per generare una build di produzione:
+Per generare una build di produzione:
 
 ```bash
 npm run build
@@ -83,7 +85,7 @@ npm run preview
 
 ## Variabili e configurazione
 
-Il progetto usa due variabili di configurazione runtime definite in `astro.config.mjs`:
+Il progetto usa due variabili di configurazione definite in [astro.config.mjs](./astro.config.mjs):
 
 - `SITE_URL`
   Serve per costruire URL assoluti in metadata e dati strutturati. Il fallback attuale è `https://example.com`.
@@ -102,7 +104,7 @@ Non è richiesto un file `.env` locale per avviare il progetto, ma le variabili 
 
 ### Sorgente dati esterna
 
-Il dataset delle escursioni viene caricato da un CSV pubblicato su Google Sheets, definito in `src/data/escursioni.js`.
+Il dataset delle escursioni viene caricato da un CSV pubblicato su Google Sheets, definito in [src/data/escursioni.js](./src/data/escursioni.js).
 
 Caratteristiche attuali della sorgente:
 
@@ -118,7 +120,7 @@ Implicazioni importanti:
 
 ### Immagini e contenuti locali
 
-Le immagini sono archiviate localmente nel repository e risolte tramite `import.meta.glob` in `src/data/imageRegistry.js`.
+Le immagini sono archiviate localmente nel repository e risolte tramite `import.meta.glob` in [src/data/imageRegistry.js](./src/data/imageRegistry.js).
 
 Struttura prevista:
 
@@ -140,7 +142,7 @@ Note operative:
 
 - le immagini di sito vengono usate per hero homepage, sezione about e logo
 - ogni escursione può avere una cover e una galleria
-- alt text e metadata galleria sono configurati in `src/data/hikeImageMeta.js`
+- alt text e metadata galleria sono configurati in [src/data/hikeImageMeta.js](./src/data/hikeImageMeta.js)
 - se le immagini locali mancano, il progetto genera placeholder per evitare rotture di layout
 
 Quando aggiungi una nuova escursione:
@@ -148,7 +150,7 @@ Quando aggiungi una nuova escursione:
 1. aggiungi la riga dati nella sorgente Google Sheet
 2. verifica che lo slug generato corrisponda al nome della cartella immagini
 3. aggiungi le immagini locali sotto `src/assets/images/hikes/<yyyy-mm-dd-slug>/`
-4. aggiorna facoltativamente `src/data/hikeImageMeta.js` con alt text e caption
+4. aggiorna facoltativamente [src/data/hikeImageMeta.js](./src/data/hikeImageMeta.js) con alt text e caption
 
 ## Dipendenze esterne
 
@@ -157,11 +159,11 @@ Il progetto dipende da alcuni servizi e risorse esterne:
 - Google Sheets
   Sorgente del dataset escursioni tramite CSV pubblicato.
 - Google Fonts
-  Font caricati in `src/styles/global.css`.
+  Font caricati in [src/styles/global.css](./src/styles/global.css).
 - OpenStreetMap
   Tile usate da Leaflet come sfondo della mappa.
 - Google Maps
-  Usato per i link esterni di ricerca/indicazioni dai popup mappa.
+  Usato per i link esterni di ricerca e indicazioni dai popup mappa.
 
 Queste dipendenze sono rilevanti per privacy, performance e manutenzione. Se il progetto viene irrigidito per una produzione più solida, sono i primi punti da valutare per self-hosting o fallback migliori.
 
@@ -176,7 +178,7 @@ Prima del deploy:
 3. esegui `npm run build`
 4. verifica che il CSV esterno sia raggiungibile durante la build
 
-Il repository ignora la cartella locale `.vercel/`, segno che Vercel può essere usato in sviluppo o deploy, ma il progetto non dipende in modo esclusivo da funzionalità proprietarie della piattaforma.
+Il repository ignora la cartella locale `.vercel/`. Il progetto può essere distribuito su Vercel, GitHub Pages o altro hosting statico, purché la build abbia accesso alla sorgente dati esterna.
 
 ## Roadmap breve
 
@@ -187,9 +189,9 @@ Il repository ignora la cartella locale `.vercel/`, segno che Vercel può essere
 
 ## Licenza
 
-Il codice sorgente di questo repository è distribuito con licenza MIT. Vedi `LICENSE`.
+Il codice sorgente di questo repository è distribuito con licenza MIT. Vedi [LICENSE](./LICENSE).
 
-Immagini, fotografie personali, testi editoriali, contenuti del diario, branding e altri asset creativi non sono automaticamente inclusi nella licenza del software, salvo dove esplicitamente indicato. Vedi `NOTICE`.
+Immagini, fotografie personali, testi editoriali, contenuti del diario, branding e altri asset creativi non sono automaticamente inclusi nella licenza del software, salvo dove esplicitamente indicato. Vedi [NOTICE](./NOTICE).
 
 In pratica:
 
