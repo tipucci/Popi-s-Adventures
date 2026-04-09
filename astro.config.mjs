@@ -1,6 +1,6 @@
-﻿import { defineConfig } from "astro/config";
+import { defineConfig } from "astro/config";
 import preact from "@astrojs/preact";
-import tailwind from "@astrojs/tailwind";
+import tailwindcss from "@tailwindcss/vite";
 
 const base = process.env.BASE_PATH || "/";
 
@@ -8,13 +8,9 @@ export default defineConfig({
   output: "static",
   site: process.env.SITE_URL || "https://example.com",
   base,
-  integrations: [
-    preact(),
-    tailwind({
-      applyBaseStyles: false
-    })
-  ],
+  integrations: [preact()],
   vite: {
+    plugins: [tailwindcss()],
     ssr: {
       noExternal: ["leaflet"]
     }
