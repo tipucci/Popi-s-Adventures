@@ -82,9 +82,9 @@ const stats = {
         {hasEscursioni && (
           <a
             href={withBase("/escursioni")}
-            class="hidden items-center justify-center rounded-full bg-forest-700 px-5 py-4 text-sm font-bold text-white transition hover:bg-forest-600 lg:inline-flex"
+            class="hidden items-center justify-center rounded-full bg-forest-700 px-5 py-4 text-sm font-bold text-[#fffaf3] transition hover:bg-forest-600 lg:inline-flex"
           >
-            Tutte le escursioni
+            <span class="text-[#fffaf3]">Tutte le escursioni</span>
           </a>
         )}
       </div>
@@ -100,9 +100,9 @@ const stats = {
           <div class="pt-2 lg:hidden">
             <a
               href={withBase("/escursioni")}
-              class="inline-flex w-full items-center justify-center rounded-full bg-forest-700 px-5 py-4 text-sm font-bold text-white transition hover:bg-forest-600 sm:w-auto"
+              class="inline-flex w-full items-center justify-center rounded-full bg-forest-700 px-5 py-4 text-sm font-bold text-[#fffaf3] transition hover:bg-forest-600 sm:w-auto"
             >
-              Vedi tutte le escursioni
+              <span class="text-[#fffaf3]">Vedi tutte le escursioni</span>
             </a>
           </div>
         </>
@@ -116,3 +116,6 @@ const stats = {
     <AboutUs />
   </div>
 </Layout>
+
+
+

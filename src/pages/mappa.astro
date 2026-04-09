@@ -11,13 +11,14 @@ const escursioni = await getEscursioni();
   description="Mappa dedicata con tutte le escursioni del diario che hanno coordinate disponibili."
   active="mappa"
 >
-  <section class="space-y-4">
-    <div class="px-1 sm:px-2">
-      <h1 class="font-display text-4xl text-forest-800 sm:text-5xl">In giro per il mondo</h1>
-    </div>
-
+  <section>
     <div class="rounded-[2rem] border border-forest-950 bg-[#173328] p-3 shadow-card sm:p-4">
+      <div class="px-3 pb-4 pt-2 sm:px-4 sm:pb-5">
+        <p class="text-sm font-bold uppercase tracking-[0.16em] text-emerald-100/90">Mappa delle escursioni</p>
+        <h1 class="mt-2 font-display text-4xl text-white sm:text-5xl">In giro per il mondo</h1>
+      </div>
       <Mappa client:load escursioni={escursioni} height="560px" />
     </div>
   </section>
 </Layout>
+

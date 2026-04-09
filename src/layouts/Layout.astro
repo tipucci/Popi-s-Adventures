@@ -1,4 +1,4 @@
-﻿---
+---
 import "../styles/global.css";
 import { withBase } from "../utils/base.js";
 import { getEscursioni } from "../data/escursioni.js";
@@ -116,7 +116,7 @@ const socialImage = image.startsWith("http") ? image : new URL(image, Astro.site
           aria-label="Torna alla home"
           class="inline-flex items-center justify-center rounded-full p-1 transition"
         >
-          <span class="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full shadow-sm">
+          <span class="flex h-12 w-12 items-center justify-center">
             <img
               src={siteLogo.src}
               alt="Logo di Popi's Adventures"
@@ -124,7 +124,7 @@ const socialImage = image.startsWith("http") ? image : new URL(image, Astro.site
               height={siteLogo.height}
               loading="eager"
               decoding="async"
-              class="h-full w-full object-cover"
+              class="h-12 w-12 object-contain drop-shadow-[0_10px_16px_rgba(95,44,29,0.18)]"
             />
           </span>
         </a>
@@ -132,7 +132,7 @@ const socialImage = image.startsWith("http") ? image : new URL(image, Astro.site
         {mobileBackHref && mobileBackLabel ? (
           <a
             href={mobileBackHref}
-            class="inline-flex items-center justify-center gap-2 rounded-full bg-forest-700 px-4 py-2 text-sm font-bold text-white shadow-card transition hover:bg-forest-600"
+            class="inline-flex items-center justify-center gap-2 rounded-full bg-forest-700 px-4 py-2 text-sm font-bold text-[#fffaf3] shadow-card transition hover:bg-forest-600"
           >
             <ArrowLeft class="h-4 w-4 shrink-0" stroke-width={2.2} aria-hidden="true" />
             <span>{mobileBackLabel}</span>
@@ -149,7 +149,7 @@ const socialImage = image.startsWith("http") ? image : new URL(image, Astro.site
             aria-label="Torna alla home"
             class="inline-flex items-center justify-center rounded-full p-1 transition hover:bg-terracotta-50"
           >
-            <span class="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full shadow-sm">
+            <span class="flex h-12 w-12 items-center justify-center">
               <img
                 src={siteLogo.src}
                 alt="Logo di Popi's Adventures"
@@ -157,7 +157,7 @@ const socialImage = image.startsWith("http") ? image : new URL(image, Astro.site
                 height={siteLogo.height}
                 loading="eager"
                 decoding="async"
-                class="h-full w-full object-cover"
+                class="h-12 w-12 object-contain drop-shadow-[0_10px_16px_rgba(95,44,29,0.18)]"
               />
             </span>
           </a>
@@ -176,12 +176,12 @@ const socialImage = image.startsWith("http") ? image : new URL(image, Astro.site
                     class:list={[
                       "inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold transition",
                       active === item.id
-                        ? "bg-terracotta-500 text-white"
+                        ? "bg-terracotta-500 text-[#fffaf3]"
                         : "text-forest-700 hover:bg-terracotta-50"
                     ]}
                   >
-<item.Icon class="h-4 w-4 shrink-0" stroke-width={2} aria-hidden="true" />
-                    <span>{item.label}</span>
+<item.Icon class={active === item.id ? "h-4 w-4 shrink-0 text-[#fffaf3]" : "h-4 w-4 shrink-0"} stroke-width={2} aria-hidden="true" />
+                    <span class={active === item.id ? "text-[#fffaf3]" : undefined}>{item.label}</span>
                   </a>
                 </li>
               ))}
@@ -216,7 +216,7 @@ const socialImage = image.startsWith("http") ? image : new URL(image, Astro.site
                   {footerQuickLinks.map((item) => (
                     <a
                       href={item.href}
-                      class="rounded-[1.1rem] border border-white/14 bg-white/8 px-4 py-3 font-semibold text-slate-50 transition hover:border-white/28 hover:bg-white/14"
+                      class="rounded-[1.1rem] border border-white/14 bg-white/8 px-4 py-3 font-semibold text-[#fffaf3] transition hover:border-white/28 hover:bg-white/14"
                     >
                       {item.label}
                     </a>
@@ -308,7 +308,7 @@ const socialImage = image.startsWith("http") ? image : new URL(image, Astro.site
                   href="https://tipucci.it"
                   target="_blank"
                   rel="noreferrer"
-                  class="font-semibold text-emerald-100 transition hover:text-white"
+                  class="font-semibold text-[#bfd9bf] transition hover:text-[#eef5ee]"
                 >
                   Tiziano Pucci
                 </a>
@@ -328,12 +328,12 @@ const socialImage = image.startsWith("http") ? image : new URL(image, Astro.site
                 class:list={[
                   "flex flex-col items-center gap-1 rounded-full px-3 py-2 text-xs font-bold transition",
                   active === item.id
-                    ? "bg-terracotta-500 text-white"
+                    ? "bg-terracotta-500 text-[#fffaf3]"
                     : "text-forest-700 hover:bg-terracotta-50"
                 ]}
               >
-<item.Icon class="h-5 w-5 shrink-0" stroke-width={2} aria-hidden="true" />
-                <span>{item.label}</span>
+<item.Icon class={active === item.id ? "h-5 w-5 shrink-0 text-[#fffaf3]" : "h-5 w-5 shrink-0"} stroke-width={2} aria-hidden="true" />
+                <span class={active === item.id ? "text-[#fffaf3]" : undefined}>{item.label}</span>
               </a>
             </li>
           ))}
@@ -343,5 +343,8 @@ const socialImage = image.startsWith("http") ? image : new URL(image, Astro.site
     </div>
   </body>
 </html>
+
+
+
 
 

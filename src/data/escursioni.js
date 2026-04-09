@@ -241,7 +241,7 @@ async function toApiShape(raw, index = 0) {
     km: toNumber(raw.km),
     durata: raw.durata || "",
     dislivello: toNumber(raw.dislivello),
-    difficolta: raw.difficolta || "",
+    difficolta: raw.difficolta || raw.tipo || "",
     partecipanti: raw.partecipanti || "",
     cane: gea,
     tag: raw.tag || "",
@@ -363,3 +363,4 @@ export async function getEscursioniApiData() {
 export function getCsvUrl() {
   return CSV_URL;
 }
+
