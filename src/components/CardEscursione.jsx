@@ -22,12 +22,22 @@ function hasFeature(escursione, key) {
   return Boolean(escursione[key]) || tags.includes(key);
 }
 
+function getDifficultyChipClass(value) {
+  const normalized = String(value || "").toLowerCase();
+  if (normalized.includes("passegg")) {
+    return "bg-emerald-100/95 text-emerald-900";
+  }
+
+  return "bg-forest-800/85 text-cream";
+}
+
 export default function CardEscursione({ escursione, hrefBase = "/escursioni" }) {
   const partecipanti = (escursione.partecipanti || []).filter((item) => item === "gea");
   const featureStates = featureBadges.map((item) => ({
     ...item,
     active: item.key === "gea" ? partecipanti.includes("gea") : hasFeature(escursione, item.key)
   }));
+  const difficultyChipClass = getDifficultyChipClass(escursione.difficolta);
 
   const stats = [
     escursione.km > 0
@@ -76,7 +86,7 @@ export default function CardEscursione({ escursione, hrefBase = "/escursioni" })
       <a href={withBase(`${hrefBase}/${escursione.slug}`)} class="block">
         <div class="relative aspect-[4/3] overflow-hidden">
           <img src={escursione.coverCard || escursione.cover} srcSet={escursione.coverSrcSet || undefined} sizes="(min-width: 1280px) 31vw, (min-width: 768px) 47vw, 96vw" alt={escursione.coverAlt || escursione.titolo} width="720" height="540" loading="lazy" decoding="async" class="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
-          {escursione.difficolta && <div class="absolute left-4 top-4 rounded-full bg-forest-800/85 px-3 py-1 text-xs font-bold text-cream">{escursione.difficolta}</div>}
+          {escursione.difficolta && <div class={`absolute left-4 top-4 rounded-full px-3 py-1 text-xs font-bold ${difficultyChipClass}`}>{escursione.difficolta}</div>}
         </div>
 
         <div class="space-y-4 p-5">

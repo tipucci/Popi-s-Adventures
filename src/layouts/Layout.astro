@@ -77,7 +77,7 @@ const seasonLinks = seasonMeta.map((item) => ({
 }));
 
 const footerQuickLinks = [
-  { label: "Tutte le escursioni", href: withBase("/escursioni") },
+  { label: "Passeggiate facili", href: `${withBase("/escursioni")}?difficolta=passeggiate` },
   { label: "Mappa escursioni", href: withBase("/mappa") },
   { label: "Escursioni con rifugio", href: `${withBase("/escursioni")}?soloRifugio=1` },
   { label: "Escursioni con Gea", href: `${withBase("/escursioni")}?soloGea=1` }
@@ -135,7 +135,7 @@ const socialImage = image.startsWith("http") ? image : new URL(image, Astro.site
             class="inline-flex items-center justify-center gap-2 rounded-full bg-forest-700 px-4 py-2 text-sm font-bold text-[#fffaf3] shadow-card transition hover:bg-forest-600"
           >
             <ArrowLeft class="h-4 w-4 shrink-0" stroke-width={2.2} aria-hidden="true" />
-            <span>{mobileBackLabel}</span>
+            <span class="text-[#fffaf3]">{mobileBackLabel}</span>
           </a>
         ) : (
           <div class="min-w-0 flex-1">
