@@ -1,6 +1,6 @@
 # Popi's Adventures
 
-Diario personale di escursioni costruito con Astro. Il progetto genera un sito statico con homepage, archivio delle uscite, pagine di dettaglio, sezione "Chi siamo" e vista mappa alimentata da un dataset esterno pubblicato su Google Sheets.
+Diario personale di escursioni costruito con Astro. Il progetto genera un sito statico con homepage, archivio delle uscite, pagine di dettaglio, sezione "Chi siamo", checklist "Prepara lo zaino" e vista mappa alimentata da un dataset esterno pubblicato su Google Sheets.
 
 ## Panoramica
 
@@ -11,6 +11,7 @@ Il sito include:
 - homepage con hero, highlights e uscite recenti
 - archivio escursioni con ricerca e filtri lato client
 - una pagina dedicata per ogni escursione
+- una checklist "Prepara lo zaino" con persistenza locale
 - una pagina mappa per le escursioni con coordinate
 - un endpoint JSON statico generato in fase di build
 
@@ -34,6 +35,7 @@ I contenuti arrivano da una combinazione di:
 - generazione statica di pagine ed endpoint API
 - archivio escursioni con ricerca, filtri e sincronizzazione con l'URL
 - pagine di dettaglio generate a partire da dati CSV esterni
+- checklist "Prepara lo zaino" con elementi predefiniti, extra personalizzati e stato salvato in `localStorage`
 - copertine e gallerie immagini locali per ogni escursione
 - lightbox galleria nelle pagine di dettaglio
 - pagina mappa con marker per le escursioni che hanno coordinate disponibili
@@ -54,7 +56,8 @@ I contenuti arrivano da una combinazione di:
 |   |-- layouts/               # Layout condivisi
 |   |-- pages/                 # Route Astro
 |   |   |-- api/               # Endpoint API statico
-|   |   `-- escursioni/        # Archivio e pagine dettaglio escursioni
+|   |   |-- escursioni/        # Archivio e pagine dettaglio escursioni
+|   |   `-- prepara-lo-zaino.astro # Checklist zaino
 |   |-- styles/                # Stili globali
 |   `-- utils/                 # Utility piccole e riusabili
 |-- astro.config.mjs
