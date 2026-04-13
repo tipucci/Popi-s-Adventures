@@ -1,0 +1,169 @@
+---
+import { ChevronLeft, ChevronRight } from "@lucide/astro";
+
+const {
+  title = "Galleria",
+  subtitle = "Foto della giornata",
+  images = []
+} = Astro.props;
+
+const galleryId = `gallery-${Math.random().toString(36).slice(2, 10)}`;
+---
+
+<section class="space-y-4" id={galleryId} data-gallery-root>
+  <div>
+    <p class="text-sm font-bold uppercase tracking-[0.16em] text-terracotta-600">{title}</p>
+    <h2 class="mt-2 text-3xl font-black text-forest-800">{subtitle}</h2>
+  </div>
+
+  <div class="grid gap-4 md:grid-cols-2">
+    {images.map((image, index) => (
+      <figure class="overflow-hidden rounded-[1.75rem] bg-white shadow-card">
+        <button
+          type="button"
+          class="group block w-full text-left"
+          data-lightbox-trigger
+          data-lightbox-index={index}
+          data-lightbox-src={image.src}
+          data-lightbox-alt={image.alt}
+          data-lightbox-caption={image.caption || ""}
+          aria-label={`Apri immagine ${index + 1} in grande`}
+        >
+          <img
+            src={image.src}
+            alt={image.alt}
+            loading="lazy"
+            class="aspect-[4/3] w-full object-cover transition duration-300 group-hover:scale-[1.02]"
+          />
+        </button>
+        {image.caption && <figcaption class="px-5 py-4 text-sm text-forest-700">{image.caption}</figcaption>}
+      </figure>
+    ))}
+  </div>
+
+  <dialog data-lightbox-dialog class="gallery-lightbox m-0 h-full w-full max-h-none max-w-none overflow-y-auto border-0 bg-transparent p-0 text-left text-white">
+    <div data-lightbox-overlay class="gallery-lightbox__shell relative flex min-h-screen w-full items-center justify-center px-1 py-6 sm:px-6 sm:py-8">
+      <div class="relative z-10 flex w-full max-w-[min(100vw,1600px)] items-start justify-center">
+        <figure data-lightbox-content class="relative flex w-full flex-col items-center justify-center px-0 sm:px-16 lg:px-20">
+          <button
+            type="button"
+            class="absolute left-0 top-1/2 inline-flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-white/25 bg-white/10 text-white backdrop-blur-sm transition hover:bg-white/16 sm:left-2 sm:h-14 sm:w-14"
+            data-lightbox-prev
+            aria-label="Immagine precedente"
+          >
+            <ChevronLeft class="h-6 w-6" stroke-width={2.4} aria-hidden="true" />
+          </button>
+
+          <div data-lightbox-media class="flex flex-col items-center">
+            <img
+              src=""
+              alt=""
+              data-lightbox-image
+              class="max-h-[82vh] w-full max-w-full object-contain sm:max-h-[86vh] sm:w-auto"
+            />
+
+            <figcaption class="mt-4 hidden w-full max-w-xl flex-col gap-1 rounded-[1.5rem] bg-cream/92 px-4 py-3 text-center text-forest-800 shadow-lg backdrop-blur-sm empty:hidden">
+              <p class="text-sm font-medium text-forest-800" data-lightbox-caption></p>
+            </figcaption>
+          </div>
+
+          <button
+            type="button"
+            class="absolute right-0 top-1/2 inline-flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-white/25 bg-white/10 text-white backdrop-blur-sm transition hover:bg-white/16 sm:right-2 sm:h-14 sm:w-14"
+            data-lightbox-next
+            aria-label="Immagine successiva"
+          >
+            <ChevronRight class="h-6 w-6" stroke-width={2.4} aria-hidden="true" />
+          </button>
+        </figure>
+      </div>
+    </div>
+  </dialog>
+</section>
+
+<style>
+  .gallery-lightbox::backdrop {
+    background: rgba(9, 16, 13, 0.94);
+  }
+
+  .gallery-lightbox[open] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+</style>
+
+<script is:inline>
+  document.querySelectorAll('[data-gallery-root]:not([data-gallery-ready])').forEach((root) => {
+    root.dataset.galleryReady = 'true';
+
+    const dialog = root.querySelector('[data-lightbox-dialog]');
+    const triggers = Array.from(root.querySelectorAll('[data-lightbox-trigger]'));
+    const image = dialog?.querySelector('[data-lightbox-image]');
+    const caption = dialog?.querySelector('[data-lightbox-caption]');
+    const prevButton = dialog?.querySelector('[data-lightbox-prev]');
+    const nextButton = dialog?.querySelector('[data-lightbox-next]');
+    const content = dialog?.querySelector('[data-lightbox-content]');
+    const media = dialog?.querySelector('[data-lightbox-media]');
+
+    if (!dialog || !image || !caption || !content || !media || !triggers.length) return;
+
+    const items = triggers.map((trigger) => ({
+      src: trigger.dataset.lightboxSrc || '',
+      alt: trigger.dataset.lightboxAlt || '',
+      caption: trigger.dataset.lightboxCaption || ''
+    }));
+
+    let currentIndex = 0;
+
+    const render = () => {
+      const item = items[currentIndex];
+      image.src = item.src;
+      image.alt = item.alt;
+      caption.textContent = item.caption;
+    };
+
+    const open = (index) => {
+      currentIndex = index;
+      render();
+      if (!dialog.open) dialog.showModal();
+    };
+
+    const close = () => {
+      if (dialog.open) dialog.close();
+    };
+
+    const goTo = (delta) => {
+      currentIndex = (currentIndex + delta + items.length) % items.length;
+      render();
+    };
+
+    triggers.forEach((trigger, index) => {
+      trigger.addEventListener('click', () => open(index));
+    });
+
+    prevButton?.addEventListener('click', () => goTo(-1));
+    nextButton?.addEventListener('click', () => goTo(1));
+    dialog.addEventListener('click', (event) => {
+      const target = event.target;
+      const clickedMedia = media.contains(target);
+      const clickedControl = target.closest('[data-lightbox-prev], [data-lightbox-next]');
+
+      if (!clickedMedia && !clickedControl) close();
+    });
+
+    dialog.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        goTo(-1);
+      }
+      if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        goTo(1);
+      }
+    });
+  });
+</script>
+
+
+

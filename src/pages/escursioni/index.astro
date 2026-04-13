@@ -1,0 +1,34 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import Filtri from "../../components/Filtri.jsx";
+import SearchEscursioni from "../../components/SearchEscursioni.jsx";
+import { getEscursioni } from "../../data/escursioni.js";
+
+const escursioni = await getEscursioni();
+const searchParams = Astro.url.searchParams;
+
+const initialFilters = {
+  search: searchParams.get("q") || "",
+  period: searchParams.get("period") || "",
+  kmMin: searchParams.get("kmMin") || "",
+  kmMax: searchParams.get("kmMax") || "",
+  difficolta: searchParams.get("difficolta") || "",
+  stagione: searchParams.get("stagione") || "",
+  provincia: searchParams.get("provincia") || searchParams.get("tag") || "",
+  soloRifugio: searchParams.get("soloRifugio") === "1",
+  soloGea: searchParams.get("soloGea") === "1",
+  sort: searchParams.get("sort") || "date-desc",
+  page: Number(searchParams.get("page") || "1")
+};
+---
+
+<Layout
+  title="Escursioni | Popi's Adventures"
+  description="Elenco filtrabile di tutte le escursioni con ordinamento, paginazione e mappa."
+  active="escursioni"
+>
+  <SearchEscursioni client:load slot="header-center" className="mx-auto w-full max-w-xl" />
+  <SearchEscursioni client:load slot="mobile-header-end" className="min-w-0 flex-1" placeholder="Cerca escursioni..." />
+
+  <Filtri client:load escursioni={escursioni} initialFilters={initialFilters} />
+</Layout>

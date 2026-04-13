@@ -1,0 +1,27 @@
+{
+  "name": "popis-adventures",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "@astrojs/preact": "^5.1.1",
+    "@lucide/astro": "^1.8.0",
+    "@vercel/speed-insights": "^2.0.0",
+    "astro": "^6.1.5",
+    "leaflet": "^1.9.4",
+    "lucide-preact": "^1.8.0",
+    "preact": "^10.29.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.2.2",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^4.2.2"
+  }
+}

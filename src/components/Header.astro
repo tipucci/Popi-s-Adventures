@@ -1,0 +1,75 @@
+---
+import { getImage } from "astro:assets";
+import { withBase } from "../utils/base.js";
+import { siteImages } from "../data/imageRegistry.js";
+
+const {
+  title = "Popi's Adventures",
+  subtitle = "Un diario, tre popi e un sacco di avventure",
+  image = siteImages.heroHome.source,
+  imageMobile = null,
+  imageDesktop = null,
+  imageAlt = siteImages.heroHome.alt
+} = Astro.props;
+
+const fallbackSource = image || imageDesktop || imageMobile || siteImages.heroHome.source;
+const mobileSource = imageMobile || image || fallbackSource;
+const desktopSource = imageDesktop || image || fallbackSource;
+
+const [heroMobile, heroDesktop] = await Promise.all([
+  typeof mobileSource === "string"
+    ? null
+    : getImage({ src: mobileSource, width: 900, format: "webp", quality: 68 }),
+  typeof desktopSource === "string"
+    ? null
+    : getImage({ src: desktopSource, width: 1440, format: "webp", quality: 74 })
+]);
+
+const heroFallbackSrc = heroDesktop?.src || heroMobile?.src || siteImages.heroHome.src;
+const heroWidth = heroDesktop?.width || heroMobile?.width || 1440;
+const heroHeight = heroDesktop?.height || heroMobile?.height || 905;
+---
+
+<section class="relative overflow-hidden rounded-[2rem] bg-forest-800 text-white shadow-card">
+  <div class="absolute inset-0">
+    <picture>
+      {heroMobile && <source media="(max-width: 767px)" srcset={heroMobile.src} />}
+      {heroDesktop && <source media="(min-width: 768px)" srcset={heroDesktop.src} />}
+      <img
+        src={heroFallbackSrc}
+        alt={imageAlt}
+        width={heroWidth}
+        height={heroHeight}
+        sizes="100vw"
+        fetchpriority="high"
+        loading="eager"
+        decoding="async"
+        class="h-full w-full object-cover opacity-55"
+      />
+    </picture>
+    <div class="absolute inset-0 bg-gradient-to-t from-forest-800 via-forest-800/55 to-transparent"></div>
+  </div>
+
+  <div class="relative px-6 py-10 sm:px-10 sm:py-14">
+    <div class="max-w-2xl">
+      <h1 class="font-display text-4xl leading-tight sm:text-5xl lg:text-6xl">{title}</h1>
+      <p class="mt-4 max-w-xl text-sm text-cream/90 sm:text-base">{subtitle}</p>
+
+      <div class="mt-8 flex flex-wrap gap-3">
+        <a
+          href={withBase("/escursioni")}
+          class="inline-flex items-center justify-center rounded-full bg-terracotta-500 px-5 py-3 text-sm font-bold text-[#fffaf3] transition hover:bg-terracotta-400"
+        >
+          Scopri le escursioni
+        </a>
+        <a
+          href={withBase("/mappa")}
+          class="inline-flex items-center justify-center rounded-full border border-white/30 bg-white/10 px-5 py-3 text-sm font-bold text-[#fffaf3] transition hover:bg-white/20"
+        >
+          Apri la mappa
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+

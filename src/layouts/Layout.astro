@@ -1,0 +1,352 @@
+---
+import "../styles/global.css";
+import { withBase } from "../utils/base.js";
+import { getEscursioni } from "../data/escursioni.js";
+import { siteImages } from "../data/imageRegistry.js";
+import { ArrowLeft, Backpack, Footprints, House, Map } from "@lucide/astro";
+import SpeedInsights from "@vercel/speed-insights/astro";
+import siteLogo from "../assets/images/site/logo/logo-popi.png";
+
+const {
+  title = "Popi's Adventures",
+  description = "Diario di escursioni tra natura, panorami e camminate con il cane.",
+  active = "home",
+  image = siteImages.heroHome.src,
+  mobileBackHref = "",
+  mobileBackLabel = ""
+} = Astro.props;
+
+const navItems = [
+  { id: "home", href: withBase("/"), label: "Home", Icon: House },
+  { id: "escursioni", href: withBase("/escursioni"), label: "Escursioni", Icon: Footprints },
+  { id: "mappa", href: withBase("/mappa"), label: "Mappa", Icon: Map },
+  { id: "zaino", href: withBase("/prepara-lo-zaino"), label: "Zaino", Icon: Backpack }
+];
+
+function getSeasonFromDate(value) {
+  if (!value) return "";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+
+  const month = date.getMonth() + 1;
+  if (month === 12 || month <= 2) return "inverno";
+  if (month >= 3 && month <= 5) return "primavera";
+  if (month >= 6 && month <= 8) return "estate";
+  return "autunno";
+}
+
+const seasonMeta = [
+  { slug: "primavera", label: "Primavera" },
+  { slug: "estate", label: "Estate" },
+  { slug: "autunno", label: "Autunno" },
+  { slug: "inverno", label: "Inverno" }
+];
+
+const escursioni = await getEscursioni();
+
+const provinceCounts = escursioni.reduce((groups, item) => {
+  const provincia = item.provincia?.trim();
+  if (!provincia) return groups;
+
+  groups[provincia] = (groups[provincia] || 0) + 1;
+  return groups;
+}, {});
+
+const seasonCounts = escursioni.reduce((groups, item) => {
+  const season = getSeasonFromDate(item.data);
+  if (!season) return groups;
+
+  groups[season] = (groups[season] || 0) + 1;
+  return groups;
+}, {});
+
+const allProvinceLinks = Object.entries(provinceCounts)
+  .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "it"))
+  .map(([name, count]) => ({
+    name,
+    count,
+    href: `${withBase("/escursioni")}?provincia=${encodeURIComponent(name)}`
+  }));
+
+const provinceLinks = allProvinceLinks.slice(0, 6);
+
+const seasonLinks = seasonMeta.map((item) => ({
+  ...item,
+  count: seasonCounts[item.slug] || 0,
+  href: `${withBase("/escursioni")}?stagione=${item.slug}`
+}));
+
+const footerQuickLinks = [
+  { label: "Passeggiate facili", href: `${withBase("/escursioni")}?difficolta=passeggiate` },
+  { label: "Mappa escursioni", href: withBase("/mappa") },
+  { label: "Escursioni con rifugio", href: `${withBase("/escursioni")}?soloRifugio=1` },
+  { label: "Escursioni con Gea", href: `${withBase("/escursioni")}?soloGea=1` },
+  { label: "Prepara lo zaino", href: withBase("/prepara-lo-zaino") }
+];
+
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const socialImage = image.startsWith("http") ? image : new URL(image, Astro.site).href;
+---
+
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="canonical" href={canonical.href} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical.href} />
+    <meta property="og:image" content={socialImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content={socialImage} />
+    <meta name="theme-color" content="#F5EBDC" />
+    <slot name="head" />
+  </head>
+
+  <body class="min-h-screen bg-cream text-forest-800 antialiased">
+    <div class="min-h-screen bg-hero-glow">
+      <div class="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 pb-32 pt-4 sm:px-6 md:pb-24 lg:px-8">
+      <div class="mb-4 flex items-center justify-between gap-4 md:hidden">
+        <a
+          href={withBase("/")}
+          aria-label="Torna alla home"
+          class="inline-flex items-center justify-center rounded-full p-1 transition"
+        >
+          <span class="flex h-12 w-12 items-center justify-center">
+            <img
+              src={siteLogo.src}
+              alt="Logo di Popi's Adventures"
+              width={siteLogo.width}
+              height={siteLogo.height}
+              loading="eager"
+              decoding="async"
+              class="h-12 w-12 object-contain drop-shadow-[0_10px_16px_rgba(95,44,29,0.18)]"
+            />
+          </span>
+        </a>
+
+        {mobileBackHref && mobileBackLabel ? (
+          <a
+            href={mobileBackHref}
+            class="inline-flex items-center justify-center gap-2 rounded-full bg-forest-700 px-4 py-2 text-sm font-bold text-[#fffaf3] shadow-card transition hover:bg-forest-600"
+          >
+            <ArrowLeft class="h-4 w-4 shrink-0 text-[#fffaf3]" stroke-width={2.2} aria-hidden="true" />
+            <span class="text-[#fffaf3]">{mobileBackLabel}</span>
+          </a>
+        ) : (
+          <div class="min-w-0 flex-1">
+            <slot name="mobile-header-end" />
+          </div>
+        )}
+      </div>
+        <header class="z-50 mb-6 hidden rounded-full border border-white/70 bg-white/85 px-4 py-3 shadow-card backdrop-blur md:grid md:grid-cols-[auto_minmax(0,1fr)_auto] md:items-center md:gap-4">
+          <a
+            href={withBase("/")}
+            aria-label="Torna alla home"
+            class="inline-flex items-center justify-center rounded-full p-1 transition hover:bg-terracotta-50"
+          >
+            <span class="flex h-12 w-12 items-center justify-center">
+              <img
+                src={siteLogo.src}
+                alt="Logo di Popi's Adventures"
+                width={siteLogo.width}
+                height={siteLogo.height}
+                loading="eager"
+                decoding="async"
+                class="h-12 w-12 object-contain drop-shadow-[0_10px_16px_rgba(95,44,29,0.18)]"
+              />
+            </span>
+          </a>
+
+          <div class="min-w-0 px-2">
+            <slot name="header-center" />
+          </div>
+
+          <nav aria-label="Navigazione principale">
+            <ul class="flex items-center gap-2">
+              {navItems.map((item) => (
+                <li>
+                  <a
+                    href={item.href}
+                    aria-current={active === item.id ? "page" : undefined}
+                    class:list={[
+                      "inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold transition",
+                      active === item.id
+                        ? "bg-terracotta-500 text-[#fffaf3]"
+                        : "text-forest-700 hover:bg-terracotta-50"
+                    ]}
+                  >
+<item.Icon class={active === item.id ? "h-4 w-4 shrink-0 text-[#fffaf3]" : "h-4 w-4 shrink-0"} stroke-width={2} aria-hidden="true" />
+                    <span class={active === item.id ? "text-[#fffaf3]" : undefined}>{item.label}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </header>
+
+        <main class="flex-1">
+          <slot />
+        </main>
+
+        <footer class="mt-16 overflow-hidden rounded-[2rem] border border-forest-950 bg-[#173328] text-sm text-slate-50 shadow-card">
+          <div class="px-6 py-8 sm:px-8 lg:px-10 lg:py-10">
+            <section class="border-b border-white/10 pb-6">
+              <div class="max-w-2xl">
+                <p class="font-display text-3xl text-white sm:text-[2.2rem]">Popi's Adventures</p>
+              </div>
+            </section>
+
+            <div class="grid gap-8 pt-6 md:grid-cols-2 xl:grid-cols-3">
+              <section aria-labelledby="footer-shortcuts" class="space-y-4">
+                <div>
+                  <p
+                    id="footer-shortcuts"
+                    class="text-xs font-bold uppercase tracking-[0.22em] text-emerald-100/90"
+                  >
+                    Scorciatoie
+                  </p>
+                </div>
+
+                <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+                  {footerQuickLinks.map((item) => (
+                    <a
+                      href={item.href}
+                      class="rounded-[1.1rem] border border-white/14 bg-white/8 px-4 py-3 font-semibold text-[#fffaf3] transition hover:border-white/28 hover:bg-white/14"
+                    >
+                      {item.label}
+                    </a>
+                  ))}
+                </div>
+              </section>
+
+              <section aria-labelledby="footer-seasoni" class="space-y-4">
+                <div>
+                  <p
+                    id="footer-seasoni"
+                    class="text-xs font-bold uppercase tracking-[0.22em] text-emerald-100/90"
+                  >
+                    Per stagione
+                  </p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                  {seasonLinks.map((item) => (
+                    <a
+                      href={item.href}
+                      class="rounded-[1.1rem] border border-white/14 bg-white/8 px-4 py-3 transition hover:border-white/28 hover:bg-white/14"
+                    >
+                      <span class="block font-semibold text-white">{item.label}</span>
+                      <span class="mt-1 block text-xs font-medium text-slate-100/72">
+                        {item.count} escursioni
+                      </span>
+                    </a>
+                  ))}
+                </div>
+              </section>
+
+              <section aria-labelledby="footer-province" class="space-y-4 md:col-span-2 xl:col-span-1">
+                <div class="flex items-end justify-between gap-4">
+                  <div>
+                    <p
+                      id="footer-province"
+                      class="text-xs font-bold uppercase tracking-[0.22em] text-emerald-100/90"
+                    >
+                      Per provincia
+                    </p>
+                  </div>
+
+                  {allProvinceLinks.length > provinceLinks.length && (
+                    <a
+                      href={withBase("/escursioni")}
+                      class="hidden text-xs font-bold uppercase tracking-[0.18em] text-slate-100/80 transition hover:text-white sm:inline"
+                    >
+                      Vedi tutte
+                    </a>
+                  )}
+                </div>
+
+                {provinceLinks.length ? (
+                  <div class="flex flex-wrap gap-2">
+                    {provinceLinks.map((item) => (
+                      <a
+                        href={item.href}
+                        class="inline-flex items-center gap-2 rounded-full border border-white/16 bg-white/10 px-3 py-2 text-sm transition hover:border-white/28 hover:bg-white/16"
+                      >
+                        <span class="font-semibold text-white">{item.name}</span>
+                        <span class="rounded-full bg-white/14 px-2 py-0.5 text-[11px] font-bold text-slate-50/84">
+                          {item.count}
+                        </span>
+                      </a>
+                    ))}
+
+                    {allProvinceLinks.length > provinceLinks.length && (
+                      <a
+                        href={withBase("/escursioni")}
+                        class="inline-flex items-center rounded-full border border-white/16 px-3 py-2 text-sm font-semibold text-slate-100/82 transition hover:border-white/28 hover:bg-white/10 sm:hidden"
+                      >
+                        Vedi tutte
+                      </a>
+                    )}
+                  </div>
+                ) : (
+                  <p class="text-sm text-slate-100/76">
+                    Le province compariranno qui appena il diario riceve nuove escursioni dal foglio condiviso.
+                  </p>
+                )}
+              </section>
+            </div>
+
+            <div class="mt-8 border-t border-white/10 pt-5 text-center text-xs text-slate-100/70 sm:text-sm">
+              <p>
+                Sviluppato con <span aria-hidden="true">&hearts;</span> e un pizzico di AI da {" "}
+                <a
+                  href="https://tipucci.it"
+                  target="_blank"
+                  rel="noreferrer"
+                  class="font-semibold text-[#bfd9bf] transition hover:text-[#eef5ee]"
+                >
+                  Tiziano Pucci
+                </a>
+              </p>
+            </div>
+          </div>
+        </footer>
+      </div>
+
+      <nav class="fixed inset-x-0 bottom-4 z-[1100] mx-auto w-[calc(100%-1.5rem)] max-w-md rounded-full border border-white/70 bg-white/90 p-2 shadow-card backdrop-blur md:hidden">
+        <ul class="grid grid-cols-4 gap-2">
+          {navItems.map((item) => (
+            <li>
+              <a
+                href={item.href}
+                aria-current={active === item.id ? "page" : undefined}
+                class:list={[
+                  "flex flex-col items-center gap-1 rounded-full px-3 py-2 text-xs font-bold transition",
+                  active === item.id
+                    ? "bg-terracotta-500 text-[#fffaf3]"
+                    : "text-forest-700 hover:bg-terracotta-50"
+                ]}
+              >
+<item.Icon class={active === item.id ? "h-5 w-5 shrink-0 text-[#fffaf3]" : "h-5 w-5 shrink-0"} stroke-width={2} aria-hidden="true" />
+                <span class={active === item.id ? "text-[#fffaf3]" : undefined}>{item.label}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+      <SpeedInsights />
+    </div>
+  </body>
+</html>
+
+
+
+
+
