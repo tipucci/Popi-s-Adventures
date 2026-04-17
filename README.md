@@ -1,6 +1,6 @@
 # Popi's Adventures
 
-Diario personale di escursioni costruito con Astro. Il progetto genera un sito statico con homepage, archivio delle uscite, pagine di dettaglio, sezione "Chi siamo", checklist "Prepara lo zaino" e vista mappa alimentata da un dataset esterno pubblicato su Google Sheets.
+Diario personale di escursioni costruito con Astro. Il progetto genera una web app statica installabile con homepage, archivio delle uscite, pagine di dettaglio, sezione "Chi siamo", checklist "Prepara lo zaino" offline-friendly e vista mappa alimentata da un dataset esterno pubblicato su Google Sheets.
 
 ## Panoramica
 
@@ -14,6 +14,7 @@ Il sito include:
 - una checklist "Prepara lo zaino" con persistenza locale
 - una pagina mappa per le escursioni con coordinate
 - un endpoint JSON statico generato in fase di build
+- supporto PWA con manifest, service worker e fallback offline
 
 I contenuti arrivano da una combinazione di:
 
@@ -28,6 +29,7 @@ I contenuti arrivano da una combinazione di:
 - Tailwind CSS 4 per lo styling
 - Leaflet per la mappa
 - `astro:assets` per la gestione delle immagini locali
+- `vite-plugin-pwa` e Workbox per manifest, service worker e cache offline
 - Vercel Speed Insights per la telemetria prestazionale lato client
 
 ## Funzionalità principali
@@ -40,12 +42,15 @@ I contenuti arrivano da una combinazione di:
 - lightbox galleria nelle pagine di dettaglio
 - pagina mappa con marker per le escursioni che hanno coordinate disponibili
 - endpoint pre-renderizzato in `/api/escursioni.json`
+- installabilità come web app standalone
+- fallback offline e cache per app shell, pagine statiche, checklist zaino e API escursioni
 
 ## Struttura del progetto
 
 ```text
 .
 |-- public/
+|   |-- icons/                 # Icone PWA
 |   `-- leaflet/               # Asset marker di Leaflet
 |-- src/
 |   |-- assets/images/
@@ -57,13 +62,29 @@ I contenuti arrivano da una combinazione di:
 |   |-- pages/                 # Route Astro
 |   |   |-- api/               # Endpoint API statico
 |   |   |-- escursioni/        # Archivio e pagine dettaglio escursioni
+|   |   |-- offline.astro      # Fallback offline PWA
 |   |   `-- prepara-lo-zaino.astro # Checklist zaino
 |   |-- styles/                # Stili globali
+|   |-- sw.ts                  # Service worker custom
 |   `-- utils/                 # Utility piccole e riusabili
+|-- scripts/
+|   `-- build-sw.mjs           # Build service worker con injectManifest
 |-- astro.config.mjs
 |-- tailwind.config.js
 `-- package.json
 ```
+
+## Web app e offline
+
+Il sito è configurato come PWA installabile:
+
+- manifest web app generato in build con icone in `public/icons/`
+- service worker custom in [src/sw.ts](./src/sw.ts)
+- strategia `injectManifest` con precache dell'app shell e cache runtime per asset, pagine e API
+- pagina fallback offline in [src/pages/offline.astro](./src/pages/offline.astro)
+- checklist "Prepara lo zaino" utilizzabile offline dopo la prima visita, con stato salvato sul dispositivo
+
+La mappa usa tile esterne e dati che possono richiedere rete: il supporto offline non promette una mappa completamente disponibile senza connessione.
 
 ## Setup locale
 

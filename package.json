@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
-    "build": "astro build",
+    "build": "astro build && node scripts/build-sw.mjs",
     "preview": "astro preview"
   },
   "dependencies": {
@@ -21,7 +21,10 @@
   "devDependencies": {
     "@tailwindcss/vite": "^4.2.2",
     "autoprefixer": "^10.4.20",
+    "esbuild": "^0.28.0",
     "postcss": "^8.4.49",
-    "tailwindcss": "^4.2.2"
+    "tailwindcss": "^4.2.2",
+    "vite-plugin-pwa": "^1.2.0",
+    "workbox-build": "^7.4.0"
   }
 }

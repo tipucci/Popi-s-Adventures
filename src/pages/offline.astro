@@ -1,0 +1,39 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { withBase } from "../utils/base.js";
+---
+
+<Layout
+  title="Offline | Popi's Adventures"
+  description="Pagina offline di Popi's Adventures."
+  active="home"
+>
+  <section class="rounded-[2rem] border border-white/70 bg-white/90 p-6 shadow-card sm:p-8">
+    <p class="text-sm font-bold uppercase tracking-[0.16em] text-terracotta-600">
+      Modalità offline
+    </p>
+    <h1 class="mt-2 font-display text-4xl text-forest-800 sm:text-5xl">
+      Sei fuori copertura
+    </h1>
+    <p class="mt-4 max-w-2xl text-base leading-8 text-forest-700">
+      Alcune pagine già visitate possono restare disponibili. La checklist dello zaino conserva
+      gli elementi sul dispositivo, mentre mappa e dati aggiornati delle escursioni possono
+      richiedere connessione.
+    </p>
+
+    <div class="mt-6 flex flex-col gap-3 sm:flex-row">
+      <a
+        href={withBase("/prepara-lo-zaino")}
+        class="inline-flex items-center justify-center rounded-full bg-forest-700 px-5 py-3 text-sm font-bold text-[#fffaf3] transition hover:bg-forest-600"
+      >
+        <span class="text-[#fffaf3]">Apri Prepara lo zaino</span>
+      </a>
+      <a
+        href={withBase("/")}
+        class="inline-flex items-center justify-center rounded-full border border-terracotta-200 bg-white px-5 py-3 text-sm font-bold text-forest-800 transition hover:bg-terracotta-50"
+      >
+        Torna alla home
+      </a>
+    </div>
+  </section>
+</Layout>

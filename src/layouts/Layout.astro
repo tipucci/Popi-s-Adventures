@@ -87,6 +87,9 @@ const footerQuickLinks = [
 
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const socialImage = image.startsWith("http") ? image : new URL(image, Astro.site).href;
+const manifestHref = withBase("/manifest.webmanifest");
+const appleTouchIconHref = withBase("/icons/popi-192.png");
+const serviceWorkerUrl = withBase("/sw.js");
 ---
 
 <!doctype html>
@@ -106,6 +109,12 @@ const socialImage = image.startsWith("http") ? image : new URL(image, Astro.site
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content={socialImage} />
     <meta name="theme-color" content="#F5EBDC" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Popi" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <link rel="manifest" href={manifestHref} />
+    <link rel="apple-touch-icon" href={appleTouchIconHref} />
     <slot name="head" />
   </head>
 
@@ -342,6 +351,15 @@ const socialImage = image.startsWith("http") ? image : new URL(image, Astro.site
         </ul>
       </nav>
       <SpeedInsights />
+      <script is:inline define:vars={{ serviceWorkerUrl }}>
+        if ("serviceWorker" in navigator) {
+          window.addEventListener("load", () => {
+            navigator.serviceWorker.register(serviceWorkerUrl).catch(() => {
+              // Service worker registration is progressive enhancement.
+            });
+          });
+        }
+      </script>
     </div>
   </body>
 </html>

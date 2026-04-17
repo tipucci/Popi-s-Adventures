@@ -1,9 +1,10 @@
 import { h } from "preact";
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
-import { CirclePlus, RotateCcw } from "lucide-preact";
+import { CirclePlus, GripVertical, Pencil, RotateCcw, Trash2 } from "lucide-preact";
 
 const CUSTOM_STORAGE_KEY = "popi-zaino-custom-items";
 const CHECKED_STORAGE_KEY = "popi-zaino-checked-items";
+const ORDER_STORAGE_KEY = "popi-zaino-item-order";
 const EXTRA_CATEGORY = { id: "altro", label: "Altro" };
 
 function normalizeLabel(value) {
@@ -81,6 +82,21 @@ function sortCategoryItems(items, checkedItems) {
   });
 }
 
+function applyStoredOrder(items, storedOrder = []) {
+  const validIds = new Set(items.map((item) => item.id));
+  const orderedIds = storedOrder.filter((itemId) => validIds.has(itemId));
+  const missingIds = [...items]
+    .sort((left, right) => left.order - right.order)
+    .map((item) => item.id)
+    .filter((itemId) => !orderedIds.includes(itemId));
+  const orderMap = new Map([...orderedIds, ...missingIds].map((itemId, index) => [itemId, index]));
+
+  return items.map((item) => ({
+    ...item,
+    order: orderMap.get(item.id) ?? item.order
+  }));
+}
+
 function getCategoryEmoji(categoryId) {
   const emojiMap = {
     essenziali: "🎒",
@@ -102,15 +118,25 @@ export default function ZainoChecklist({ categories = [] }) {
   const [newItemLabel, setNewItemLabel] = useState("");
   const [selectedCategoryId, setSelectedCategoryId] = useState(categories[0]?.id || "");
   const [formError, setFormError] = useState("");
+  const [editingItemId, setEditingItemId] = useState("");
+  const [itemOrderByCategory, setItemOrderByCategory] = useState({});
+  const [draggedItem, setDraggedItem] = useState(null);
+  const [dragOverItemId, setDragOverItemId] = useState("");
   const inputRef = useRef(null);
   const selectableCategories = useMemo(() => [...categories, EXTRA_CATEGORY], [categories]);
 
   useEffect(() => {
     const storedCustomItems = readStorage(CUSTOM_STORAGE_KEY, []);
     const storedCheckedItems = readStorage(CHECKED_STORAGE_KEY, []);
+    const storedItemOrder = readStorage(ORDER_STORAGE_KEY, {});
 
     setCustomItems(Array.isArray(storedCustomItems) ? storedCustomItems : []);
     setCheckedItems(Array.isArray(storedCheckedItems) ? storedCheckedItems : []);
+    setItemOrderByCategory(
+      storedItemOrder && typeof storedItemOrder === "object" && !Array.isArray(storedItemOrder)
+        ? storedItemOrder
+        : {}
+    );
     setIsReady(true);
   }, []);
 
@@ -123,6 +149,11 @@ export default function ZainoChecklist({ categories = [] }) {
     if (!isReady || typeof window === "undefined") return;
     window.localStorage.setItem(CHECKED_STORAGE_KEY, JSON.stringify(checkedItems));
   }, [checkedItems, isReady]);
+
+  useEffect(() => {
+    if (!isReady || typeof window === "undefined") return;
+    window.localStorage.setItem(ORDER_STORAGE_KEY, JSON.stringify(itemOrderByCategory));
+  }, [itemOrderByCategory, isReady]);
 
   useEffect(() => {
     if (!isAddFormOpen) return;
@@ -139,11 +170,6 @@ export default function ZainoChecklist({ categories = [] }) {
     [allItemsByCategory]
   );
 
-  const normalizedItemNames = useMemo(
-    () => new Set(allItems.map((item) => normalizeLabel(item.label))),
-    [allItems]
-  );
-
   const checkedItemIds = useMemo(() => {
     const validIds = new Set(allItems.map((item) => item.id));
     return checkedItems.filter((itemId) => validIds.has(itemId));
@@ -156,11 +182,15 @@ export default function ZainoChecklist({ categories = [] }) {
 
   const categoriesWithSortedItems = useMemo(
     () =>
-      allItemsByCategory.map((category) => ({
-        ...category,
-        items: sortCategoryItems(category.items, checkedItemIds)
-      })),
-    [allItemsByCategory, checkedItemIds]
+      allItemsByCategory.map((category) => {
+        const orderedItems = applyStoredOrder(category.items, itemOrderByCategory[category.id]);
+
+        return {
+          ...category,
+          items: sortCategoryItems(orderedItems, checkedItemIds)
+        };
+      }),
+    [allItemsByCategory, checkedItemIds, itemOrderByCategory]
   );
 
   const checkedCount = checkedItemIds.length;
@@ -178,6 +208,9 @@ export default function ZainoChecklist({ categories = [] }) {
 
   function handleOpenAddForm() {
     setIsAddFormOpen(true);
+    setEditingItemId("");
+    setNewItemLabel("");
+    setSelectedCategoryId(categories[0]?.id || "");
     setFormError("");
   }
 
@@ -197,12 +230,48 @@ export default function ZainoChecklist({ categories = [] }) {
       return;
     }
 
-    if (normalizedItemNames.has(normalizedLabel)) {
+    if (allItems.some((item) => item.id !== editingItemId && normalizeLabel(item.label) === normalizedLabel)) {
       setFormError("Questo elemento è già presente nella checklist.");
       return;
     }
 
-      const nextItem = {
+    if (editingItemId) {
+      const itemToEdit = customItems.find((item) => item.id === editingItemId);
+      if (!itemToEdit) return;
+
+      setCustomItems((current) =>
+        current.map((item) =>
+          item.id === editingItemId
+            ? {
+                ...item,
+                label: trimmedLabel,
+                categoryId: selectedCategoryId,
+                categoryLabel:
+                  selectableCategories.find((category) => category.id === selectedCategoryId)?.label ||
+                  EXTRA_CATEGORY.label
+              }
+            : item
+        )
+      );
+
+      if (itemToEdit.categoryId !== selectedCategoryId) {
+        setItemOrderByCategory((current) => ({
+          ...current,
+          [itemToEdit.categoryId]: (current[itemToEdit.categoryId] || []).filter(
+            (itemId) => itemId !== editingItemId
+          ),
+          [selectedCategoryId]: [...(current[selectedCategoryId] || []), editingItemId]
+        }));
+      }
+
+      setEditingItemId("");
+      setNewItemLabel("");
+      setFormError("");
+      setIsAddFormOpen(false);
+      return;
+    }
+
+    const nextItem = {
       id: `custom-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       label: trimmedLabel,
       categoryId: selectedCategoryId,
@@ -212,6 +281,10 @@ export default function ZainoChecklist({ categories = [] }) {
     };
 
     setCustomItems((current) => [...current, nextItem]);
+    setItemOrderByCategory((current) => ({
+      ...current,
+      [selectedCategoryId]: [...(current[selectedCategoryId] || []), nextItem.id]
+    }));
     setNewItemLabel("");
     setFormError("");
     setIsAddFormOpen(false);
@@ -219,6 +292,53 @@ export default function ZainoChecklist({ categories = [] }) {
 
   function handleResetChecked() {
     setCheckedItems([]);
+  }
+
+  function deleteCustomItem(itemId) {
+    setCustomItems((current) => current.filter((item) => item.id !== itemId));
+    setCheckedItems((current) => current.filter((entry) => entry !== itemId));
+    setItemOrderByCategory((current) =>
+      Object.fromEntries(
+        Object.entries(current).map(([categoryId, itemIds]) => [
+          categoryId,
+          itemIds.filter((entry) => entry !== itemId)
+        ])
+      )
+    );
+  }
+
+  function editCustomItem(item) {
+    setEditingItemId(item.id);
+    setNewItemLabel(item.label);
+    setSelectedCategoryId(item.categoryId);
+    setFormError("");
+    setIsAddFormOpen(true);
+  }
+
+  function reorderCategoryItem(category, targetItemId) {
+    if (!draggedItem || draggedItem.categoryId !== category.id || draggedItem.id === targetItemId) return;
+
+    const orderedIds = category.items.map((item) => item.id);
+    const nextOrder = orderedIds.filter((itemId) => itemId !== draggedItem.id);
+    const targetIndex = nextOrder.indexOf(targetItemId);
+    nextOrder.splice(targetIndex >= 0 ? targetIndex : nextOrder.length, 0, draggedItem.id);
+
+    setItemOrderByCategory((current) => ({
+      ...current,
+      [category.id]: nextOrder
+    }));
+    setDragOverItemId("");
+  }
+
+  function handleDragStart(event, categoryId, itemId) {
+    setDraggedItem({ categoryId, id: itemId });
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", itemId);
+  }
+
+  function handleDragEnd() {
+    setDraggedItem(null);
+    setDragOverItemId("");
   }
 
   return (
@@ -274,70 +394,122 @@ export default function ZainoChecklist({ categories = [] }) {
       </header>
 
       <div class="grid gap-4">
-        {categoriesWithSortedItems.map((category) => (
-          <section
-            key={category.id}
-            aria-labelledby={`category-${category.id}`}
-            class="rounded-[2rem] border border-white/70 bg-white/90 p-5 shadow-card sm:p-6"
-          >
-            <div class="flex items-center justify-between gap-3">
-              <div>
-                <h2 id={`category-${category.id}`} class="mt-1 text-2xl font-black text-forest-800">
-                  <span aria-hidden="true" class="mr-2">
-                    {getCategoryEmoji(category.id)}
+        {categoriesWithSortedItems.map((category) => {
+          const missingCount = category.items.filter((item) => !checkedItemIds.includes(item.id)).length;
+
+          return (
+            <section
+              key={category.id}
+              aria-labelledby={`category-${category.id}`}
+              class="rounded-[2rem] border border-white/70 bg-white/90 p-5 shadow-card sm:p-6"
+            >
+              <div class="flex items-center justify-between gap-3">
+                <div>
+                  <h2 id={`category-${category.id}`} class="mt-1 text-2xl font-black text-forest-800">
+                    <span aria-hidden="true" class="mr-2">
+                      {getCategoryEmoji(category.id)}
+                    </span>
+                    {category.label}
+                  </h2>
+                </div>
+
+                {missingCount === 0 ? (
+                  <span class="rounded-full bg-emerald-100 px-3 py-2 text-sm font-bold text-emerald-800">
+                    Pronto
                   </span>
-                  {category.label}
-                </h2>
+                ) : (
+                  <span class="rounded-full bg-cream px-3 py-2 text-sm font-bold text-forest-700">
+                    {missingCount} mancanti
+                  </span>
+                )}
               </div>
 
-              {category.items.filter((item) => !checkedItemIds.includes(item.id)).length === 0 ? (
-                <span class="rounded-full bg-emerald-100 px-3 py-2 text-sm font-bold text-emerald-800">
-                  Pronto
-                </span>
-              ) : (
-                <span class="rounded-full bg-cream px-3 py-2 text-sm font-bold text-forest-700">
-                  {category.items.filter((item) => !checkedItemIds.includes(item.id)).length} mancanti
-                </span>
-              )}
-            </div>
+              <ul class="mt-4 grid gap-3" role="list">
+                {category.items.map((item) => {
+                  const isChecked = checkedItemIds.includes(item.id);
+                  const itemStateClass = isChecked
+                    ? "border-[#e8d9c8] bg-[#fcf7f0] text-forest-700/70"
+                    : "border-transparent bg-cream text-forest-800 shadow-[inset_0_0_0_1px_rgba(95,44,29,0.06)]";
 
-            <ul class="mt-4 grid gap-3" role="list">
-              {category.items.map((item) => {
-                const isChecked = checkedItemIds.includes(item.id);
-
-                return (
-                  <li key={item.id}>
-                    <label
-                      class={`flex items-center gap-3 rounded-[1.4rem] border px-4 py-3 transition ${
-                        isChecked
-                          ? "border-[#e8d9c8] bg-[#fcf7f0] text-forest-700/70"
-                          : "border-transparent bg-cream text-forest-800 shadow-[inset_0_0_0_1px_rgba(95,44,29,0.06)]"
-                      }`}
+                  return (
+                    <li
+                      key={item.id}
+                      draggable="true"
+                      onDragStart={(event) => handleDragStart(event, category.id, item.id)}
+                      onDragEnd={handleDragEnd}
+                      onDragOver={(event) => {
+                        event.preventDefault();
+                        event.dataTransfer.dropEffect = "move";
+                        setDragOverItemId(item.id);
+                      }}
+                      onDragLeave={() => {
+                        if (dragOverItemId === item.id) setDragOverItemId("");
+                      }}
+                      onDrop={(event) => {
+                        event.preventDefault();
+                        reorderCategoryItem(category, item.id);
+                      }}
                     >
-                      <input
-                        type="checkbox"
-                        checked={isChecked}
-                        onChange={() => toggleItem(item.id)}
-                        class="h-5 w-5 shrink-0 accent-[#315334]"
-                      />
-
-                      <span class="min-w-0 flex-1 text-base font-semibold leading-6">
-                        <span class={isChecked ? "line-through decoration-[1.5px]" : ""}>
-                          {item.label}
+                      <div
+                        class={`flex items-center gap-2 rounded-[1.4rem] border transition ${
+                          dragOverItemId === item.id ? "ring-2 ring-terracotta-300" : ""
+                        } ${itemStateClass}`}
+                      >
+                        <span
+                          class="ml-2 inline-flex h-10 w-8 shrink-0 cursor-grab items-center justify-center rounded-full text-forest-700/55 active:cursor-grabbing"
+                          aria-hidden="true"
+                        >
+                          <GripVertical size={18} strokeWidth={2.1} />
                         </span>
-                        {item.source === "custom" && (
-                          <span class="ml-2 inline-flex rounded-full bg-white px-2 py-0.5 text-xs font-bold uppercase tracking-[0.12em] text-terracotta-600">
-                            Extra
+
+                        <label class="flex min-w-0 flex-1 items-center gap-3 px-4 py-3">
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={() => toggleItem(item.id)}
+                            class="h-5 w-5 shrink-0 accent-[#315334]"
+                          />
+
+                          <span class="min-w-0 flex-1 text-base font-semibold leading-6">
+                            <span class={isChecked ? "line-through decoration-[1.5px]" : ""}>
+                              {item.label}
+                            </span>
+                            {item.source === "custom" && (
+                              <span class="ml-2 inline-flex rounded-full bg-white px-2 py-0.5 text-xs font-bold uppercase tracking-[0.12em] text-terracotta-600">
+                                Extra
+                              </span>
+                            )}
                           </span>
+                        </label>
+
+                        {item.source === "custom" && (
+                          <div class="mr-2 flex shrink-0 items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => editCustomItem(item)}
+                              aria-label={`Modifica ${item.label}`}
+                              class="inline-flex h-10 w-10 items-center justify-center rounded-full text-forest-700 transition hover:bg-white hover:text-forest-900 focus:outline-none focus:ring-2 focus:ring-terracotta-400 focus:ring-offset-2 focus:ring-offset-cream"
+                            >
+                              <Pencil size={17} strokeWidth={2.1} aria-hidden="true" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => deleteCustomItem(item.id)}
+                              aria-label={`Elimina ${item.label}`}
+                              class="inline-flex h-10 w-10 items-center justify-center rounded-full text-terracotta-700 transition hover:bg-white hover:text-terracotta-900 focus:outline-none focus:ring-2 focus:ring-terracotta-400 focus:ring-offset-2 focus:ring-offset-cream"
+                            >
+                              <Trash2 size={18} strokeWidth={2.1} aria-hidden="true" />
+                            </button>
+                          </div>
                         )}
-                      </span>
-                    </label>
-                  </li>
-                );
-              })}
-            </ul>
-          </section>
-        ))}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          );
+        })}
       </div>
 
       <section class="rounded-[2rem] border border-white/70 bg-white/90 p-5 shadow-card sm:p-6">
@@ -408,6 +580,7 @@ export default function ZainoChecklist({ categories = [] }) {
                   setIsAddFormOpen(false);
                   setFormError("");
                   setNewItemLabel("");
+                  setEditingItemId("");
                 }}
                 class="inline-flex items-center justify-center rounded-full border border-forest-200 px-4 py-3 text-sm font-bold text-forest-800 transition hover:bg-white"
               >
