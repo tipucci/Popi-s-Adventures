@@ -1,4 +1,5 @@
 import { getHikeImages } from "./imageRegistry.js";
+import { FALLBACK_ESCURSIONI_CSV } from "./escursioniFallback.js";
 
 const CSV_URL =
   "https://docs.google.com/spreadsheets/d/e/2PACX-1vT29EGlSwQbCjoc9lnwcS3x7VX8XommgfcI9qrFsrCZzQmlNEjoYqKq5YU1ZKhgHKnidVX8LWTLmTuT/pub?gid=0&single=true&output=csv";
@@ -308,6 +309,17 @@ async function normalizeEscursioniRows(rows) {
   return normalized.filter(Boolean).sort(sortByDateDesc);
 }
 
+async function getFallbackEscursioni() {
+  try {
+    return await normalizeEscursioniRows(parseCsv(FALLBACK_ESCURSIONI_CSV));
+  } catch (error) {
+    console.warn(
+      `[escursioni] Impossibile caricare il fallback locale: ${error instanceof Error ? error.message : error}`
+    );
+    return [];
+  }
+}
+
 export async function fetchEscursioniCsv() {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
@@ -339,7 +351,7 @@ export async function getEscursioni() {
     console.warn(
       `[escursioni] Impossibile caricare il CSV: ${error instanceof Error ? error.message : error}`
     );
-    return [];
+    return getFallbackEscursioni();
   }
 }
 
@@ -356,7 +368,7 @@ export async function getEscursioniApiData() {
     console.warn(
       `[escursioni] Impossibile caricare i dati API dal CSV: ${error instanceof Error ? error.message : error}`
     );
-    return [];
+    return getFallbackEscursioni();
   }
 }
 

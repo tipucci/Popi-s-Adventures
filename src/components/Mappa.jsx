@@ -5,6 +5,7 @@ import { withBase } from "../utils/base.js";
 const markerIconRetinaUrl = withBase("/leaflet/marker-icon-2x.png");
 const markerIconUrl = withBase("/leaflet/marker-icon.png");
 const markerShadowUrl = withBase("/leaflet/marker-shadow.png");
+const geaMarkerLogoUrl = withBase("/icons/popi-192.png");
 
 function escapeHtml(value = "") {
   return String(value)
@@ -35,6 +36,30 @@ function createPopupContent(item) {
   `;
 }
 
+function hasGea(item) {
+  if (item?.cane || item?.gea || item?.con_gea) return true;
+
+  const partecipanti = Array.isArray(item?.partecipanti)
+    ? item.partecipanti
+    : String(item?.partecipanti || "").split(/[|,;]/);
+
+  return partecipanti.some((participant) => String(participant).trim().toLowerCase() === "gea");
+}
+
+function createGeaMarkerIcon(L) {
+  return L.divIcon({
+    className: "gea-map-marker",
+    html: `
+      <span style="display:block;width:46px;height:46px;overflow:hidden;border:3px solid #fff;border-radius:9999px;background:#F5EBDC;box-shadow:0 10px 20px rgba(23,51,40,.28);">
+        <img src="${geaMarkerLogoUrl}" alt="" style="display:block;width:100%;height:100%;object-fit:cover;" />
+      </span>
+    `,
+    iconSize: [46, 46],
+    iconAnchor: [23, 23],
+    popupAnchor: [0, -24]
+  });
+}
+
 export default function Mappa({ escursioni = [], height = "420px" }) {
   const mapElement = useRef(null);
   const mapInstance = useRef(null);
@@ -54,6 +79,7 @@ export default function Mappa({ escursioni = [], height = "420px" }) {
 
         delete L.Icon.Default.prototype._getIconUrl;
         L.Icon.Default.mergeOptions({ iconRetinaUrl: markerIconRetinaUrl, iconUrl: markerIconUrl, shadowUrl: markerShadowUrl });
+        const geaMarkerIcon = createGeaMarkerIcon(L);
 
         const map = L.map(mapElement.current, { scrollWheelZoom: false });
         mapInstance.current = map;
@@ -64,7 +90,7 @@ export default function Mappa({ escursioni = [], height = "420px" }) {
 
         const bounds = [];
         points.forEach((item) => {
-          const marker = L.marker([item.lat, item.lng]).addTo(map);
+          const marker = L.marker([item.lat, item.lng], hasGea(item) ? { icon: geaMarkerIcon } : undefined).addTo(map);
           marker.bindPopup(createPopupContent(item));
           bounds.push([item.lat, item.lng]);
         });

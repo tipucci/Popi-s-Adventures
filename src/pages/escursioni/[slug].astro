@@ -44,6 +44,17 @@ function getGeaRatingValue(item) {
   return Math.max(0, Math.min(5, Math.round(numeric * 2) / 2));
 }
 
+function hasGea(item) {
+  if (item?.cane || item?.gea || item?.con_gea) return true;
+
+  const partecipanti = Array.isArray(item?.partecipanti)
+    ? item.partecipanti
+    : String(item?.partecipanti || "").split(/[|,;]/);
+
+  return partecipanti.some((participant) => String(participant).trim().toLowerCase() === "gea");
+}
+
+const showGeaRating = hasGea(escursione);
 const geaRating = getGeaRatingValue(escursione);
 const geaStars = Array.from({ length: 5 }, (_, index) => {
   const slot = index + 1;
@@ -113,35 +124,37 @@ const jsonLd = {
             </div>
           )}
 
-          <div class="rounded-[1.5rem] bg-forest-50 p-5">
-            <p class="text-xs font-bold uppercase tracking-[0.16em] text-terracotta-600">Gea Rating</p>
-            <div class="mt-3 flex items-center gap-2" aria-label={`Gea Rating: ${geaRating} su 5`}>
-              {geaStars.map((starType) => (
-                starType === "full" ? (
-                  <Star
-                    size={28}
-                    strokeWidth={2}
-                    class="text-terracotta-500 fill-terracotta-500"
-                    aria-hidden="true"
-                  />
-                ) : starType === "half" ? (
-                  <StarHalf
-                    size={28}
-                    strokeWidth={2}
-                    class="text-terracotta-500 fill-terracotta-500"
-                    aria-hidden="true"
-                  />
-                ) : (
-                  <Star
-                    size={28}
-                    strokeWidth={2}
-                    class="text-forest-200"
-                    aria-hidden="true"
-                  />
-                )
-              ))}
+          {showGeaRating && (
+            <div class="rounded-[1.5rem] bg-forest-50 p-5">
+              <p class="text-xs font-bold uppercase tracking-[0.16em] text-terracotta-600">Gea Rating</p>
+              <div class="mt-3 flex items-center gap-2" aria-label={`Gea Rating: ${geaRating} su 5`}>
+                {geaStars.map((starType) => (
+                  starType === "full" ? (
+                    <Star
+                      size={28}
+                      strokeWidth={2}
+                      class="text-terracotta-500 fill-terracotta-500"
+                      aria-hidden="true"
+                    />
+                  ) : starType === "half" ? (
+                    <StarHalf
+                      size={28}
+                      strokeWidth={2}
+                      class="text-terracotta-500 fill-terracotta-500"
+                      aria-hidden="true"
+                    />
+                  ) : (
+                    <Star
+                      size={28}
+                      strokeWidth={2}
+                      class="text-forest-200"
+                      aria-hidden="true"
+                    />
+                  )
+                ))}
               </div>
-          </div>
+            </div>
+          )}
         </div>
       </div>
     </section>
