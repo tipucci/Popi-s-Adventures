@@ -65,9 +65,7 @@ const geaStars = Array.from({ length: 5 }, (_, index) => {
 });
 const heroDescription = String(escursione.note || "").trim();
 const hasRealCover = typeof escursione.cover === "string" && !escursione.cover.startsWith("data:image/svg+xml");
-const hasRealGallery = Array.isArray(escursione.gallery)
-  && escursione.gallery.some((image) => typeof image?.src === "string" && !image.src.startsWith("data:image/svg+xml"));
-const galleryImages = hasRealGallery ? escursione.gallery : [];
+const galleryImages = Array.isArray(escursione.gallery) ? escursione.gallery : [];
 const detailGalleryImages = hasRealCover
   ? [{ src: escursione.cover, alt: escursione.coverAlt || escursione.titolo, caption: "" }, ...galleryImages]
   : galleryImages;
@@ -98,7 +96,6 @@ const uploadSlug = escursione.imageSlug || escursione.slug;
           <p class="text-sm font-bold uppercase tracking-[0.16em] text-cream/80">{escursione.luogo}</p>
           <h1 class="mt-2 font-display text-4xl sm:text-5xl">{escursione.titolo}</h1>
           {heroDescription && <p class="mt-3 max-w-3xl text-sm text-cream/90 sm:text-base">{heroDescription}</p>}
-          <PhotoUploadButton client:load slug={uploadSlug} apiUrl={withBase("/api/admin/upload-hike-photos")} />
         </div>
       </div>
     </section>
@@ -169,7 +166,11 @@ const uploadSlug = escursione.imageSlug || escursione.slug;
       <Mappa client:load escursioni={[escursione]} height="420px" />
     </section>
 
-    {detailGalleryImages.length > 0 && <HikeGallery images={detailGalleryImages} />}
+    {detailGalleryImages.length > 0 && (
+      <HikeGallery images={detailGalleryImages}>
+        <PhotoUploadButton slot="footer" client:load slug={uploadSlug} apiUrl={withBase("/api/admin/upload-hike-photos")} />
+      </HikeGallery>
+    )}
   </article>
 </Layout>
 

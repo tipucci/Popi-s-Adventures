@@ -41,6 +41,10 @@ const galleryId = `gallery-${Math.random().toString(36).slice(2, 10)}`;
     ))}
   </div>
 
+  <div class="flex justify-end">
+    <slot name="footer" />
+  </div>
+
   <dialog data-lightbox-dialog class="gallery-lightbox m-0 h-full w-full max-h-none max-w-none overflow-y-auto border-0 bg-transparent p-0 text-left text-white">
     <div data-lightbox-overlay class="gallery-lightbox__shell relative flex min-h-screen w-full items-center justify-center px-1 py-6 sm:px-6 sm:py-8">
       <div class="relative z-10 flex w-full max-w-[min(100vw,1600px)] items-start justify-center">

@@ -132,6 +132,7 @@ export default function PhotoUploadButton({
 
   function closePanel() {
     if (isBusy) return;
+    document.body.classList.remove("upload-modal-open");
     setIsOpen(false);
     setPassword("");
     updateSelection([]);
@@ -215,24 +216,24 @@ export default function PhotoUploadButton({
   }
 
   return (
-    <div class="mt-4 flex justify-end">
+    <div>
       <button
         type="button"
-        class="inline-flex items-center justify-center rounded-full border border-white/35 bg-white/14 px-4 py-2 text-sm font-bold text-white backdrop-blur-sm transition hover:bg-white/22 focus:outline-none focus:ring-2 focus:ring-white/80 focus:ring-offset-2 focus:ring-offset-forest-800"
-        onClick={() => setIsOpen(true)}
+        class="inline-flex items-center justify-center rounded-full bg-forest-700 px-5 py-3 text-sm font-bold text-[#fffaf3] shadow-card transition hover:bg-forest-600 focus:outline-none focus:ring-2 focus:ring-terracotta-400 focus:ring-offset-2 focus:ring-offset-[#f5ebdc]"
+        onClick={() => {
+          document.body.classList.add("upload-modal-open");
+          setIsOpen(true);
+        }}
       >
         Aggiungi foto
       </button>
 
       {isOpen && (
-        <div class="fixed inset-0 z-50 flex items-end justify-center bg-[#173328]/45 px-4 pb-4 pt-10 sm:items-center sm:py-8">
-          <div class="w-full max-w-md overflow-hidden rounded-[1.75rem] border border-white/70 bg-[#fffaf4] shadow-2xl">
+        <div class="fixed inset-0 z-[1300] flex items-end justify-center bg-[#173328]/55 px-4 pb-4 pt-6 sm:items-center sm:py-8">
+          <div class="max-h-[calc(100vh-1.5rem)] w-full max-w-md overflow-y-auto rounded-[1.75rem] border border-white/70 bg-[#fffaf4] shadow-2xl">
             <div class="border-b border-[#eadac8] px-5 py-4">
               <p class="text-xs font-bold uppercase tracking-[0.16em] text-terracotta-600">Upload foto</p>
               <h2 class="mt-1 text-2xl font-black text-forest-800">Aggiungi immagini a questa escursione</h2>
-              <p class="mt-2 text-sm text-forest-700">
-                Seleziona fino a {MAX_FILES} foto. Verranno compresse sul dispositivo prima dell&apos;upload.
-              </p>
             </div>
 
             <form class="space-y-4 px-5 py-5" onSubmit={handleSubmit}>
@@ -297,21 +298,21 @@ export default function PhotoUploadButton({
                 </div>
               )}
 
-              <div class="flex gap-3 pt-1">
+              <div class="sticky bottom-0 -mx-5 flex gap-3 border-t border-[#eadac8] bg-[#fffaf4] px-5 pb-1 pt-4">
                 <button
                   type="button"
                   onClick={closePanel}
                   disabled={isBusy}
-                  class="inline-flex flex-1 items-center justify-center rounded-full border border-[#d9c7b2] px-4 py-3 text-sm font-bold text-forest-800 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
+                  class="inline-flex min-h-12 flex-1 items-center justify-center rounded-full border border-[#d9c7b2] bg-white px-4 py-3 text-sm font-bold text-forest-800 transition hover:bg-[#fffdfa] disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  Chiudi
+                  Annulla
                 </button>
                 <button
                   type="submit"
                   disabled={!canSubmit}
-                  class="inline-flex flex-1 items-center justify-center rounded-full bg-forest-700 px-4 py-3 text-sm font-bold text-[#fffaf3] transition hover:bg-forest-600 disabled:cursor-not-allowed disabled:opacity-60"
+                  class="inline-flex min-h-12 flex-1 items-center justify-center rounded-full bg-forest-700 px-4 py-3 text-sm font-bold text-[#fffaf3] transition hover:bg-forest-600 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  Carica foto
+                  Conferma
                 </button>
               </div>
             </form>

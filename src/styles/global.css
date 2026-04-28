@@ -27,6 +27,11 @@ body.map-fullscreen nav.fixed.inset-x-0.bottom-4 {
   visibility: hidden;
 }
 
+body.upload-modal-open .mobile-topbar,
+body.upload-modal-open .mobile-bottom-nav {
+  visibility: hidden;
+}
+
 a {
   color: inherit;
   text-decoration: none;
