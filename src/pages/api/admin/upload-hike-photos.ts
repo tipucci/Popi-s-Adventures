@@ -220,14 +220,6 @@ export async function POST({ request }: APIContext) {
     const baseTreeSha = await getCommitTreeSha(githubOwner, githubRepo, headCommitSha, githubToken);
     const existingPaths = await getExistingPaths(githubOwner, githubRepo, baseTreeSha, slug, githubToken);
     const directoryPath = getDirectoryPath(slug);
-    const hasDirectory = existingPaths.length > 0;
-
-    if (!hasDirectory) {
-      return json(
-        { success: false, createdFiles: [], message: "Cartella escursione non trovata nel repository GitHub." },
-        404
-      );
-    }
 
     let nextIndex = getNextGalleryIndex(existingPaths);
     const createdFiles: string[] = [];
