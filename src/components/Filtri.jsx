@@ -1,5 +1,6 @@
 import { h } from "preact";
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
+import { ChevronLeft, ChevronRight } from "lucide-preact";
 import CardEscursione from "./CardEscursione.jsx";
 
 const seasonOptions = [
@@ -621,10 +622,10 @@ export default function Filtri({ escursioni = [], initialFilters = defaultFilter
         )}
 
         {filtered.length > pageSize && (
-          <div class="flex flex-wrap items-center justify-center gap-3">
+          <div class="flex items-center justify-center gap-2 overflow-x-auto pb-1">
             {currentPage === 1 ? (
-              <span class="rounded-full border border-sand px-4 py-2 text-sm font-bold text-forest-700 opacity-40">
-                Precedente
+              <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-sand text-forest-700 opacity-40">
+                <ChevronLeft size={18} strokeWidth={2.4} aria-hidden="true" />
               </span>
             ) : (
               <a
@@ -633,13 +634,15 @@ export default function Filtri({ escursioni = [], initialFilters = defaultFilter
                   event.preventDefault();
                   goToPage(currentPage - 1);
                 }}
-                class="rounded-full border border-sand px-4 py-2 text-sm font-bold text-forest-700 transition hover:bg-white"
+                aria-label="Pagina precedente"
+                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-sand bg-white text-forest-700 transition hover:bg-terracotta-50"
               >
-                Precedente
+                <ChevronLeft size={18} strokeWidth={2.4} aria-hidden="true" />
               </a>
             )}
 
-            {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+            <div class="flex items-center gap-2 whitespace-nowrap">
+              {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
               <a
                 href={buildPaginationUrl(page)}
                 onClick={(event) => {
@@ -655,11 +658,12 @@ export default function Filtri({ escursioni = [], initialFilters = defaultFilter
               >
                 {page}
               </a>
-            ))}
+              ))}
+            </div>
 
             {currentPage === totalPages ? (
-              <span class="rounded-full border border-sand px-4 py-2 text-sm font-bold text-forest-700 opacity-40">
-                Successiva
+              <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-sand text-forest-700 opacity-40">
+                <ChevronRight size={18} strokeWidth={2.4} aria-hidden="true" />
               </span>
             ) : (
               <a
@@ -668,9 +672,10 @@ export default function Filtri({ escursioni = [], initialFilters = defaultFilter
                   event.preventDefault();
                   goToPage(currentPage + 1);
                 }}
-                class="rounded-full border border-sand px-4 py-2 text-sm font-bold text-forest-700 transition hover:bg-white"
+                aria-label="Pagina successiva"
+                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-sand bg-white text-forest-700 transition hover:bg-terracotta-50"
               >
-                Successiva
+                <ChevronRight size={18} strokeWidth={2.4} aria-hidden="true" />
               </a>
             )}
           </div>
