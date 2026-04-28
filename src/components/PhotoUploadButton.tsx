@@ -1,5 +1,6 @@
 import { h } from "preact";
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
+import { Pencil } from "lucide-preact";
 
 type PreviewImage = {
   id: string;
@@ -95,12 +96,14 @@ export default function PhotoUploadButton({
   slug,
   apiUrl,
   target = "gallery",
-  buttonClassName = ""
+  buttonClassName = "",
+  iconOnly = false
 }: {
   slug: string;
   apiUrl: string;
   target?: UploadTarget;
   buttonClassName?: string;
+  iconOnly?: boolean;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [password, setPassword] = useState("");
@@ -238,8 +241,9 @@ export default function PhotoUploadButton({
           document.body.classList.add("upload-modal-open");
           setIsOpen(true);
         }}
+        aria-label={buttonLabel}
       >
-        {buttonLabel}
+        {iconOnly ? <Pencil size={18} strokeWidth={2.2} aria-hidden="true" /> : buttonLabel}
       </button>
 
       {isOpen && (
@@ -274,12 +278,6 @@ export default function PhotoUploadButton({
                   class="block w-full rounded-[1rem] border border-dashed border-[#d8c5ae] bg-white px-4 py-3 text-sm text-forest-700 file:mr-3 file:rounded-full file:border-0 file:bg-terracotta-50 file:px-4 file:py-2 file:font-bold file:text-terracotta-700"
                 />
               </label>
-
-              {selectedFiles.length > 0 && (
-                <p class="text-sm font-semibold text-forest-700">
-                  {selectedFiles.length} {selectedFiles.length === 1 ? "immagine selezionata" : "immagini selezionate"}
-                </p>
-              )}
 
               {previews.length > 0 && (
                 <div class="grid grid-cols-3 gap-2 rounded-[1.25rem] bg-cream p-2">

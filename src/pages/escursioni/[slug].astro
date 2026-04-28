@@ -96,8 +96,9 @@ const uploadSlug = escursione.imageSlug || escursione.slug;
             client:load
             slug={uploadSlug}
             target="cover"
+            iconOnly={true}
             apiUrl={withBase("/api/admin/upload-hike-photos")}
-            buttonClassName="bg-white/16 px-4 py-2 text-white backdrop-blur-sm hover:bg-white/22 focus:ring-white/80 focus:ring-offset-forest-800 focus:ring-offset-2"
+            buttonClassName="h-10 w-10 rounded-full border border-white/20 bg-white/14 px-0 py-0 text-white backdrop-blur-sm hover:bg-white/22 focus:ring-white/80 focus:ring-offset-forest-800 focus:ring-offset-2"
           />
         </div>
 
