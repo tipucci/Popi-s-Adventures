@@ -319,7 +319,7 @@ export default function PhotoUploadButton({
                   disabled={isBusy}
                   class="inline-flex min-h-12 flex-1 items-center justify-center rounded-full border border-[#d9c7b2] bg-white px-4 py-3 text-sm font-bold text-forest-800 transition hover:bg-[#fffdfa] disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  Annulla
+                  Chiudi
                 </button>
                 <button
                   type="submit"
