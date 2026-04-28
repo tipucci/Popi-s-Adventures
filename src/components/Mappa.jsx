@@ -294,7 +294,7 @@ export default function Mappa({
 
   const sectionClass = isFullscreen
     ? "fixed inset-0 z-[1300] bg-[#173328]/92 p-3 backdrop-blur-sm sm:p-5"
-    : "";
+    : "mb-6 sm:mb-8";
   const frameClass = isFullscreen
     ? "relative h-full"
     : "rounded-[2rem] border border-forest-950 bg-[#173328] p-3 shadow-card sm:p-4";
