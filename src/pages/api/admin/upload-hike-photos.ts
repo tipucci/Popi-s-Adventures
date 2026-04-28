@@ -10,6 +10,7 @@ const HIKES_ROOT = "src/assets/images/hikes";
 type UploadPayload = {
   password?: string;
   slug?: string;
+  target?: "gallery" | "cover";
   images?: string[];
 };
 
@@ -154,10 +155,14 @@ async function createTree(
 }
 
 async function createCommit(owner: string, repo: string, token: string, treeSha: string, parentCommitSha: string, slug: string) {
+  return createCommitWithMessage(owner, repo, token, treeSha, parentCommitSha, `Add hike photos for ${slug}`);
+}
+
+async function createCommitWithMessage(owner: string, repo: string, token: string, treeSha: string, parentCommitSha: string, message: string) {
   const response = await githubRequest(`/repos/${owner}/${repo}/git/commits`, token, {
     method: "POST",
     body: JSON.stringify({
-      message: `Add hike photos for ${slug}`,
+      message,
       tree: treeSha,
       parents: [parentCommitSha]
     })
@@ -199,6 +204,7 @@ export async function POST({ request }: APIContext) {
 
     const password = String(payload.password || "");
     const slug = String(payload.slug || "");
+    const target = payload.target === "cover" ? "cover" : "gallery";
     const images = Array.isArray(payload.images) ? payload.images : [];
 
     if (password !== adminPassword) {
@@ -209,7 +215,14 @@ export async function POST({ request }: APIContext) {
       return json({ success: false, createdFiles: [], message: "Slug non valido." }, 400);
     }
 
-    if (images.length === 0 || images.length > MAX_FILES) {
+    if (target === "cover" && images.length !== 1) {
+      return json(
+        { success: false, createdFiles: [], message: "Per la cover puoi inviare una sola immagine." },
+        400
+      );
+    }
+
+    if (target === "gallery" && (images.length === 0 || images.length > MAX_FILES)) {
       return json(
         { success: false, createdFiles: [], message: `Puoi inviare da 1 a ${MAX_FILES} immagini per richiesta.` },
         400
@@ -221,24 +234,30 @@ export async function POST({ request }: APIContext) {
     const existingPaths = await getExistingPaths(githubOwner, githubRepo, baseTreeSha, slug, githubToken);
     const directoryPath = getDirectoryPath(slug);
 
-    let nextIndex = getNextGalleryIndex(existingPaths);
     const createdFiles: string[] = [];
-
     const blobEntries = [];
-    for (const image of images) {
-      const base64Content = extractBase64Content(image);
-      const fileName = `gallery-${String(nextIndex).padStart(2, "0")}.jpg`;
-      const filePath = `${directoryPath}/${fileName}`;
-
-      if (existingPaths.includes(filePath) || createdFiles.includes(filePath)) {
-        nextIndex += 1;
-        continue;
-      }
-
-      const blobSha = await createBlob(githubOwner, githubRepo, githubToken, base64Content);
+    if (target === "cover") {
+      const filePath = `${directoryPath}/cover.jpg`;
+      const blobSha = await createBlob(githubOwner, githubRepo, githubToken, extractBase64Content(images[0]));
       blobEntries.push({ path: filePath, sha: blobSha });
       createdFiles.push(filePath);
-      nextIndex += 1;
+    } else {
+      let nextIndex = getNextGalleryIndex(existingPaths);
+      for (const image of images) {
+        const base64Content = extractBase64Content(image);
+        const fileName = `gallery-${String(nextIndex).padStart(2, "0")}.jpg`;
+        const filePath = `${directoryPath}/${fileName}`;
+
+        if (existingPaths.includes(filePath) || createdFiles.includes(filePath)) {
+          nextIndex += 1;
+          continue;
+        }
+
+        const blobSha = await createBlob(githubOwner, githubRepo, githubToken, base64Content);
+        blobEntries.push({ path: filePath, sha: blobSha });
+        createdFiles.push(filePath);
+        nextIndex += 1;
+      }
     }
 
     if (blobEntries.length === 0) {
@@ -246,10 +265,13 @@ export async function POST({ request }: APIContext) {
     }
 
     const newTreeSha = await createTree(githubOwner, githubRepo, githubToken, baseTreeSha, blobEntries);
-    const commitSha = await createCommit(githubOwner, githubRepo, githubToken, newTreeSha, headCommitSha, slug);
+    const commitMessage = target === "cover" ? `Update hike cover for ${slug}` : `Add hike photos for ${slug}`;
+    const commitSha = await createCommitWithMessage(githubOwner, githubRepo, githubToken, newTreeSha, headCommitSha, commitMessage);
     await updateBranchRef(githubOwner, githubRepo, githubToken, githubBranch, commitSha);
 
-    let message = `${createdFiles.length} ${createdFiles.length === 1 ? "foto aggiunta" : "foto aggiunte"} con successo.`;
+    let message = target === "cover"
+      ? "Cover aggiornata con successo."
+      : `${createdFiles.length} ${createdFiles.length === 1 ? "foto aggiunta" : "foto aggiunte"} con successo.`;
     if (deployHookUrl) {
       try {
         await triggerDeployHook(deployHookUrl);

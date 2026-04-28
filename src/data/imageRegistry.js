@@ -12,6 +12,7 @@ const hikeImageModules = import.meta.glob("../assets/images/hikes/**/*.{jpg,jpeg
 });
 
 const imageExtensionPriority = [".avif", ".webp", ".jpg", ".jpeg", ".png", ".svg"];
+const coverExtensionPriority = [".jpg", ".jpeg", ".png", ".webp", ".avif", ".svg"];
 
 function normalizeImageSource(value) {
   if (!value) return "";
@@ -74,8 +75,8 @@ function createPlaceholderImage(title, alt) {
   };
 }
 
-function getPreferredImage(modules, folderPrefix, baseName) {
-  for (const extension of imageExtensionPriority) {
+function getPreferredImage(modules, folderPrefix, baseName, extensions = imageExtensionPriority) {
+  for (const extension of extensions) {
     const match = modules[`${folderPrefix}${baseName}${extension}`];
     if (match) return { source: match, file: `${baseName}${extension}` };
   }
@@ -122,7 +123,7 @@ export const siteImages = {
 export async function getHikeImages(slug, title) {
   const folderPrefix = `../assets/images/hikes/${slug}/`;
   const meta = hikeImageMeta[slug] || {};
-  const cover = getPreferredImage(hikeImageModules, folderPrefix, "cover");
+  const cover = getPreferredImage(hikeImageModules, folderPrefix, "cover", coverExtensionPriority);
 
   const gallery = [...new Set(
     Object.keys(hikeImageModules)

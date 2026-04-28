@@ -15,7 +15,9 @@ type UploadResponse = {
   message?: string;
 };
 
-const MAX_FILES = 12;
+type UploadTarget = "gallery" | "cover";
+
+const MAX_GALLERY_FILES = 12;
 const MAX_LONG_EDGE = 2000;
 const JPEG_QUALITY = 0.78;
 
@@ -91,10 +93,14 @@ function getStatusLabel(state: UploadState) {
 
 export default function PhotoUploadButton({
   slug,
-  apiUrl
+  apiUrl,
+  target = "gallery",
+  buttonClassName = ""
 }: {
   slug: string;
   apiUrl: string;
+  target?: UploadTarget;
+  buttonClassName?: string;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [password, setPassword] = useState("");
@@ -105,10 +111,17 @@ export default function PhotoUploadButton({
   const [createdFiles, setCreatedFiles] = useState<string[]>([]);
   const [busyLabel, setBusyLabel] = useState("");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const maxFiles = target === "cover" ? 1 : MAX_GALLERY_FILES;
+  const isCoverUpload = target === "cover";
+  const eyebrow = isCoverUpload ? "Cover escursione" : "Upload foto";
+  const title = isCoverUpload ? "Aggiorna l'immagine di copertina" : "Aggiungi immagini a questa escursione";
+  const buttonLabel = isCoverUpload ? "Aggiungi cover" : "Aggiungi foto";
+  const confirmLabel = isCoverUpload ? "Salva cover" : "Conferma";
 
   useEffect(() => {
     return () => {
       previews.forEach((preview) => URL.revokeObjectURL(preview.url));
+      document.body.classList.remove("upload-modal-open");
     };
   }, [previews]);
 
@@ -145,9 +158,9 @@ export default function PhotoUploadButton({
     const input = event.currentTarget as HTMLInputElement;
     const nextFiles = Array.from(input.files || []);
 
-    if (nextFiles.length > MAX_FILES) {
+    if (nextFiles.length > maxFiles) {
       setStatus("error");
-      setMessage(`Puoi caricare al massimo ${MAX_FILES} immagini per volta.`);
+      setMessage(`Puoi caricare al massimo ${maxFiles} ${maxFiles === 1 ? "immagine" : "immagini"} per volta.`);
       if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
@@ -191,6 +204,7 @@ export default function PhotoUploadButton({
         body: JSON.stringify({
           password,
           slug,
+          target,
           images: compressedImages
         })
       });
@@ -219,21 +233,21 @@ export default function PhotoUploadButton({
     <div>
       <button
         type="button"
-        class="inline-flex items-center justify-center rounded-full bg-forest-700 px-5 py-3 text-sm font-bold text-[#fffaf3] shadow-card transition hover:bg-forest-600 focus:outline-none focus:ring-2 focus:ring-terracotta-400 focus:ring-offset-2 focus:ring-offset-[#f5ebdc]"
+        class={`inline-flex items-center justify-center rounded-full bg-forest-700 px-5 py-3 text-sm font-bold text-[#fffaf3] shadow-card transition hover:bg-forest-600 focus:outline-none focus:ring-2 focus:ring-terracotta-400 focus:ring-offset-2 focus:ring-offset-[#f5ebdc] ${buttonClassName}`.trim()}
         onClick={() => {
           document.body.classList.add("upload-modal-open");
           setIsOpen(true);
         }}
       >
-        Aggiungi foto
+        {buttonLabel}
       </button>
 
       {isOpen && (
         <div class="fixed inset-0 z-[1300] flex items-end justify-center bg-[#173328]/55 px-4 pb-4 pt-6 sm:items-center sm:py-8">
           <div class="max-h-[calc(100vh-1.5rem)] w-full max-w-md overflow-y-auto rounded-[1.75rem] border border-white/70 bg-[#fffaf4] shadow-2xl">
             <div class="border-b border-[#eadac8] px-5 py-4">
-              <p class="text-xs font-bold uppercase tracking-[0.16em] text-terracotta-600">Upload foto</p>
-              <h2 class="mt-1 text-2xl font-black text-forest-800">Aggiungi immagini a questa escursione</h2>
+              <p class="text-xs font-bold uppercase tracking-[0.16em] text-terracotta-600">{eyebrow}</p>
+              <h2 class="mt-1 text-2xl font-black text-forest-800">{title}</h2>
             </div>
 
             <form class="space-y-4 px-5 py-5" onSubmit={handleSubmit}>
@@ -255,7 +269,7 @@ export default function PhotoUploadButton({
                   ref={fileInputRef}
                   type="file"
                   accept="image/*"
-                  multiple
+                  multiple={!isCoverUpload}
                   onChange={handleFilesChange}
                   class="block w-full rounded-[1rem] border border-dashed border-[#d8c5ae] bg-white px-4 py-3 text-sm text-forest-700 file:mr-3 file:rounded-full file:border-0 file:bg-terracotta-50 file:px-4 file:py-2 file:font-bold file:text-terracotta-700"
                 />
@@ -312,7 +326,7 @@ export default function PhotoUploadButton({
                   disabled={!canSubmit}
                   class="inline-flex min-h-12 flex-1 items-center justify-center rounded-full bg-forest-700 px-4 py-3 text-sm font-bold text-[#fffaf3] transition hover:bg-forest-600 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  Conferma
+                  {confirmLabel}
                 </button>
               </div>
             </form>
