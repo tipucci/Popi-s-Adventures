@@ -2,6 +2,7 @@
 import Layout from "../../layouts/Layout.astro";
 import HikeGallery from "../../components/HikeGallery.astro";
 import Mappa from "../../components/Mappa.jsx";
+import PhotoUploadButton from "../../components/PhotoUploadButton.tsx";
 import { Star, StarHalf } from "@lucide/astro";
 import { getEscursioni } from "../../data/escursioni.js";
 import { withBase } from "../../utils/base.js";
@@ -81,6 +82,7 @@ const jsonLd = {
   image: jsonLdImages,
   url: new URL(withBase(`/escursioni/${escursione.slug}`), Astro.site).href
 };
+const uploadSlug = escursione.imageSlug || escursione.slug;
 ---
 
 <Layout title={`${escursione.titolo} | Popi's Adventures`} description={escursione.descrizione} image={escursione.cover} active="escursioni" mobileBackHref={withBase("/escursioni")} mobileBackLabel="Torna indietro">
@@ -96,6 +98,7 @@ const jsonLd = {
           <p class="text-sm font-bold uppercase tracking-[0.16em] text-cream/80">{escursione.luogo}</p>
           <h1 class="mt-2 font-display text-4xl sm:text-5xl">{escursione.titolo}</h1>
           {heroDescription && <p class="mt-3 max-w-3xl text-sm text-cream/90 sm:text-base">{heroDescription}</p>}
+          <PhotoUploadButton client:load slug={uploadSlug} apiUrl={withBase("/api/admin/upload-hike-photos")} />
         </div>
       </div>
     </section>

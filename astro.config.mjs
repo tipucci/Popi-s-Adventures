@@ -1,5 +1,6 @@
 import { defineConfig } from "astro/config";
 import preact from "@astrojs/preact";
+import vercel from "@astrojs/vercel";
 import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from "vite-plugin-pwa";
 
@@ -11,6 +12,7 @@ export default defineConfig({
   output: "static",
   site: process.env.SITE_URL || "https://example.com",
   base,
+  adapter: vercel(),
   integrations: [preact()],
   vite: {
     plugins: [

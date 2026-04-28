@@ -59,6 +59,7 @@ export const zainoCategories = [
       { id: "gea-telo", label: "Telo / asciugamano" },
       { id: "gea-bilbo", label: "Bilbo" },
       { id: "gea-crocche", label: "Crocche" },
+      { id: "gea-mantellina", label: "Mantellina" },
       { id: "gea-masticativo", label: "Masticativo" }
     ]
   }

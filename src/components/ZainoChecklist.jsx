@@ -388,7 +388,7 @@ export default function ZainoChecklist({ categories = [] }) {
             class="inline-flex items-center justify-center gap-2 rounded-full border border-terracotta-200 bg-white px-4 py-3 text-sm font-bold text-forest-800 transition hover:border-terracotta-300 hover:bg-terracotta-50"
           >
             <RotateCcw size={18} strokeWidth={2.2} aria-hidden="true" />
-            <span>Nuovo zaino</span>
+            <span>Svuota lo zaino</span>
           </button>
         </div>
       </header>
@@ -451,18 +451,18 @@ export default function ZainoChecklist({ categories = [] }) {
                       }}
                     >
                       <div
-                        class={`flex items-center gap-2 rounded-[1.4rem] border transition ${
+                        class={`flex items-center gap-1 rounded-[1.4rem] border transition ${
                           dragOverItemId === item.id ? "ring-2 ring-terracotta-300" : ""
                         } ${itemStateClass}`}
                       >
                         <span
-                          class="ml-2 inline-flex h-10 w-8 shrink-0 cursor-grab items-center justify-center rounded-full text-forest-700/55 active:cursor-grabbing"
+                          class="ml-1 inline-flex h-10 w-7 shrink-0 cursor-grab items-center justify-center rounded-full text-forest-700/55 active:cursor-grabbing"
                           aria-hidden="true"
                         >
                           <GripVertical size={18} strokeWidth={2.1} />
                         </span>
 
-                        <label class="flex min-w-0 flex-1 items-center gap-3 px-4 py-3">
+                        <label class="flex min-w-0 flex-1 items-center gap-2 pl-1 pr-3 py-3">
                           <input
                             type="checkbox"
                             checked={isChecked}

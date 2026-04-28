@@ -2,15 +2,12 @@
 import Layout from "../layouts/Layout.astro";
 import ZainoChecklist from "../components/ZainoChecklist.jsx";
 import { zainoCategories } from "../data/zainoChecklist.js";
-import { withBase } from "../utils/base.js";
 ---
 
 <Layout
   title="Prepara lo zaino | Popi's Adventures"
   description="Checklist mobile-first per preparare lo zaino prima di un'escursione."
   active="zaino"
-  mobileBackHref={withBase("/")}
-  mobileBackLabel="Home"
 >
   <ZainoChecklist client:load categories={zainoCategories} />
 </Layout>
