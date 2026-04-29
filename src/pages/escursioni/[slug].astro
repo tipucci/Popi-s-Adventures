@@ -3,7 +3,8 @@ import Layout from "../../layouts/Layout.astro";
 import HikeGallery from "../../components/HikeGallery.astro";
 import Mappa from "../../components/Mappa.jsx";
 import PhotoUploadButton from "../../components/PhotoUploadButton.tsx";
-import { Star, StarHalf } from "@lucide/astro";
+import { PawPrint, Star, StarHalf, UserRound } from "@lucide/astro";
+import { getDogFriendByName, getDogFriends } from "../../data/dogFriends.js";
 import { getEscursioni } from "../../data/escursioni.js";
 import { withBase } from "../../utils/base.js";
 import { formatKilometers, formatMeters } from "../../utils/format.js";
@@ -14,7 +15,15 @@ export async function getStaticPaths() {
 }
 
 const { escursione } = Astro.props;
-const partecipantiLabels = { meg: "Meg", tizi: "Tizi", gea: "Gea" };
+const dogFriends = await getDogFriends();
+const compagnia = (Array.isArray(escursione.compagnia) ? escursione.compagnia : []).map((item) => {
+  const dogFriend = item.type === "dog" ? getDogFriendByName(item.name, dogFriends) : null;
+  return {
+    ...item,
+    href: dogFriend ? withBase(`/gea-gang/${dogFriend.id}`) : ""
+  };
+});
+const showCompagnia = compagnia.length > 0;
 
 function formatDate(value) {
   if (!value) return "Data da definire";
@@ -98,7 +107,7 @@ const uploadSlug = escursione.imageSlug || escursione.slug;
             target="cover"
             iconOnly={true}
             apiUrl={withBase("/api/admin/upload-hike-photos")}
-            buttonClassName="h-10 w-10 rounded-full border border-white/20 bg-white/14 px-0 py-0 text-white backdrop-blur-sm hover:bg-white/22 focus:ring-white/80 focus:ring-offset-forest-800 focus:ring-offset-2"
+            buttonClassName="h-10 w-10 rounded-full border border-white/70 bg-white/90 px-0 py-0 text-forest-800 shadow-lg backdrop-blur-sm hover:bg-white focus:ring-white/80 focus:ring-offset-forest-800 focus:ring-offset-2"
           />
         </div>
 
@@ -119,12 +128,45 @@ const uploadSlug = escursione.imageSlug || escursione.slug;
       </div>
 
       <div class="space-y-4 rounded-[2rem] bg-white p-6 shadow-card">
-        <div>
-          <p class="text-xs font-bold uppercase tracking-[0.16em] text-terracotta-600">Compagnia</p>
-          <div class="mt-3 flex flex-wrap gap-2">
-            {escursione.partecipanti.map((item) => <span class="rounded-full bg-cream px-4 py-2 text-sm font-bold text-forest-700">{partecipantiLabels[item] || item}</span>)}
+        {showCompagnia && (
+          <div>
+            <p class="text-xs font-bold uppercase tracking-[0.16em] text-terracotta-600">Compagnia</p>
+            <div class="mt-3 flex flex-wrap gap-2">
+              {compagnia.map((item) => (
+                item.href ? (
+                  <a
+                    href={item.href}
+                    class={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold transition hover:-translate-y-0.5 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-terracotta-400 focus:ring-offset-2 focus:ring-offset-white ${
+                      item.type === "dog"
+                        ? "bg-[#eef4ea] text-forest-800"
+                        : "bg-[#fff1e8] text-[#8a4d2d]"
+                    }`}
+                  >
+                    {item.type === "dog" ? (
+                      <PawPrint size={16} strokeWidth={2.2} class="shrink-0" aria-hidden="true" />
+                    ) : (
+                      <UserRound size={16} strokeWidth={2.2} class="shrink-0" aria-hidden="true" />
+                    )}
+                    <span>{item.name}</span>
+                  </a>
+                ) : (
+                  <span class={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold ${
+                    item.type === "dog"
+                      ? "bg-[#eef4ea] text-forest-800"
+                      : "bg-[#fff1e8] text-[#8a4d2d]"
+                  }`}>
+                    {item.type === "dog" ? (
+                      <PawPrint size={16} strokeWidth={2.2} class="shrink-0" aria-hidden="true" />
+                    ) : (
+                      <UserRound size={16} strokeWidth={2.2} class="shrink-0" aria-hidden="true" />
+                    )}
+                    <span>{item.name}</span>
+                  </span>
+                )
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         <div class="grid gap-4 lg:grid-cols-2">
           {escursione.nome_rifugio && (

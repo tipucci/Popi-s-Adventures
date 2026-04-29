@@ -1,6 +1,6 @@
 import { h } from "preact";
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
-import { Pencil } from "lucide-preact";
+import { SquarePen } from "lucide-preact";
 
 type PreviewImage = {
   id: string;
@@ -236,14 +236,14 @@ export default function PhotoUploadButton({
     <div>
       <button
         type="button"
-        class={`inline-flex items-center justify-center rounded-full bg-forest-700 px-5 py-3 text-sm font-bold text-[#fffaf3] shadow-card transition hover:bg-forest-600 focus:outline-none focus:ring-2 focus:ring-terracotta-400 focus:ring-offset-2 focus:ring-offset-[#f5ebdc] ${buttonClassName}`.trim()}
+        class={`inline-flex items-center justify-center rounded-full bg-forest-700 px-5 py-3 text-sm font-bold leading-none text-[#fffaf3] shadow-card transition hover:bg-forest-600 focus:outline-none focus:ring-2 focus:ring-terracotta-400 focus:ring-offset-2 focus:ring-offset-[#f5ebdc] [&_svg]:block [&_svg]:shrink-0 ${buttonClassName}`.trim()}
         onClick={() => {
           document.body.classList.add("upload-modal-open");
           setIsOpen(true);
         }}
         aria-label={buttonLabel}
       >
-        {iconOnly ? <Pencil size={18} strokeWidth={2.2} aria-hidden="true" /> : buttonLabel}
+        {iconOnly ? <SquarePen size={18} strokeWidth={2.2} color="currentColor" aria-hidden="true" /> : buttonLabel}
       </button>
 
       {isOpen && (

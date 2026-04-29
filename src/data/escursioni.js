@@ -64,6 +64,21 @@ function toArray(value) {
     .filter(Boolean);
 }
 
+function parseCommaSeparatedList(value) {
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => String(item).trim())
+      .filter(Boolean);
+  }
+
+  if (typeof value !== "string") return [];
+
+  return value
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
 function parseDateParts(value = "") {
   const text = String(value).trim();
   if (!text) return null;
@@ -179,6 +194,27 @@ function normalizeParticipants(raw) {
   return people;
 }
 
+function normalizeCompagnia(raw) {
+  const compagnia = [
+    { type: "human", name: "Meg" },
+    { type: "human", name: "Tizi" }
+  ];
+
+  if (hasGea(raw)) {
+    compagnia.push({ type: "dog", name: "Gea" });
+  }
+
+  parseCommaSeparatedList(raw.cani).forEach((name) => {
+    compagnia.push({ type: "dog", name });
+  });
+
+  parseCommaSeparatedList(raw.amici).forEach((name) => {
+    compagnia.push({ type: "human", name });
+  });
+
+  return compagnia;
+}
+
 function getRifugioName(raw) {
   const value = raw.nome_rifugio || raw.rifugio || "";
   if (typeof value !== "string") return "";
@@ -271,6 +307,7 @@ export async function normalizeEscursione(raw, index = 0) {
   const luogoCompleto = formatLuogo(api);
   const tag = normalizeTags(api.tag, api);
   const partecipanti = normalizeParticipants(raw);
+  const compagnia = normalizeCompagnia(raw);
 
   return {
     ...api,
@@ -278,6 +315,7 @@ export async function normalizeEscursione(raw, index = 0) {
     descrizione: buildDescription(api),
     durataMinuti: toNumber(api.durata),
     partecipanti,
+    compagnia,
     tag
   };
 }

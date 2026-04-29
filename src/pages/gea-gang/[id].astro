@@ -1,0 +1,140 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { PawPrint } from "@lucide/astro";
+import { getDogFriendById, getDogFriendImage, getDogFriends, slugifyDogName } from "../../data/dogFriends.js";
+import { getEscursioni } from "../../data/escursioni.js";
+import { withBase } from "../../utils/base.js";
+
+export async function getStaticPaths() {
+  const dogs = await getDogFriends();
+  return dogs.map((dog) => ({
+    params: { id: dog.id }
+  }));
+}
+
+const dogs = await getDogFriends();
+const dog = getDogFriendById(Astro.params.id, dogs);
+
+if (!dog) {
+  throw new Response(null, { status: 404, statusText: "Dog friend not found" });
+}
+
+const dogImage = getDogFriendImage(dog.image);
+const escursioni = await getEscursioni();
+const recentHikes = escursioni
+  .filter((item) =>
+    Array.isArray(item.compagnia) &&
+    item.compagnia.some((member) => member.type === "dog" && slugifyDogName(member.name) === dog.id)
+  )
+  .slice(0, 4);
+
+function formatDate(value) {
+  if (!value) return "";
+  const parsed = new Date(`${value}T00:00:00`);
+  if (Number.isNaN(parsed.getTime())) return value;
+  return new Intl.DateTimeFormat("it-IT", { day: "2-digit", month: "long", year: "numeric" }).format(parsed);
+}
+---
+
+<Layout
+  title={`${dog.name} | Gea Gang`}
+  description={dog.description}
+  active="home"
+  mobileBackHref={withBase("/gea-gang")}
+  mobileBackLabel="Torna alla gang"
+>
+  <article class="space-y-6">
+    <section class="overflow-hidden rounded-[2rem] bg-white shadow-card">
+      <div class="grid gap-0 lg:grid-cols-[0.95fr_1.05fr]">
+        <div class="relative min-h-80 bg-[#efe4d1]">
+          {dogImage ? (
+            <img
+              src={dogImage.src}
+              alt={`${dog.name}, ${dog.breed}, ritratto della scheda Gea Gang.`}
+              width={dogImage.width}
+              height={dogImage.height}
+              loading="eager"
+              decoding="async"
+              class="h-full w-full object-cover"
+            />
+          ) : (
+            <div class="flex h-full min-h-80 items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.6),_transparent_58%),linear-gradient(135deg,_#efe4d1,_#dfc8a2)] text-terracotta-700">
+              <div class="flex flex-col items-center gap-3">
+                <span class="rounded-full bg-white/70 p-5 shadow-sm">
+                  <PawPrint size={34} strokeWidth={2.2} aria-hidden="true" />
+                </span>
+                <p class="text-sm font-bold uppercase tracking-[0.16em]">Foto in arrivo</p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div class="space-y-6 p-6 sm:p-8">
+          <header>
+            <p class="text-sm font-bold uppercase tracking-[0.16em] text-terracotta-600">Gea Gang</p>
+            <h1 class="mt-2 text-4xl font-black text-forest-800">{dog.name}</h1>
+            <p class="mt-2 text-lg font-bold text-forest-700">{dog.breed}</p>
+          </header>
+
+          <p class="text-base leading-7 text-forest-700">{dog.description}</p>
+
+          <dl class="grid gap-4 sm:grid-cols-2">
+            <div class="rounded-[1.5rem] bg-forest-50 p-5">
+              <dt class="text-xs font-bold uppercase tracking-[0.16em] text-terracotta-600">Razza</dt>
+              <dd class="mt-2 text-2xl font-black text-forest-800">{dog.breed}</dd>
+            </div>
+
+            {dog.weightKg && (
+              <div class="rounded-[1.5rem] bg-forest-50 p-5">
+                <dt class="text-xs font-bold uppercase tracking-[0.16em] text-terracotta-600">Peso</dt>
+                <dd class="mt-2 text-2xl font-black text-forest-800">{dog.weightKg} kg</dd>
+              </div>
+            )}
+
+            {dog.birthDate && (
+              <div class="rounded-[1.5rem] bg-forest-50 p-5 sm:col-span-2">
+                <dt class="text-xs font-bold uppercase tracking-[0.16em] text-terracotta-600">Data di nascita</dt>
+                <dd class="mt-2 text-2xl font-black text-forest-800">{formatDate(dog.birthDate)}</dd>
+              </div>
+            )}
+          </dl>
+
+          {dog.traits.length > 0 && (
+            <section aria-labelledby="dog-traits">
+              <h2 id="dog-traits" class="text-xs font-bold uppercase tracking-[0.16em] text-terracotta-600">Tratti distintivi</h2>
+              <div class="mt-3 flex flex-wrap gap-2">
+                {dog.traits.map((trait) => (
+                  <span class="rounded-full bg-[#fff1e8] px-3 py-1.5 text-sm font-bold text-[#8a4d2d]">{trait}</span>
+                ))}
+              </div>
+            </section>
+          )}
+        </div>
+      </div>
+    </section>
+
+    {recentHikes.length > 0 && (
+      <section class="rounded-[2rem] bg-white p-6 shadow-card sm:p-8">
+        <div class="flex items-end justify-between gap-4">
+          <div>
+            <p class="text-sm font-bold uppercase tracking-[0.16em] text-terracotta-600">Escursioni insieme</p>
+            <h2 class="mt-2 text-3xl font-black text-forest-800">Ultime avventure con {dog.name}</h2>
+          </div>
+        </div>
+
+        <div class="mt-5 grid gap-4 md:grid-cols-2">
+          {recentHikes.map((hike) => (
+            <a
+              href={withBase(`/escursioni/${hike.slug}`)}
+              class="rounded-[1.5rem] border border-[#eadac8] bg-[#fffaf4] p-5 transition hover:-translate-y-0.5 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-terracotta-400 focus:ring-offset-2 focus:ring-offset-white"
+            >
+              <p class="text-xs font-bold uppercase tracking-[0.16em] text-terracotta-600">{hike.data}</p>
+              <h3 class="mt-2 text-2xl font-black text-forest-800">{hike.titolo}</h3>
+              <p class="mt-1 text-sm text-forest-700">{hike.luogo}</p>
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+  </article>
+</Layout>

@@ -1,0 +1,185 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { PawPrint } from "@lucide/astro";
+import { getDogFriendImage, getDogFriends } from "../data/dogFriends.js";
+import { withBase } from "../utils/base.js";
+
+const dogs = (await getDogFriends()).map((dog) => ({
+  ...dog,
+  imageAsset: getDogFriendImage(dog.image)
+}));
+
+function formatCardNumber(index) {
+  return `#${String(index + 1).padStart(3, "0")}`;
+}
+
+function getDogAgeLabel(value) {
+  if (!value) return "";
+  const birthDate = new Date(`${value}T00:00:00`);
+  if (Number.isNaN(birthDate.getTime())) return "";
+
+  const now = new Date();
+  let years = now.getFullYear() - birthDate.getFullYear();
+  const monthDelta = now.getMonth() - birthDate.getMonth();
+  const dayDelta = now.getDate() - birthDate.getDate();
+
+  if (monthDelta < 0 || (monthDelta === 0 && dayDelta < 0)) {
+    years -= 1;
+  }
+
+  if (years <= 0) return "meno di 1 anno";
+  return `${years} ${years === 1 ? "anno" : "anni"}`;
+}
+---
+
+<Layout
+  title="Gea Gang | Popi's Adventures"
+  description="La piccola gang canina che accompagna le avventure di Popi's Adventures."
+  active="home"
+  mobileBackHref={withBase("/")}
+  mobileBackLabel="Torna alla home"
+>
+  <section class="space-y-6">
+    <section aria-labelledby="gea-gang-carousel">
+      <div class="flex items-end justify-between gap-4">
+        <div>
+          <p id="gea-gang-carousel" class="text-sm font-bold uppercase tracking-[0.16em] text-terracotta-600">Gea Gang</p>
+          <h1 class="mt-2 text-3xl font-black text-forest-800 sm:text-4xl">La banda a quattro zampe</h1>
+        </div>
+      </div>
+
+      <div class="-mr-4 mt-5 pb-3 sm:-mr-6 lg:-mr-8">
+      <ul class="dog-carousel flex list-none gap-4 overflow-x-auto pl-4 pr-4 pb-6 pt-1 sm:pl-6 sm:pr-6 lg:pl-8 lg:pr-8" role="list">
+        {dogs.map((dog, index) => (
+          <li class="dog-slide shrink-0">
+            <a
+              href={withBase(`/gea-gang/${dog.id}`)}
+              class="dog-card group flex h-full flex-col overflow-hidden rounded-[2rem] border border-[#eadac8] bg-[#fffaf4] p-3 text-left shadow-card focus:outline-none focus:ring-2 focus:ring-terracotta-400 focus:ring-offset-2 focus:ring-offset-[#f5ebdc]"
+            >
+              <div class="relative overflow-hidden rounded-[1.4rem] border border-white/80 bg-[#efe4d1]">
+                {dog.imageAsset ? (
+                  <img
+                    src={dog.imageAsset.src}
+                    alt={`${dog.name}, ${dog.breed}, ritratto per la scheda Gea Gang.`}
+                    width={dog.imageAsset.width}
+                    height={dog.imageAsset.height}
+                    loading="lazy"
+                    decoding="async"
+                    class="h-72 w-full object-cover transition duration-500 group-hover:scale-[1.03] group-focus-visible:scale-[1.03]"
+                  />
+                ) : (
+                  <div class="flex h-72 items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.58),_transparent_55%),linear-gradient(135deg,_#efe4d1,_#e1d0b3)] text-terracotta-700">
+                    <div class="flex flex-col items-center gap-3">
+                      <span class="rounded-full bg-white/70 p-4 shadow-sm">
+                        <PawPrint size={28} strokeWidth={2.2} aria-hidden="true" />
+                      </span>
+                      <p class="text-sm font-bold uppercase tracking-[0.16em]">Foto in arrivo</p>
+                    </div>
+                  </div>
+                )}
+
+                <div class="pointer-events-none absolute bottom-3 right-3 rounded-full bg-white/72 px-2.5 py-1 text-xs font-black text-terracotta-700 shadow-sm">
+                  {formatCardNumber(index)}
+                </div>
+              </div>
+
+              <div class="mt-3 flex flex-1 flex-col rounded-[1.5rem] border border-[#f1e3d2] bg-white/72 p-4">
+                <div>
+                  <h3 class="text-3xl font-black text-forest-800">{dog.name}</h3>
+                  <p class="mt-1 text-sm font-bold text-forest-700">{dog.breed || "Razza in aggiornamento"}</p>
+                </div>
+
+                {(getDogAgeLabel(dog.birthDate) || dog.weightKg) && (
+                  <div class="mt-4 flex flex-wrap gap-2">
+                    {getDogAgeLabel(dog.birthDate) && (
+                      <span class="rounded-full bg-[#eef4ea] px-3 py-1.5 text-xs font-bold text-forest-800">
+                        {getDogAgeLabel(dog.birthDate)}
+                      </span>
+                    )}
+                    {dog.weightKg && (
+                      <span class="rounded-full bg-[#f4eadb] px-3 py-1.5 text-xs font-bold text-terracotta-700">
+                        {dog.weightKg} kg
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                <p class="mt-3 line-clamp-4 text-sm leading-6 text-forest-700">{dog.description}</p>
+
+                {dog.traits.length > 0 && (
+                  <div class="mt-4 flex flex-wrap gap-2">
+                    {dog.traits.slice(0, 3).map((trait) => (
+                      <span class="rounded-full bg-[#fff1e8] px-3 py-1.5 text-xs font-bold text-[#8a4d2d]">{trait}</span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </a>
+          </li>
+        ))}
+      </ul>
+      </div>
+    </section>
+  </section>
+</Layout>
+
+<style>
+  .dog-carousel {
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .dog-carousel::-webkit-scrollbar {
+    display: none;
+  }
+
+  .dog-slide {
+    width: 82vw;
+    max-width: 26rem;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+
+  .dog-card {
+    transform-origin: center;
+    transition:
+      transform 220ms ease,
+      box-shadow 220ms ease;
+    box-shadow:
+      0 18px 38px rgba(95, 44, 29, 0.12),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.45);
+  }
+
+  .dog-card:hover,
+  .dog-card:focus-visible {
+    transform: translateY(-4px) scale(1.015);
+    box-shadow:
+      0 24px 46px rgba(95, 44, 29, 0.18),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+  }
+
+  .dog-card:active {
+    transform: scale(0.98);
+  }
+
+  @media (min-width: 768px) {
+    .dog-slide {
+      width: 24rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dog-carousel {
+      scroll-behavior: auto;
+    }
+
+    .dog-card,
+    .dog-card:hover,
+    .dog-card:focus-visible,
+    .dog-card:active {
+      transform: none;
+      transition: none;
+    }
+  }
+</style>
