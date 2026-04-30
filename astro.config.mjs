@@ -38,17 +38,17 @@ export default defineConfig({
           theme_color: "#315334",
           icons: [
             {
-              src: withBasePath("/icons/popi-192.png"),
+              src: withBasePath("/icons/popi-192-v2.png"),
               sizes: "192x192",
               type: "image/png"
             },
             {
-              src: withBasePath("/icons/popi-512.png"),
+              src: withBasePath("/icons/popi-512-v2.png"),
               sizes: "512x512",
               type: "image/png"
             },
             {
-              src: withBasePath("/icons/popi-maskable-512.png"),
+              src: withBasePath("/icons/popi-maskable-512-v2.png"),
               sizes: "512x512",
               type: "image/png",
               purpose: "maskable"
@@ -56,7 +56,7 @@ export default defineConfig({
           ]
         },
         injectManifest: {
-          globPatterns: ["offline/index.html", "**/*.{js,css,png,svg,woff2}"],
+          globPatterns: ["**/offline/index.html", "**/*.{js,css,png,svg,woff2}"],
           maximumFileSizeToCacheInBytes: 5 * 1024 * 1024
         },
         devOptions: {

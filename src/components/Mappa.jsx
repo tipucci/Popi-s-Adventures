@@ -6,7 +6,7 @@ import { withBase } from "../utils/base.js";
 const markerIconRetinaUrl = withBase("/leaflet/marker-icon-2x.png");
 const markerIconUrl = withBase("/leaflet/marker-icon.png");
 const markerShadowUrl = withBase("/leaflet/marker-shadow.png");
-const geaMarkerLogoUrl = withBase("/icons/popi-192.png");
+const geaMarkerLogoUrl = withBase("/icons/popi-192-v2.png");
 const CLUSTER_DISTANCE = 52;
 const CLUSTER_MAX_ZOOM = 17;
 

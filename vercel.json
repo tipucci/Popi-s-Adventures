@@ -1,29 +1,15 @@
 {
   "headers": [
     {
-      "source": "/sw.js",
+      "source": "/(.*).html",
       "headers": [
         {
           "key": "Cache-Control",
-          "value": "no-cache, no-store, must-revalidate"
-        }
-      ]
-    },
-    {
-      "source": "/manifest.webmanifest",
-      "headers": [
+          "value": "public, max-age=0, must-revalidate"
+        },
         {
-          "key": "Cache-Control",
-          "value": "no-cache, no-store, must-revalidate"
-        }
-      ]
-    },
-    {
-      "source": "/api/escursioni.json",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-store"
+          "key": "CDN-Cache-Control",
+          "value": "max-age=60"
         }
       ]
     },
@@ -32,7 +18,24 @@
       "headers": [
         {
           "key": "Cache-Control",
-          "value": "no-cache, no-store, must-revalidate"
+          "value": "public, max-age=0, must-revalidate"
+        },
+        {
+          "key": "CDN-Cache-Control",
+          "value": "max-age=60"
+        }
+      ]
+    },
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        },
+        {
+          "key": "CDN-Cache-Control",
+          "value": "max-age=60"
         }
       ]
     },
@@ -41,16 +44,24 @@
       "headers": [
         {
           "key": "Cache-Control",
-          "value": "no-cache, no-store, must-revalidate"
+          "value": "public, max-age=0, must-revalidate"
+        },
+        {
+          "key": "CDN-Cache-Control",
+          "value": "max-age=60"
         }
       ]
     },
     {
-      "source": "/escursioni/:path*",
+      "source": "/escursioni/(.*)",
       "headers": [
         {
           "key": "Cache-Control",
-          "value": "no-cache, no-store, must-revalidate"
+          "value": "public, max-age=0, must-revalidate"
+        },
+        {
+          "key": "CDN-Cache-Control",
+          "value": "max-age=60"
         }
       ]
     },
@@ -59,7 +70,11 @@
       "headers": [
         {
           "key": "Cache-Control",
-          "value": "no-cache, no-store, must-revalidate"
+          "value": "public, max-age=0, must-revalidate"
+        },
+        {
+          "key": "CDN-Cache-Control",
+          "value": "max-age=60"
         }
       ]
     },
@@ -68,7 +83,11 @@
       "headers": [
         {
           "key": "Cache-Control",
-          "value": "no-cache, no-store, must-revalidate"
+          "value": "public, max-age=0, must-revalidate"
+        },
+        {
+          "key": "CDN-Cache-Control",
+          "value": "max-age=60"
         }
       ]
     },
@@ -77,16 +96,24 @@
       "headers": [
         {
           "key": "Cache-Control",
-          "value": "no-cache, no-store, must-revalidate"
+          "value": "public, max-age=0, must-revalidate"
+        },
+        {
+          "key": "CDN-Cache-Control",
+          "value": "max-age=60"
         }
       ]
     },
     {
-      "source": "/gea-gang/:path*",
+      "source": "/gea-gang/(.*)",
       "headers": [
         {
           "key": "Cache-Control",
-          "value": "no-cache, no-store, must-revalidate"
+          "value": "public, max-age=0, must-revalidate"
+        },
+        {
+          "key": "CDN-Cache-Control",
+          "value": "max-age=60"
         }
       ]
     },
@@ -95,7 +122,46 @@
       "headers": [
         {
           "key": "Cache-Control",
-          "value": "no-cache, no-store, must-revalidate"
+          "value": "public, max-age=0, must-revalidate"
+        },
+        {
+          "key": "CDN-Cache-Control",
+          "value": "max-age=60"
+        }
+      ]
+    },
+    {
+      "source": "/manifest.webmanifest",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        },
+        {
+          "key": "CDN-Cache-Control",
+          "value": "max-age=60"
+        }
+      ]
+    },
+    {
+      "source": "/sw.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        },
+        {
+          "key": "CDN-Cache-Control",
+          "value": "max-age=60"
+        }
+      ]
+    },
+    {
+      "source": "/_astro/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
         }
       ]
     }

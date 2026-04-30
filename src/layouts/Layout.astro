@@ -89,7 +89,7 @@ const footerQuickLinks = [
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const socialImage = image.startsWith("http") ? image : new URL(image, Astro.site).href;
 const manifestHref = withBase("/manifest.webmanifest");
-const appleTouchIconHref = withBase("/icons/apple-touch-icon.png");
+const appleTouchIconHref = withBase("/icons/apple-touch-icon-v2.png");
 const serviceWorkerUrl = withBase("/sw.js");
 ---
 
