@@ -91,7 +91,6 @@ const socialImage = image.startsWith("http") ? image : new URL(image, Astro.site
 const manifestHref = withBase("/manifest.webmanifest");
 const appleTouchIconHref = withBase("/icons/apple-touch-icon.png");
 const serviceWorkerUrl = withBase("/sw.js");
-const serviceWorkerRegistrationUrl = `${serviceWorkerUrl}?v=${Date.now().toString(36)}`;
 ---
 
 <!doctype html>
@@ -353,7 +352,7 @@ const serviceWorkerRegistrationUrl = `${serviceWorkerUrl}?v=${Date.now().toStrin
         </ul>
       </nav>
       <SpeedInsights />
-      <script is:inline define:vars={{ serviceWorkerRegistrationUrl }}>
+      <script is:inline define:vars={{ serviceWorkerUrl }}>
         if ("serviceWorker" in navigator) {
           window.addEventListener("load", () => {
             let refreshing = false;
@@ -365,7 +364,7 @@ const serviceWorkerRegistrationUrl = `${serviceWorkerUrl}?v=${Date.now().toStrin
             });
 
             navigator.serviceWorker
-              .register(serviceWorkerRegistrationUrl)
+              .register(serviceWorkerUrl, { updateViaCache: "none" })
               .then((registration) => {
                 registration.update();
 

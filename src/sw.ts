@@ -5,17 +5,13 @@ import { clientsClaim } from "workbox-core";
 import { ExpirationPlugin } from "workbox-expiration";
 import { cleanupOutdatedCaches, matchPrecache, precacheAndRoute } from "workbox-precaching";
 import { registerRoute, setCatchHandler } from "workbox-routing";
-import { CacheFirst, NetworkFirst, StaleWhileRevalidate } from "workbox-strategies";
+import { CacheFirst, NetworkOnly, StaleWhileRevalidate } from "workbox-strategies";
 
 declare const self: ServiceWorkerGlobalScope & {
   __WB_MANIFEST: Array<{ revision: string | null; url: string }>;
 };
 
 const CACHE_PREFIX = "popi";
-const PAGES_CACHE = `${CACHE_PREFIX}-pages-v3`;
-const API_CACHE = `${CACHE_PREFIX}-api-v2`;
-const RUNTIME_CACHE_PREFIXES = [`${CACHE_PREFIX}-pages-`, `${CACHE_PREFIX}-api-`];
-const CURRENT_RUNTIME_CACHES = new Set([PAGES_CACHE, API_CACHE]);
 const offlineFallbackUrls = [
   new URL("offline/", self.registration.scope).toString(),
   new URL("offline/index.html", self.registration.scope).toString()
@@ -32,11 +28,7 @@ self.addEventListener("activate", (event) => {
       .then((cacheNames) =>
         Promise.all(
           cacheNames
-            .filter(
-              (cacheName) =>
-                RUNTIME_CACHE_PREFIXES.some((prefix) => cacheName.startsWith(prefix)) &&
-                !CURRENT_RUNTIME_CACHES.has(cacheName)
-            )
+            .filter((cacheName) => cacheName.startsWith(CACHE_PREFIX))
             .map((cacheName) => caches.delete(cacheName))
         )
       )
@@ -55,14 +47,7 @@ async function getOfflineFallback() {
 registerRoute(
   ({ request }) => request.mode === "navigate",
   async (options) => {
-    const strategy = new NetworkFirst({
-      cacheName: PAGES_CACHE,
-      plugins: [
-        new CacheableResponsePlugin({
-          statuses: [0, 200]
-        })
-      ]
-    });
+    const strategy = new NetworkOnly();
 
     try {
       return (await strategy.handle(options)) || getOfflineFallback();
@@ -77,18 +62,7 @@ precacheAndRoute(self.__WB_MANIFEST);
 registerRoute(
   ({ url }) =>
     url.origin === self.location.origin && url.pathname.endsWith("/api/escursioni.json"),
-  new NetworkFirst({
-    cacheName: API_CACHE,
-    plugins: [
-      new CacheableResponsePlugin({
-        statuses: [0, 200]
-      }),
-      new ExpirationPlugin({
-        maxEntries: 5,
-        maxAgeSeconds: 60 * 60 * 24
-      })
-    ]
-  })
+  new NetworkOnly()
 );
 
 registerRoute(
