@@ -90,6 +90,8 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
 const socialImage = image.startsWith("http") ? image : new URL(image, Astro.site).href;
 const manifestHref = withBase("/manifest.webmanifest");
 const appleTouchIconHref = withBase("/icons/apple-touch-icon-v2.png");
+const appleTouchIconFallbackHref = withBase("/apple-touch-icon.png");
+const faviconHref = withBase("/favicon-192.png");
 const serviceWorkerUrl = withBase("/sw.js");
 ---
 
@@ -116,6 +118,8 @@ const serviceWorkerUrl = withBase("/sw.js");
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <link rel="manifest" href={manifestHref} />
     <link rel="apple-touch-icon" sizes="180x180" href={appleTouchIconHref} />
+    <link rel="apple-touch-icon" href={appleTouchIconFallbackHref} />
+    <link rel="icon" type="image/png" sizes="192x192" href={faviconHref} />
     <slot name="head" />
   </head>
 
