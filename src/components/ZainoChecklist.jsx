@@ -101,7 +101,7 @@ function getCategoryEmoji(categoryId) {
   const emojiMap = {
     essenziali: "🎒",
     "acqua-cibo": "🥪",
-    abbigliamento: "🧥",
+    abbigliamento: "🥾",
     sicurezza: "🧭",
     gea: "🐶",
     altro: "✨"
@@ -361,14 +361,8 @@ export default function ZainoChecklist({ categories = [] }) {
 
         <div class="mt-5 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
           <div class="rounded-[1.5rem] bg-cream px-4 py-4">
-            <div class="flex items-center gap-3">
-              <p class="whitespace-nowrap text-sm font-bold text-forest-800">
-                {checkedCount} di {totalCount} pronti
-              </p>
-            </div>
-
             <div
-              class="mt-3 h-3 overflow-hidden rounded-full bg-[#e9ddcd]"
+              class="h-3 overflow-hidden rounded-full bg-[#e9ddcd]"
               role="progressbar"
               aria-label="Progresso preparazione zaino"
               aria-valuemin="0"

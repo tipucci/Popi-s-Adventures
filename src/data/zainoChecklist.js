@@ -23,7 +23,7 @@ export const zainoCategories = [
   },
   {
     id: "abbigliamento",
-    label: "Abbigliamento",
+    label: "Vestiti",
     items: [
       { id: "abbigliamento-kway", label: "K-way" },
       { id: "abbigliamento-pile", label: "Pile leggero" },
@@ -53,7 +53,7 @@ export const zainoCategories = [
       { id: "gea-cintura-auto", label: "Cintura per auto" },
       { id: "gea-ciotola", label: "Ciotola" },
       { id: "gea-borraccia", label: "Borraccia" },
-      { id: "gea-sacchetti", label: "Sacchetti 💩" },
+      { id: "gea-sacchetti", label: "Sacchetti cacca" },
       { id: "gea-biscottini", label: "Biscottini" },
       { id: "gea-salviette", label: "Salviette" },
       { id: "gea-telo", label: "Telo / asciugamano" },

@@ -69,7 +69,7 @@ const allProvinceLinks = Object.entries(provinceCounts)
     href: `${withBase("/escursioni")}?provincia=${encodeURIComponent(name)}`
   }));
 
-const provinceLinks = allProvinceLinks.slice(0, 6);
+const provinceLinks = allProvinceLinks.slice(0, 10);
 
 const seasonLinks = seasonMeta.map((item) => ({
   ...item,
