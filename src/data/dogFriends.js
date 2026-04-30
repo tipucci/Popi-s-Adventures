@@ -7,6 +7,7 @@ const DOG_FRIENDS_CSV_URL =
   "https://docs.google.com/spreadsheets/d/e/2PACX-1vT29EGlSwQbCjoc9lnwcS3x7VX8XommgfcI9qrFsrCZzQmlNEjoYqKq5YU1ZKhgHKnidVX8LWTLmTuT/pub?gid=1886783810&single=true&output=csv";
 
 const DOG_FRIENDS_FETCH_TIMEOUT_MS = 8000;
+let dogFriendsPromise;
 
 const FALLBACK_DOG_FRIENDS_CSV = `Nome,Razza,Peso,Descrizione,Tag,Data di nascita
 Gea,Border Collie,17kg,"La padrona di casa: energia, intelligenza e voglia di sentiero.","energia pura, curiosa, fedelissima",06/02/2024
@@ -177,17 +178,18 @@ function getFallbackDogFriends() {
 }
 
 export async function getDogFriends() {
-  try {
-    const rows = await fetchDogFriendsCsvRows();
-    return rows
-      .map(normalizeDogFriend)
-      .filter(Boolean);
-  } catch (error) {
-    console.warn(
-      `[dog-friends] Impossibile caricare il CSV dei cani: ${error instanceof Error ? error.message : error}`
-    );
-    return getFallbackDogFriends();
+  if (!dogFriendsPromise) {
+    dogFriendsPromise = fetchDogFriendsCsvRows()
+      .then((rows) => rows.map(normalizeDogFriend).filter(Boolean))
+      .catch((error) => {
+        console.warn(
+          `[dog-friends] Impossibile caricare il CSV dei cani, uso il fallback locale: ${error instanceof Error ? error.message : error}`
+        );
+        return getFallbackDogFriends();
+      });
   }
+
+  return dogFriendsPromise;
 }
 
 export function getDogFriendByName(name = "", dogs = []) {

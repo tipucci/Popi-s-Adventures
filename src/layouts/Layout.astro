@@ -89,8 +89,9 @@ const footerQuickLinks = [
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const socialImage = image.startsWith("http") ? image : new URL(image, Astro.site).href;
 const manifestHref = withBase("/manifest.webmanifest");
-const appleTouchIconHref = withBase("/icons/popi-192.png");
+const appleTouchIconHref = withBase("/icons/apple-touch-icon.png");
 const serviceWorkerUrl = withBase("/sw.js");
+const serviceWorkerRegistrationUrl = `${serviceWorkerUrl}?v=${Date.now().toString(36)}`;
 ---
 
 <!doctype html>
@@ -115,7 +116,7 @@ const serviceWorkerUrl = withBase("/sw.js");
     <meta name="apple-mobile-web-app-title" content="Popi" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <link rel="manifest" href={manifestHref} />
-    <link rel="apple-touch-icon" href={appleTouchIconHref} />
+    <link rel="apple-touch-icon" sizes="180x180" href={appleTouchIconHref} />
     <slot name="head" />
   </head>
 
@@ -352,12 +353,36 @@ const serviceWorkerUrl = withBase("/sw.js");
         </ul>
       </nav>
       <SpeedInsights />
-      <script is:inline define:vars={{ serviceWorkerUrl }}>
+      <script is:inline define:vars={{ serviceWorkerRegistrationUrl }}>
         if ("serviceWorker" in navigator) {
           window.addEventListener("load", () => {
-            navigator.serviceWorker.register(serviceWorkerUrl).catch(() => {
-              // Service worker registration is progressive enhancement.
+            let refreshing = false;
+
+            navigator.serviceWorker.addEventListener("controllerchange", () => {
+              if (refreshing) return;
+              refreshing = true;
+              window.location.reload();
             });
+
+            navigator.serviceWorker
+              .register(serviceWorkerRegistrationUrl)
+              .then((registration) => {
+                registration.update();
+
+                registration.addEventListener("updatefound", () => {
+                  const worker = registration.installing;
+                  if (!worker) return;
+
+                  worker.addEventListener("statechange", () => {
+                    if (worker.state === "installed" && navigator.serviceWorker.controller) {
+                      worker.postMessage({ type: "SKIP_WAITING" });
+                    }
+                  });
+                });
+              })
+              .catch(() => {
+                // Service worker registration is progressive enhancement.
+              });
           });
         }
       </script>

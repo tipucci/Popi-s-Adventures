@@ -1,6 +1,6 @@
 # Popi's Adventures
 
-Diario personale di escursioni costruito con Astro. Il progetto genera una web app statica installabile con homepage, archivio delle uscite, pagine di dettaglio, sezione "Chi siamo", checklist "Prepara lo zaino" offline-friendly e vista mappa alimentata da un dataset esterno pubblicato su Google Sheets.
+Diario personale di escursioni costruito con Astro. Il progetto genera una web app statica installabile con homepage, archivio delle uscite, pagine di dettaglio, sezione "Chi siamo", Gea Gang, checklist "Prepara lo zaino" offline-friendly e vista mappa alimentata da un dataset esterno pubblicato su Google Sheets.
 
 ## Panoramica
 
@@ -13,6 +13,7 @@ Il sito include:
 - una pagina dedicata per ogni escursione
 - una checklist "Prepara lo zaino" con persistenza locale
 - una pagina mappa per le escursioni con coordinate
+- una sezione Gea Gang con schede dedicate ai cani e collegamenti alle escursioni condivise
 - un endpoint JSON statico generato in fase di build
 - supporto PWA con manifest, service worker e fallback offline
 
@@ -41,9 +42,10 @@ I contenuti arrivano da una combinazione di:
 - copertine e gallerie immagini locali per ogni escursione
 - lightbox galleria nelle pagine di dettaglio
 - pagina mappa con marker per le escursioni che hanno coordinate disponibili
+- Gea Gang con carosello cani, pagine dettaglio e riferimenti alle uscite fatte insieme
 - endpoint pre-renderizzato in `/api/escursioni.json`
-- installabilità come web app standalone
-- fallback offline e cache per app shell, pagine statiche, checklist zaino e API escursioni
+- installabilità come web app standalone con icone dedicate, inclusa `apple-touch-icon`
+- fallback offline e cache per app shell e media, con pagine e API gestite network-first per evitare contenuti pubblici non aggiornati
 
 ## Struttura del progetto
 
@@ -55,6 +57,7 @@ I contenuti arrivano da una combinazione di:
 |-- src/
 |   |-- assets/images/
 |   |   |-- site/              # Immagini di sito (home, about, logo)
+|   |   |-- dogs/              # Foto dei cani della Gea Gang
 |   |   `-- hikes/             # Una cartella per ogni escursione
 |   |-- components/            # Componenti UI Astro e Preact
 |   |-- data/                  # Caricamento dati, registry immagini, metadata immagini
@@ -80,7 +83,8 @@ Il sito è configurato come PWA installabile:
 
 - manifest web app generato in build con icone in `public/icons/`
 - service worker custom in [src/sw.ts](./src/sw.ts)
-- strategia `injectManifest` con precache dell'app shell e cache runtime per asset, pagine e API
+- strategia `injectManifest` con precache dell'app shell e fallback offline, evitando il precache di HTML e JSON pubblici
+- navigazioni e API escursioni con strategia network-first per mostrare i contenuti aggiornati dopo i deploy
 - pagina fallback offline in [src/pages/offline.astro](./src/pages/offline.astro)
 - checklist "Prepara lo zaino" utilizzabile offline dopo la prima visita, con stato salvato sul dispositivo
 
@@ -90,7 +94,7 @@ La mappa usa tile esterne e dati che possono richiedere rete: il supporto offlin
 
 ### Requisiti
 
-- Node.js 20 o superiore
+- Node.js 24, allineato al runtime Vercel usato dal progetto
 - npm
 
 ### Avvio
@@ -128,19 +132,20 @@ Non è richiesto un file `.env` locale per avviare il progetto, ma le variabili 
 
 ### Sorgente dati esterna
 
-Il dataset delle escursioni viene caricato da un CSV pubblicato su Google Sheets, definito in [src/data/escursioni.js](./src/data/escursioni.js).
+Il dataset delle escursioni viene caricato da un CSV pubblicato su Google Sheets, definito in [src/data/escursioni.js](./src/data/escursioni.js). La Gea Gang usa un secondo foglio CSV, normalizzato in [src/data/dogFriends.js](./src/data/dogFriends.js).
 
 Caratteristiche attuali della sorgente:
 
 - CSV pubblicato da Google Sheets
 - scaricato durante la build e durante lo sviluppo locale
 - normalizzato in campi utili al sito come `slug`, `cover`, `gallery`, `lat`, `lng`, tag e metadati derivati
+- dati Gea Gang normalizzati con `id`, razza, descrizione, tratti, peso, data di nascita e immagine locale
 
 Implicazioni importanti:
 
 - la build dipende dalla raggiungibilità del CSV esterno
-- se il CSV non è disponibile, il codice attuale restituisce una lista vuota invece di fallire la build
-- la route `/api/escursioni.json` espone i dati normalizzati e anche l'URL sorgente
+- se il CSV non è disponibile, il sito usa fallback locali per mantenere la build e le pagine consultabili
+- la route `/api/escursioni.json` espone i dati normalizzati e anche l'URL sorgente, con header `no-store` per ridurre il rischio di dati obsoleti
 
 ### Immagini e contenuti locali
 
@@ -154,6 +159,8 @@ src/assets/images/
     home/
     about/
     logo/
+  dogs/
+    <nome-cane>.jpg
   hikes/
     <yyyy-mm-dd-slug>/
       cover.jpg|webp

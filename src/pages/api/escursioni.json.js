@@ -18,7 +18,7 @@ export async function GET() {
     {
       headers: {
         "Content-Type": "application/json; charset=utf-8",
-        "Cache-Control": "public, max-age=300"
+        "Cache-Control": "no-store"
       }
     }
   );

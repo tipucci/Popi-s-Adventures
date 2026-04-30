@@ -1,6 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import { PawPrint } from "@lucide/astro";
+import { ChevronLeft, ChevronRight, PawPrint } from "@lucide/astro";
 import { getDogFriendImage, getDogFriends } from "../data/dogFriends.js";
 import { withBase } from "../utils/base.js";
 
@@ -46,10 +46,31 @@ function getDogAgeLabel(value) {
           <p id="gea-gang-carousel" class="text-sm font-bold uppercase tracking-[0.16em] text-terracotta-600">Gea Gang</p>
           <h1 class="mt-2 text-3xl font-black text-forest-800 sm:text-4xl">La banda a quattro zampe</h1>
         </div>
+
+        {dogs.length > 1 && (
+          <div class="hidden items-center gap-2 md:flex" aria-label="Controlli carousel Gea Gang">
+            <button
+              type="button"
+              class="dog-carousel-button inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#eadac8] bg-white/85 text-forest-800 shadow-sm transition hover:bg-[#fffaf4] focus:outline-none focus:ring-2 focus:ring-terracotta-400 focus:ring-offset-2 focus:ring-offset-[#f5ebdc]"
+              data-dog-carousel-prev
+              aria-label="Mostra le card precedenti"
+            >
+              <ChevronLeft class="h-5 w-5" stroke-width={2.2} aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              class="dog-carousel-button inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#eadac8] bg-white/85 text-forest-800 shadow-sm transition hover:bg-[#fffaf4] focus:outline-none focus:ring-2 focus:ring-terracotta-400 focus:ring-offset-2 focus:ring-offset-[#f5ebdc]"
+              data-dog-carousel-next
+              aria-label="Mostra le card successive"
+            >
+              <ChevronRight class="h-5 w-5" stroke-width={2.2} aria-hidden="true" />
+            </button>
+          </div>
+        )}
       </div>
 
-      <div class="-mr-4 mt-5 pb-3 sm:-mr-6 lg:-mr-8">
-      <ul class="dog-carousel flex list-none gap-4 overflow-x-auto pl-4 pr-4 pb-6 pt-1 sm:pl-6 sm:pr-6 lg:pl-8 lg:pr-8" role="list">
+      <div class="-mx-4 mt-5 pb-10 sm:-mx-6 lg:-mx-8">
+      <ul class="dog-carousel flex list-none gap-4 overflow-x-auto pl-4 pr-4 pb-10 pt-1 sm:pl-6 sm:pr-6 lg:pl-8 lg:pr-8" role="list">
         {dogs.map((dog, index) => (
           <li class="dog-slide shrink-0">
             <a
@@ -121,17 +142,46 @@ function getDogAgeLabel(value) {
       </div>
     </section>
   </section>
+
+  <script>
+    const carousel = document.querySelector(".dog-carousel");
+    const previousButton = document.querySelector("[data-dog-carousel-prev]");
+    const nextButton = document.querySelector("[data-dog-carousel-next]");
+
+    function scrollDogs(direction) {
+      if (!carousel) return;
+      const firstSlide = carousel.querySelector(".dog-slide");
+      const slideWidth = firstSlide instanceof HTMLElement ? firstSlide.offsetWidth : 360;
+      carousel.scrollBy({
+        left: direction * (slideWidth + 16),
+        behavior: "smooth"
+      });
+    }
+
+    previousButton?.addEventListener("click", () => scrollDogs(-1));
+    nextButton?.addEventListener("click", () => scrollDogs(1));
+  </script>
 </Layout>
 
 <style>
   .dog-carousel {
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
+    scrollbar-color: rgba(138, 77, 45, 0.42) transparent;
+    scrollbar-width: thin;
   }
 
   .dog-carousel::-webkit-scrollbar {
-    display: none;
+    height: 0.55rem;
+  }
+
+  .dog-carousel::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .dog-carousel::-webkit-scrollbar-thumb {
+    background: rgba(138, 77, 45, 0.34);
+    border-radius: 999px;
   }
 
   .dog-slide {
@@ -166,6 +216,16 @@ function getDogAgeLabel(value) {
   @media (min-width: 768px) {
     .dog-slide {
       width: 24rem;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .dog-carousel {
+      scrollbar-width: none;
+    }
+
+    .dog-carousel::-webkit-scrollbar {
+      display: none;
     }
   }
 

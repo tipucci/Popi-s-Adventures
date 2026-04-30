@@ -12,6 +12,10 @@ declare const self: ServiceWorkerGlobalScope & {
 };
 
 const CACHE_PREFIX = "popi";
+const PAGES_CACHE = `${CACHE_PREFIX}-pages-v3`;
+const API_CACHE = `${CACHE_PREFIX}-api-v2`;
+const RUNTIME_CACHE_PREFIXES = [`${CACHE_PREFIX}-pages-`, `${CACHE_PREFIX}-api-`];
+const CURRENT_RUNTIME_CACHES = new Set([PAGES_CACHE, API_CACHE]);
 const offlineFallbackUrls = [
   new URL("offline/", self.registration.scope).toString(),
   new URL("offline/index.html", self.registration.scope).toString()
@@ -20,7 +24,24 @@ const offlineFallbackUrls = [
 self.skipWaiting();
 clientsClaim();
 cleanupOutdatedCaches();
-precacheAndRoute(self.__WB_MANIFEST);
+
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    caches
+      .keys()
+      .then((cacheNames) =>
+        Promise.all(
+          cacheNames
+            .filter(
+              (cacheName) =>
+                RUNTIME_CACHE_PREFIXES.some((prefix) => cacheName.startsWith(prefix)) &&
+                !CURRENT_RUNTIME_CACHES.has(cacheName)
+            )
+            .map((cacheName) => caches.delete(cacheName))
+        )
+      )
+  );
+});
 
 async function getOfflineFallback() {
   for (const url of offlineFallbackUrls) {
@@ -35,8 +56,7 @@ registerRoute(
   ({ request }) => request.mode === "navigate",
   async (options) => {
     const strategy = new NetworkFirst({
-      cacheName: `${CACHE_PREFIX}-pages-v1`,
-      networkTimeoutSeconds: 3,
+      cacheName: PAGES_CACHE,
       plugins: [
         new CacheableResponsePlugin({
           statuses: [0, 200]
@@ -52,12 +72,13 @@ registerRoute(
   }
 );
 
+precacheAndRoute(self.__WB_MANIFEST);
+
 registerRoute(
   ({ url }) =>
     url.origin === self.location.origin && url.pathname.endsWith("/api/escursioni.json"),
   new NetworkFirst({
-    cacheName: `${CACHE_PREFIX}-api-v1`,
-    networkTimeoutSeconds: 4,
+    cacheName: API_CACHE,
     plugins: [
       new CacheableResponsePlugin({
         statuses: [0, 200]

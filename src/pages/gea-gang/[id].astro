@@ -1,6 +1,6 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-import { PawPrint } from "@lucide/astro";
+import { ArrowLeft, PawPrint } from "@lucide/astro";
 import { getDogFriendById, getDogFriendImage, getDogFriends, slugifyDogName } from "../../data/dogFriends.js";
 import { getEscursioni } from "../../data/escursioni.js";
 import { withBase } from "../../utils/base.js";
@@ -71,8 +71,14 @@ function formatDate(value) {
 
         <div class="space-y-6 p-6 sm:p-8">
           <header>
-            <p class="text-sm font-bold uppercase tracking-[0.16em] text-terracotta-600">Gea Gang</p>
-            <h1 class="mt-2 text-4xl font-black text-forest-800">{dog.name}</h1>
+            <a
+              href={withBase("/gea-gang")}
+              class="mb-6 hidden w-fit items-center gap-2 rounded-full bg-forest-700 px-4 py-2 text-sm font-bold text-[#fffaf3] shadow-card transition hover:bg-forest-600 focus:outline-none focus:ring-2 focus:ring-terracotta-400 focus:ring-offset-2 focus:ring-offset-white md:inline-flex"
+            >
+              <ArrowLeft class="h-4 w-4 shrink-0 text-[#fffaf3]" stroke-width={2.2} aria-hidden="true" />
+              <span class="text-[#fffaf3]">Torna alla gang</span>
+            </a>
+            <h1 class="text-4xl font-black text-forest-800">{dog.name}</h1>
             <p class="mt-2 text-lg font-bold text-forest-700">{dog.breed}</p>
           </header>
 
@@ -126,11 +132,20 @@ function formatDate(value) {
           {recentHikes.map((hike) => (
             <a
               href={withBase(`/escursioni/${hike.slug}`)}
-              class="rounded-[1.5rem] border border-[#eadac8] bg-[#fffaf4] p-5 transition hover:-translate-y-0.5 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-terracotta-400 focus:ring-offset-2 focus:ring-offset-white"
+              class="grid grid-cols-[5.5rem_minmax(0,1fr)] gap-4 rounded-[1.5rem] border border-[#eadac8] bg-[#fffaf4] p-3 transition hover:-translate-y-0.5 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-terracotta-400 focus:ring-offset-2 focus:ring-offset-white sm:grid-cols-[6.5rem_minmax(0,1fr)]"
             >
-              <p class="text-xs font-bold uppercase tracking-[0.16em] text-terracotta-600">{hike.data}</p>
-              <h3 class="mt-2 text-2xl font-black text-forest-800">{hike.titolo}</h3>
-              <p class="mt-1 text-sm text-forest-700">{hike.luogo}</p>
+              <img
+                src={hike.coverCard || hike.cover}
+                alt={hike.coverAlt}
+                loading="lazy"
+                decoding="async"
+                class="aspect-square w-full self-start rounded-[1rem] object-cover"
+              />
+              <div class="min-w-0 py-1 pr-1">
+                <p class="text-xs font-bold uppercase tracking-[0.16em] text-terracotta-600">{formatDate(hike.data)}</p>
+                <h3 class="mt-2 text-xl font-black leading-tight text-forest-800 sm:text-2xl">{hike.titolo}</h3>
+                <p class="mt-1 text-sm text-forest-700">{hike.luogo}</p>
+              </div>
             </a>
           ))}
         </div>

@@ -29,7 +29,7 @@ const { count, size, warnings } = await injectManifest({
   swSrc: bundledSw,
   swDest,
   globDirectory: distDir,
-  globPatterns: ["**/*.{html,js,css,json,png,svg,woff2}"],
+  globPatterns: ["offline/index.html", "**/*.{js,css,png,svg,woff2}"],
   maximumFileSizeToCacheInBytes: 5 * 1024 * 1024
 });
 

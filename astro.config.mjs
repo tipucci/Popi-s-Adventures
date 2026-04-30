@@ -56,7 +56,7 @@ export default defineConfig({
           ]
         },
         injectManifest: {
-          globPatterns: ["**/*.{html,js,css,json,png,svg,woff2}"],
+          globPatterns: ["offline/index.html", "**/*.{js,css,png,svg,woff2}"],
           maximumFileSizeToCacheInBytes: 5 * 1024 * 1024
         },
         devOptions: {

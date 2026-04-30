@@ -1,5 +1,6 @@
 ---
 import { siteImages } from "../data/imageRegistry.js";
+import { withBase } from "../utils/base.js";
 
 const title = "Tizi, Meg e Gea";
 
@@ -7,7 +8,7 @@ const description =
   "Ci piacciono le giornate all'aria aperta, un bel sentiero e le soste per mangiare qualcosa di buono lungo il percorso. La vera protagonista \u00E8 Gea, una border collie di due anni. \u00C8 un piccolo demonio pieno di energia e futura Fetch Queen: ogni prato o bosco \u00E8 il suo campo di allenamento.";
 
 const descriptionSecond =
-  "Questo spazio \u00E8 il diario delle nostre escursioni. Tiene traccia di tutte le giornate semplici che ci lasciano stanchi ma felici.";
+  "Questo spazio \u00E8 il diario delle nostre escursioni. Tiene traccia di tutte le giornate semplici che ci lasciano con un sorriso.";
 
 const descriptionThird = "";
 
@@ -28,6 +29,7 @@ const imageAlt = siteImages.aboutUs.alt;
         <p class="about-us__text">{description}</p>
         <p class="about-us__text">{descriptionSecond}</p>
         {descriptionThird && <p class="about-us__text">{descriptionThird}</p>}
+        <a class="about-us__link" href={withBase("/gea-gang")}>Scopri tutta la gang</a>
       </div>
     </div>
   </div>
@@ -130,6 +132,35 @@ const imageAlt = siteImages.aboutUs.alt;
     text-wrap: pretty;
   }
 
+  .about-us__link {
+    display: inline-flex;
+    width: fit-content;
+    align-items: center;
+    justify-content: center;
+    margin-top: 0.25rem;
+    border-radius: 999px;
+    background: #315334;
+    padding: 0.85rem 1.1rem;
+    color: #fffaf3;
+    font-size: 0.95rem;
+    font-weight: 800;
+    line-height: 1;
+    box-shadow: 0 12px 24px rgba(49, 83, 52, 0.18);
+    transition: background 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+  }
+
+  .about-us__link:hover,
+  .about-us__link:focus-visible {
+    background: #244528;
+    box-shadow: 0 16px 28px rgba(49, 83, 52, 0.22);
+    transform: translateY(-1px);
+  }
+
+  .about-us__link:focus-visible {
+    outline: 2px solid #c96f49;
+    outline-offset: 3px;
+  }
+
   @media (min-width: 768px) {
     .about-us__layout {
       grid-template-columns: minmax(0, 1.02fr) minmax(0, 0.98fr);
@@ -157,14 +188,17 @@ const imageAlt = siteImages.aboutUs.alt;
 
   @media (prefers-reduced-motion: reduce) {
     .about-us__shell,
-    .about-us__image {
+    .about-us__image,
+    .about-us__link {
       transition: none;
     }
 
     .about-us__shell:hover,
     .about-us__shell:focus-within,
     .about-us__shell:hover .about-us__image,
-    .about-us__shell:focus-within .about-us__image {
+    .about-us__shell:focus-within .about-us__image,
+    .about-us__link:hover,
+    .about-us__link:focus-visible {
       transform: none;
       filter: none;
     }

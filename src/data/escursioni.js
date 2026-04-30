@@ -5,6 +5,7 @@ const CSV_URL =
   "https://docs.google.com/spreadsheets/d/e/2PACX-1vT29EGlSwQbCjoc9lnwcS3x7VX8XommgfcI9qrFsrCZzQmlNEjoYqKq5YU1ZKhgHKnidVX8LWTLmTuT/pub?gid=0&single=true&output=csv";
 
 const FETCH_TIMEOUT_MS = 8000;
+let escursioniDataPromise;
 
 function slugify(value = "") {
   return value
@@ -382,15 +383,18 @@ export async function fetchEscursioniCsv() {
 }
 
 export async function getEscursioni() {
-  try {
-    const rows = await fetchEscursioniCsv();
-    return await normalizeEscursioniRows(rows);
-  } catch (error) {
-    console.warn(
-      `[escursioni] Impossibile caricare il CSV: ${error instanceof Error ? error.message : error}`
-    );
-    return getFallbackEscursioni();
+  if (!escursioniDataPromise) {
+    escursioniDataPromise = fetchEscursioniCsv()
+      .then(normalizeEscursioniRows)
+      .catch((error) => {
+        console.warn(
+          `[escursioni] Impossibile caricare il CSV, uso il fallback locale: ${error instanceof Error ? error.message : error}`
+        );
+        return getFallbackEscursioni();
+      });
   }
+
+  return escursioniDataPromise;
 }
 
 export async function getEscursioneBySlug(slug) {
@@ -399,15 +403,7 @@ export async function getEscursioneBySlug(slug) {
 }
 
 export async function getEscursioniApiData() {
-  try {
-    const rows = await fetchEscursioniCsv();
-    return await normalizeEscursioniRows(rows);
-  } catch (error) {
-    console.warn(
-      `[escursioni] Impossibile caricare i dati API dal CSV: ${error instanceof Error ? error.message : error}`
-    );
-    return getFallbackEscursioni();
-  }
+  return getEscursioni();
 }
 
 export function getCsvUrl() {
