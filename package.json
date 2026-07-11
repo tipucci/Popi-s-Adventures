@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
+    "import:gpx": "node scripts/import-gpx.mjs",
     "build": "astro build && node scripts/build-sw.mjs",
     "preview": "astro preview"
   },

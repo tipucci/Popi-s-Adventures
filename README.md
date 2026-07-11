@@ -183,6 +183,68 @@ Quando aggiungi una nuova escursione:
 3. aggiungi le immagini locali sotto `src/assets/images/hikes/<yyyy-mm-dd-slug>/`
 4. aggiorna facoltativamente [src/data/hikeImageMeta.js](./src/data/hikeImageMeta.js) con alt text e caption
 
+### Import GPX da Komoot
+
+Il progetto include un importer locale per velocizzare la precompilazione tecnica di una nuova escursione a partire da un file GPX esportato da Komoot. L'importer non scrive su Google Sheets: stampa solo dati copiabili a mano.
+
+Google Sheets resta la sorgente principale e vincente. Se nello Sheet esistono già valori manuali, non vanno sovrascritti con quelli importati dal GPX, salvo scelta esplicita futura.
+
+Flusso consigliato:
+
+1. da Komoot esporta il tour in formato GPX
+2. salva il file in una cartella locale temporanea, per esempio `./tmp/komoot/monte-xyz.gpx`
+3. esegui:
+
+```bash
+npm run import:gpx -- ./tmp/komoot/monte-xyz.gpx
+```
+
+Lo script stampa prima un blocco CSV compatibile con copia-incolla in Google Sheets e poi un JSON leggibile per debug.
+
+Campi tecnici prodotti dal GPX:
+
+- `gpx_source`
+- `imported_distance_km`
+- `imported_elevation_gain`
+- `imported_duration_minutes`
+- `imported_lat`
+- `imported_lng`
+
+Campi editoriali e manuali da mantenere nello Sheet:
+
+- `title`
+- `description`
+- `tags`
+- `dog_friendly`
+- `weather`
+- `cover`
+- `gallery`
+- `region`
+- `notes`
+- `komoot_url`
+
+Compatibilità con il loader attuale:
+
+- il sito oggi legge i campi `Gita`, `Data`, `Km`, `Dislivello`, `Durata`, `lat`, `lng` dal CSV pubblicato
+- l'importer produce campi `imported_*` per evitare sovrascritture accidentali
+- quando vuoi usare un valore GPX nel sito, copialo manualmente dal relativo campo `imported_*` al campo effettivo dello Sheet (`Km`, `Dislivello`, `Durata`, `lat`, `lng`)
+- `imported_duration_minutes` e `Durata` sono entrambi in minuti
+
+Esempio output:
+
+```csv
+slug,title,date,imported_distance_km,imported_elevation_gain,imported_duration_minutes,imported_lat,imported_lng,gpx_source
+2026-05-24-monte-xyz,Monte XYZ,2026-05-24,12.4,640,210,44.12345,10.12345,monte-xyz.gpx
+```
+
+Limiti noti del parser GPX:
+
+- legge i trackpoint `<trkpt>` standard, inclusi latitudine, longitudine, elevation e timestamp
+- la distanza è calcolata sui segmenti della traccia con formula haversine
+- il dislivello positivo somma gli incrementi tra punti consecutivi con elevation disponibile
+- la durata è calcolata dal primo all'ultimo timestamp disponibile
+- se mancano timestamp o elevation, lo script mostra un warning e lascia vuoti i campi non calcolabili
+
 ## Dipendenze esterne
 
 Il progetto dipende da alcuni servizi e risorse esterne:

@@ -1,12 +1,13 @@
 import { h } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 import { Expand, Shrink } from "lucide-preact";
+import siteLogo from "../assets/images/site/logo/logo-v2.png";
 import { withBase } from "../utils/base.js";
 
 const markerIconRetinaUrl = withBase("/leaflet/marker-icon-2x.png");
 const markerIconUrl = withBase("/leaflet/marker-icon.png");
 const markerShadowUrl = withBase("/leaflet/marker-shadow.png");
-const geaMarkerLogoUrl = withBase("/icons/popi-192-v2.png");
+const geaMarkerLogoUrl = siteLogo.src;
 const CLUSTER_DISTANCE = 52;
 const CLUSTER_MAX_ZOOM = 17;
 
@@ -54,9 +55,9 @@ function createGeaMarkerIcon(L) {
     className: "gea-map-marker",
     html: `
       <span style="position:relative;display:flex;align-items:center;justify-content:center;width:52px;height:62px;">
-        <span style="position:absolute;left:50%;bottom:1px;transform:translateX(-50%);width:0;height:0;border-left:11px solid transparent;border-right:11px solid transparent;border-top:17px solid #ffffff;filter:drop-shadow(0 8px 10px rgba(23,51,40,.28));"></span>
-        <span style="position:relative;display:block;width:46px;height:46px;overflow:hidden;border:3px solid #fff;border-radius:9999px;background:#F5EBDC;box-shadow:0 10px 20px rgba(23,51,40,.28);">
-          <img src="${geaMarkerLogoUrl}" alt="" style="display:block;width:78%;height:78%;margin:11% auto;object-fit:contain;" />
+        <span style="position:absolute;left:50%;bottom:1px;transform:translateX(-50%);width:0;height:0;border-left:11px solid transparent;border-right:11px solid transparent;border-top:17px solid #315334;filter:drop-shadow(0 8px 10px rgba(23,51,40,.28));"></span>
+        <span style="position:relative;display:flex;width:46px;height:46px;align-items:center;justify-content:center;border:3px solid #ffffff;border-radius:9999px;background:#315334;box-shadow:0 10px 20px rgba(23,51,40,.28);">
+          <img src="${geaMarkerLogoUrl}" alt="" style="display:block;width:28px;height:28px;object-fit:contain;" />
         </span>
       </span>
     `,
