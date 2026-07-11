@@ -1,7 +1,7 @@
 import { h } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 import { Expand, Shrink } from "lucide-preact";
-import siteLogo from "../assets/images/site/logo/logo-v2.png";
+import siteLogo from "../assets/images/site/logo/logo-popi.webp";
 import { withBase } from "../utils/base.js";
 
 const markerIconRetinaUrl = withBase("/leaflet/marker-icon-2x.png");

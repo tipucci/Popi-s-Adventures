@@ -38,17 +38,17 @@ export default defineConfig({
           theme_color: "#315334",
           icons: [
             {
-              src: withBasePath("/icons/popi-192-v2.png"),
+              src: withBasePath("/icons/popi-192-v3.png"),
               sizes: "192x192",
               type: "image/png"
             },
             {
-              src: withBasePath("/icons/popi-512-v2.png"),
+              src: withBasePath("/icons/popi-512-v3.png"),
               sizes: "512x512",
               type: "image/png"
             },
             {
-              src: withBasePath("/icons/popi-maskable-512-v2.png"),
+              src: withBasePath("/icons/popi-maskable-512-v3.png"),
               sizes: "512x512",
               type: "image/png",
               purpose: "maskable"
