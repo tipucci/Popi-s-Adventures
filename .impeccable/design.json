@@ -1,0 +1,263 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-20T22:06:36Z",
+  "title": "Design System: Popi's Adventures",
+  "extensions": {
+    "colorMeta": {
+      "cream": {
+        "role": "neutral",
+        "displayName": "Warm Notebook Cream",
+        "canonical": "#F7F1E3",
+        "tonalRamp": ["#63605B", "#949188", "#C6C1B6", "#F7F1E3", "#F9F5EA", "#FBF7F0", "#FCFAF5", "#FEFCFA"]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Clean Paper",
+        "canonical": "#FFFDF7",
+        "tonalRamp": ["#666563", "#999894", "#CCCAC6", "#FFFDF7", "#FFFEF9", "#FFFEFB", "#FFFEFC", "#FFFFFE"]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Warm Ink",
+        "canonical": "#25251F",
+        "tonalRamp": ["#0F0F0C", "#161613", "#1E1E19", "#25251F", "#5C5C57", "#878784", "#B3B3B1", "#D8D8D7"]
+      },
+      "leaf": {
+        "role": "primary",
+        "displayName": "Trail Leaf",
+        "canonical": "#3F6B4F",
+        "tonalRamp": ["#192B20", "#26402F", "#32563F", "#3F6B4F", "#6F907B", "#95AE9E", "#BCCBC1", "#DCE4DF"]
+      },
+      "sunshine": {
+        "role": "secondary",
+        "displayName": "Sunshine Marker",
+        "canonical": "#F2C94C",
+        "tonalRamp": ["#61501E", "#91792E", "#C2A13D", "#F2C94C", "#F5D779", "#F8E19D", "#FAECC0", "#FDF5DF"]
+      },
+      "tomato": {
+        "role": "tertiary",
+        "displayName": "Tomato Marker",
+        "canonical": "#E66A4E",
+        "tonalRamp": ["#5C2A1F", "#8A402F", "#B8553E", "#E66A4E", "#EC8F7A", "#F1AD9E", "#F6CBC1", "#FBE4DF"]
+      },
+      "sky": {
+        "role": "secondary",
+        "displayName": "Map Sky",
+        "canonical": "#7EB6C2",
+        "tonalRamp": ["#32494E", "#4C6D74", "#65929B", "#7EB6C2", "#9EC8D1", "#B8D7DD", "#D2E5EA", "#E8F2F4"]
+      },
+      "moss": {
+        "role": "secondary",
+        "displayName": "Soft Moss",
+        "canonical": "#91A66D",
+        "tonalRamp": ["#3A422C", "#576441", "#748557", "#91A66D", "#ADBC92", "#C3CEAF", "#D9E0CC", "#EBEFE5"]
+      },
+      "border": {
+        "role": "neutral",
+        "displayName": "Quiet Divider",
+        "canonical": "#DDD7C9",
+        "tonalRamp": ["#585650", "#858179", "#B1ACA1", "#DDD7C9", "#E6E1D7", "#ECE9E1", "#F3F1EC", "#F9F8F5"]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "A few joyful homepage moments without becoming a giant marketing headline."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Page titles and major section headings."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Hike names, cards, and subsection titles."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Stories, descriptions, instructions, and general content."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Compact controls and metadata that must remain immediately clear."
+      }
+    },
+    "shadows": [
+      {
+        "name": "ambient-low",
+        "value": "0 8px 24px rgba(37, 37, 31, 0.08)",
+        "purpose": "Detached overlays, map controls, or a purposeful hover lift only."
+      }
+    ],
+    "motion": [
+      {
+        "name": "duration-fast",
+        "value": "160ms",
+        "purpose": "Color, focus, and compact control feedback."
+      },
+      {
+        "name": "duration-image",
+        "value": "240ms",
+        "purpose": "Gentle photographic hover treatment."
+      },
+      {
+        "name": "duration-doodle",
+        "value": "280ms",
+        "purpose": "A short line-draw or underline reveal when motion is allowed."
+      },
+      {
+        "name": "ease-standard",
+        "value": "ease",
+        "purpose": "Restrained, immediate state transitions."
+      }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The default action treatment: compact, friendly, and clearly functional.",
+      "html": "<button class=\"ds-button-primary\">Scopri l'escursione</button>",
+      "css": ".ds-button-primary { appearance: none; border: 0; border-radius: 10px; background: #3F6B4F; color: #FFFDF7; padding: 12px 18px; font: 700 14px/1.3 Nunito, ui-sans-serif, system-ui, sans-serif; cursor: pointer; transition: background-color 160ms ease, transform 160ms ease; } .ds-button-primary:hover { background: #25251F; } .ds-button-primary:focus-visible { outline: 3px solid #F2C94C; outline-offset: 3px; } .ds-button-primary:active { transform: translateY(1px); }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "A quiet secondary action that remains visibly subordinate to the primary action.",
+      "html": "<button class=\"ds-button-secondary\">Apri la mappa</button>",
+      "css": ".ds-button-secondary { appearance: none; border: 1px solid #DDD7C9; border-radius: 10px; background: #FFFDF7; color: #3F6B4F; padding: 11px 17px; font: 700 14px/1.3 Nunito, ui-sans-serif, system-ui, sans-serif; cursor: pointer; transition: background-color 160ms ease, border-color 160ms ease; } .ds-button-secondary:hover { background: #F7F1E3; border-color: #91A66D; } .ds-button-secondary:focus-visible { outline: 3px solid #F2C94C; outline-offset: 3px; }"
+    },
+    {
+      "name": "Search Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "A readable archive search field with a quiet boundary and strong focus state.",
+      "html": "<label class=\"ds-search\"><span class=\"ds-search-label\">Dove siamo stati?</span><input class=\"ds-search-input\" type=\"search\" placeholder=\"Luogo o nome del sentiero\"></label>",
+      "css": ".ds-search { display: grid; gap: 8px; color: #25251F; font-family: Nunito, ui-sans-serif, system-ui, sans-serif; } .ds-search-label { font-size: 14px; font-weight: 700; line-height: 1.3; } .ds-search-input { width: 100%; box-sizing: border-box; border: 1px solid #DDD7C9; border-radius: 6px; background: #FFFDF7; color: #25251F; padding: 12px 14px; font: 400 16px/1.5 Nunito, ui-sans-serif, system-ui, sans-serif; outline: none; transition: border-color 160ms ease, box-shadow 160ms ease; } .ds-search-input::placeholder { color: rgba(37, 37, 31, 0.62); } .ds-search-input:focus-visible { border-color: #3F6B4F; box-shadow: 0 0 0 3px rgba(63, 107, 79, 0.18); }"
+    },
+    {
+      "name": "Filter Chip",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "A pill reserved for compact selectable filters, with text and a checkmark reinforcing selection.",
+      "html": "<button class=\"ds-filter-chip\" aria-pressed=\"true\"><span aria-hidden=\"true\">✓</span> Con Gea</button>",
+      "css": ".ds-filter-chip { display: inline-flex; align-items: center; gap: 6px; border: 1px solid #25251F; border-radius: 9999px; background: #F2C94C; color: #25251F; padding: 6px 10px; font: 700 14px/1.3 Nunito, ui-sans-serif, system-ui, sans-serif; cursor: pointer; transition: transform 160ms ease, background-color 160ms ease; } .ds-filter-chip:hover { background: #FFFDF7; transform: rotate(-1deg); } .ds-filter-chip:focus-visible { outline: 3px solid #7EB6C2; outline-offset: 3px; }"
+    },
+    {
+      "name": "Primary Navigation",
+      "kind": "nav",
+      "description": "Simple text navigation with a slightly imperfect active underline and familiar interaction.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Navigazione principale\"><a class=\"ds-nav-link\" href=\"#\">Home</a><a class=\"ds-nav-link ds-nav-link-active\" href=\"#\" aria-current=\"page\">Escursioni</a><a class=\"ds-nav-link\" href=\"#\">Mappa</a></nav>",
+      "css": ".ds-nav { display: flex; align-items: center; gap: 24px; font-family: Nunito, ui-sans-serif, system-ui, sans-serif; } .ds-nav-link { position: relative; color: rgba(37, 37, 31, 0.68); padding: 8px 0; font-size: 14px; font-weight: 700; line-height: 1.3; text-decoration: none; transition: color 160ms ease; } .ds-nav-link:hover { color: #3F6B4F; } .ds-nav-link:focus-visible { outline: 3px solid #F2C94C; outline-offset: 4px; border-radius: 6px; } .ds-nav-link-active { color: #25251F; } .ds-nav-link-active::after { content: ''; position: absolute; right: -2px; bottom: 1px; left: -2px; height: 3px; border-radius: 60% 45% 55% 40%; background: #E66A4E; transform: rotate(-1.5deg); }"
+    },
+    {
+      "name": "Hand-Drawn Accent",
+      "kind": "custom",
+      "description": "A lightweight local-SVG style accent that points to something meaningful without becoming a control.",
+      "html": "<div class=\"ds-doodle-accent\" aria-hidden=\"true\"><svg viewBox=\"0 0 180 70\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M8 50C46 26 91 21 150 31\" stroke=\"currentColor\" stroke-width=\"4\" stroke-linecap=\"round\"/><path d=\"M137 20C145 25 151 30 157 37C149 40 142 45 136 52\" stroke=\"currentColor\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></div>",
+      "css": ".ds-doodle-accent { width: 180px; color: #E66A4E; transform: rotate(-3deg); } .ds-doodle-accent svg { display: block; width: 100%; height: auto; } .ds-doodle-accent path { stroke-dasharray: 240; stroke-dashoffset: 0; transition: stroke-dashoffset 280ms ease; } .ds-doodle-accent:hover path { stroke-dashoffset: 18; } @media (prefers-reduced-motion: reduce) { .ds-doodle-accent path { transition: none; } }"
+    },
+    {
+      "name": "Hike Journal Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "A borderless, photography-led memory with essential metadata presented as one compact reading line.",
+      "html": "<article class=\"ds-hike-card\"><div class=\"ds-hike-photo\" role=\"img\" aria-label=\"Fotografia dell'escursione\"></div><div class=\"ds-hike-content\"><h3 class=\"ds-hike-title\">Monte San Primo</h3><p class=\"ds-hike-place\">Triangolo Lariano · 19 aprile 2026</p><p class=\"ds-hike-stats\">12,4 km · 620 m D+ · 4h 10m</p></div></article>",
+      "css": ".ds-hike-card { color: #25251F; font-family: Nunito, ui-sans-serif, system-ui, sans-serif; } .ds-hike-photo { aspect-ratio: 4 / 3; border-radius: 14px; background: #7EB6C2; transition: filter 240ms ease, transform 240ms ease; } .ds-hike-card:hover .ds-hike-photo { filter: saturate(1.08); transform: rotate(-0.5deg); } .ds-hike-card:focus-within { outline: 3px solid #F2C94C; outline-offset: 4px; border-radius: 14px; } .ds-hike-content { padding-top: 16px; } .ds-hike-title { margin: 0; font-size: 22px; font-weight: 800; line-height: 1.2; } .ds-hike-place { margin: 8px 0 0; color: rgba(37, 37, 31, 0.66); font-size: 14px; line-height: 1.4; } .ds-hike-stats { margin: 10px 0 0; color: #3F6B4F; font-size: 14px; font-weight: 700; line-height: 1.4; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Hand-Drawn Adventure Journal",
+    "overview": "Popi's Adventures is a joyful, hand-crafted outdoor diary: a travel journal drawn by hand, with the usability of a modern outdoor product. It should feel made by real people to remember real adventures shared by Tizi, Meg, Gea, and their friends—not like an activity tracker, fitness product, or generic hiking platform. The underlying interface stays clean, structured, and highly usable. Personality is layered on top through real photography, hand-drawn lines, arrows, circles, underlines, stars, suns, mountains, footprints, paw prints, paths, short annotations, and controlled irregularity. The content grid can be precise; the decorative marks should not be. Memories come before performance. Distance, elevation, duration, maps, filters, and checklists remain immediately understandable, but they support the adventure rather than becoming its identity. This direction replaces the previous restrained-minimal world: sunny color, imperfect marks, and affectionate visual details are now intentional parts of the brand.",
+    "keyCharacteristics": [
+      "Joyful, warm, affectionate, curious, and slightly imperfect.",
+      "Modern usability underneath expressive hand-drawn personality.",
+      "Photography-led, with memories presented as collected rather than marketed.",
+      "Calm neutral surfaces punctuated by marker-like bursts of color.",
+      "Playful without becoming childish, chaotic, rustic, or scrapbook-like."
+    ],
+    "rules": [
+      {
+        "name": "The Marker-on-Paper Rule",
+        "body": "Cream, Paper, and Ink create a calm field; brand colors behave like markers that highlight, circle, or connect something meaningful.",
+        "section": "colors"
+      },
+      {
+        "name": "The Simple Component Rule",
+        "body": "A page may use several brand colors, but an individual component should stay visually simple and avoid a rainbow of competing accents.",
+        "section": "colors"
+      },
+      {
+        "name": "The Meaning Beyond Color Rule",
+        "body": "Never use color alone to communicate state, difficulty, completion, or selection; pair it with copy, icons, shape, or position.",
+        "section": "colors"
+      },
+      {
+        "name": "The Two Voices, One Job Each Rule",
+        "body": "Nunito communicates; handwriting adds affection and emphasis. Never make the visitor decode a functional control through decorative lettering.",
+        "section": "typography"
+      },
+      {
+        "name": "The Margin Note Rule",
+        "body": "Handwritten copy should remain brief enough to feel like something added in the moment, not a second body-text system.",
+        "section": "typography"
+      },
+      {
+        "name": "The Precise Grid, Imperfect Ink Rule",
+        "body": "Align content and interaction reliably; let drawings and annotations break the geometry in controlled, non-blocking ways.",
+        "section": "layout"
+      },
+      {
+        "name": "The Three-Layer Balance Rule",
+        "body": "Content leads, interface supports, personality signs the work. Layer three must never obscure layers one or two.",
+        "section": "layout"
+      },
+      {
+        "name": "The Flat Notebook Rule",
+        "body": "A journal page does not turn every memory into a floating panel; sections and cards do not automatically receive borders and shadows.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Geometry Has a Job Rule",
+        "body": "Containers communicate grouping or interaction; doodles communicate emphasis or personality. Do not confuse their roles.",
+        "section": "shapes"
+      },
+      {
+        "name": "The Meaningful Mark Rule",
+        "body": "A doodle, color burst, annotation, or animation must emphasize a memory, relationship, state, or action. Empty space is not an invitation to decorate.",
+        "section": "components"
+      },
+      {
+        "name": "The Final Test",
+        "body": "Ask first: “Does this feel like something we made to remember our adventures together?” Then ask: “Can I still find the hike or information I need immediately?” Both answers must be yes.",
+        "section": "components"
+      }
+    ],
+    "dos": [
+      "Do let real local photography carry the emotional weight of a page.",
+      "Do keep the content grid precise while allowing decorative marks and editorial image groupings to feel hand-made.",
+      "Do use Sunshine, Tomato, Sky, Moss, and Leaf like notebook markers: small bursts that highlight something meaningful.",
+      "Do build reusable doodles as lightweight local SVG assets with accessible behavior.",
+      "Do express hiking data as a compact supporting line rather than a panel of performance statistics.",
+      "Do reward interaction with short, optional moments of playful motion.",
+      "Do remove or simplify personality whenever it interferes with content, navigation, or comprehension."
+    ],
+    "donts": [
+      "Don't imitate Piantala Club, Scribbbles, Komoot, or any other reference directly; use them only as evidence for warmth, hand-drawn expression, and outdoor usability.",
+      "Don't default to SaaS cards, fitness dashboards, statistics panels, dark outdoor green everywhere, or generic hiking-app patterns.",
+      "Don't use gradient backgrounds, glassmorphism, oversized typography, excessive shadows, or pill-shaped controls everywhere.",
+      "Don't make every layout geometrically perfect, but never make decoration destabilize the usable grid.",
+      "Don't replace familiar interface icons or controls with ambiguous doodles.",
+      "Don't use stock outdoor illustrations, random doodles, fake paper textures, fake Polaroids, tape, paper clips, or literal scrapbook styling.",
+      "Don't place several decorative marks on every card or animate them constantly.",
+      "Don't make the experience technical, athletic, corporate, premium, overly polished, childish, or performance-oriented."
+    ]
+  }
+}

@@ -3,7 +3,7 @@ import { getImage } from "astro:assets";
 import Layout from "../layouts/Layout.astro";
 import Header from "../components/Header.astro";
 import AboutUs from "../components/AboutUs.astro";
-import CardEscursione from "../components/CardEscursione.jsx";
+import HomeAdventureCard from "../components/HomeAdventureCard.astro";
 import { getEscursioni } from "../data/escursioni.js";
 import { siteImages } from "../data/imageRegistry.js";
 import heroHomeMobile from "../assets/images/site/home/popi-hero-mobile.webp";
@@ -13,6 +13,7 @@ import { formatKilometers, formatMeters } from "../utils/format.js";
 
 const escursioni = await getEscursioni();
 const recenti = escursioni.slice(0, 3);
+const [ultimaAvventura, ...altreRecenti] = recenti;
 const hasEscursioni = escursioni.length > 0;
 const [heroPreloadMobile, heroPreloadDesktop] = await Promise.all([
   getImage({ src: heroHomeMobile, width: 900, format: "webp", quality: 68 }),
@@ -43,79 +44,236 @@ const stats = {
       fetchpriority="high"
     />
   </Fragment>
-  <div class="space-y-10">
+  <div class="home-journal">
     <Header imageMobile={heroHomeMobile} imageDesktop={heroHomeDesktop} />
 
-    <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      <article class="rounded-[1.75rem] bg-white p-5 shadow-card">
-        <p class="text-sm font-bold uppercase tracking-[0.16em] text-terracotta-600">Uscite</p>
-        <p class="mt-3 text-4xl font-black text-forest-800">{stats.uscite}</p>
-        <p class="mt-1 text-sm text-forest-700">Camminate salvate nel diario</p>
-      </article>
+    <section id="ultima-avventura" class="home-recent" aria-labelledby="recenti-title">
+      <h2 id="recenti-title">Le avventure più recenti</h2>
 
-      <article class="rounded-[1.75rem] bg-white p-5 shadow-card">
-        <p class="text-sm font-bold uppercase tracking-[0.16em] text-terracotta-600">Km totali</p>
-        <p class="mt-3 text-4xl font-black text-forest-800">{stats.km}</p>
-        <p class="mt-1 text-sm text-forest-700">Distanza percorsa insieme</p>
-      </article>
+      {hasEscursioni && ultimaAvventura ? (
+        <div class="home-recent__stories">
+          <HomeAdventureCard escursione={ultimaAvventura} variant="featured" />
 
-      <article class="rounded-[1.75rem] bg-white p-5 shadow-card">
-        <p class="text-sm font-bold uppercase tracking-[0.16em] text-terracotta-600">Dislivello</p>
-        <p class="mt-3 text-4xl font-black text-forest-800">{stats.dislivello} m</p>
-        <p class="mt-1 text-sm text-forest-700">Somma totale delle salite</p>
-      </article>
+          {altreRecenti.length > 0 && (
+            <div class="home-recent__secondary">
+              {altreRecenti.map((escursione) => (
+                <HomeAdventureCard escursione={escursione} />
+              ))}
+            </div>
+          )}
 
-      <article class="rounded-[1.75rem] bg-white p-5 shadow-card">
-        <p class="text-sm font-bold uppercase tracking-[0.16em] text-terracotta-600">Con Gea</p>
-        <p class="mt-3 text-4xl font-black text-forest-800">{stats.conGea}</p>
-        <p class="mt-1 text-sm text-forest-700">Escursioni con tutta la squadra</p>
-      </article>
-    </section>
-
-    <section class="space-y-5">
-      <div class="flex items-start justify-between gap-4">
-        <div>
-          <p class="text-sm font-bold uppercase tracking-[0.16em] text-terracotta-600">Ultime 3</p>
-          <h2 class="text-3xl font-black text-forest-800">Le avventure più recenti</h2>
-        </div>
-
-        {hasEscursioni && (
-          <a
-            href={withBase("/escursioni")}
-            class="hidden items-center justify-center rounded-full bg-forest-700 px-5 py-4 text-sm font-bold text-[#fffaf3] transition hover:bg-forest-600 lg:inline-flex"
-          >
-            <span class="text-[#fffaf3]">Tutte le escursioni</span>
+          <a href={withBase("/escursioni")} class="home-recent__all">
+            Tutte le escursioni <span aria-hidden="true">→</span>
           </a>
-        )}
-      </div>
-
-      {hasEscursioni ? (
-        <>
-          <div class="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-            {recenti.map((escursione) => (
-              <CardEscursione escursione={escursione} />
-            ))}
-          </div>
-
-          <div class="pt-2 lg:hidden">
-            <a
-              href={withBase("/escursioni")}
-              class="inline-flex w-full items-center justify-center rounded-full bg-forest-700 px-5 py-4 text-sm font-bold text-[#fffaf3] transition hover:bg-forest-600 sm:w-auto"
-            >
-              <span class="text-[#fffaf3]">Vedi tutte le escursioni</span>
-            </a>
-          </div>
-        </>
+        </div>
       ) : (
-        <div class="rounded-[1.75rem] border border-dashed border-terracotta-300 bg-white/80 p-8 text-center text-forest-700 shadow-card">
-          Il sito si è aperto, ma il CSV non ha risposto entro 8 secondi. Controlla la connessione oppure prova di nuovo tra poco.
+        <div class="home-recent__empty">
+          <p>Le ultime avventure stanno facendo un giro più lungo del previsto.</p>
+          <a href={Astro.url.pathname}>Riprova</a>
         </div>
       )}
     </section>
 
+    {hasEscursioni && (
+      <section class="journal-facts" aria-labelledby="journal-facts-title">
+        <h2 id="journal-facts-title">Il diario, fin qui</h2>
+        <dl>
+          <div>
+            <dt>Uscite</dt>
+            <dd>{stats.uscite}</dd>
+          </div>
+          <div>
+            <dt>Km totali</dt>
+            <dd>{stats.km}</dd>
+          </div>
+          <div>
+            <dt>Dislivello</dt>
+            <dd>{stats.dislivello} m</dd>
+          </div>
+          <div class="journal-facts__gea">
+            <dt>Con Gea</dt>
+            <dd>{stats.conGea}</dd>
+          </div>
+        </dl>
+      </section>
+    )}
+
     <AboutUs />
   </div>
 </Layout>
+
+<style>
+  .home-journal {
+    --journal-cream: #f7f1e3;
+    --journal-paper: #fffdf7;
+    --journal-ink: #25251f;
+    --journal-leaf: #3f6b4f;
+    --journal-sunshine: #f2c94c;
+    --journal-tomato: #e66a4e;
+    --journal-sky: #7eb6c2;
+    --journal-moss: #91a66d;
+    --journal-border: #ddd7c9;
+
+    display: grid;
+    gap: 64px;
+    padding-inline: 4px;
+    background: var(--journal-cream);
+    box-shadow: 0 0 0 100vmax var(--journal-cream);
+    clip-path: inset(0 -100vmax);
+    color: var(--journal-ink);
+  }
+
+  .home-recent {
+    scroll-margin-top: 24px;
+  }
+
+  .home-recent h2,
+  .journal-facts h2 {
+    margin: 0;
+    color: var(--journal-ink);
+    font-family: "Nunito", ui-sans-serif, system-ui, sans-serif;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  .home-recent h2 {
+    max-width: 18ch;
+    font-size: clamp(2rem, 7vw, 3rem);
+    line-height: 1.1;
+  }
+
+  .home-recent__stories {
+    display: grid;
+    gap: 40px;
+    margin-top: 24px;
+  }
+
+  .home-recent__secondary {
+    display: grid;
+    gap: 32px;
+  }
+
+  .home-recent__all,
+  .home-recent__empty a {
+    display: inline-flex;
+    width: fit-content;
+    min-height: 44px;
+    align-items: center;
+    gap: 8px;
+    border-radius: 10px;
+    background: var(--journal-leaf);
+    padding: 12px 18px;
+    color: var(--journal-paper);
+    font-size: 0.875rem;
+    font-weight: 800;
+    line-height: 1.3;
+  }
+
+  .home-recent__all:hover,
+  .home-recent__empty a:hover {
+    background: var(--journal-ink);
+  }
+
+  .home-recent__all:focus-visible,
+  .home-recent__empty a:focus-visible {
+    outline: 3px solid var(--journal-sunshine);
+    outline-offset: 4px;
+  }
+
+  .home-recent__empty {
+    margin-top: 24px;
+    border: 1px solid var(--journal-border);
+    border-radius: 10px;
+    background: var(--journal-paper);
+    padding: 24px;
+  }
+
+  .home-recent__empty p {
+    max-width: 42rem;
+    margin: 0 0 16px;
+    line-height: 1.7;
+  }
+
+  .journal-facts {
+    display: grid;
+    gap: 24px;
+    border-block: 1px solid var(--journal-border);
+    padding-block: 24px;
+  }
+
+  .journal-facts h2 {
+    font-size: 1.5rem;
+    line-height: 1.2;
+  }
+
+  .journal-facts dl {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px 24px;
+    margin: 0;
+  }
+
+  .journal-facts dl > div {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 4px;
+    min-width: 0;
+  }
+
+  .journal-facts dt,
+  .journal-facts dd {
+    margin: 0;
+  }
+
+  .journal-facts dt {
+    color: color-mix(in srgb, var(--journal-ink) 66%, transparent);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+
+  .journal-facts dd {
+    color: var(--journal-ink);
+    font-size: 1.125rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.2;
+  }
+
+  .journal-facts__gea dd {
+    width: fit-content;
+    background: linear-gradient(
+      transparent 56%,
+      color-mix(in srgb, var(--journal-sunshine) 70%, transparent) 56%
+    );
+  }
+
+  @media (min-width: 640px) {
+    .home-journal {
+      padding-inline: 0;
+    }
+
+    .home-recent__secondary {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .journal-facts {
+      grid-template-columns: minmax(10rem, 0.7fr) minmax(0, 2fr);
+      align-items: center;
+    }
+
+    .journal-facts dl {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 639px) {
+    .home-journal {
+      gap: 48px;
+    }
+  }
+</style>
 
 
 

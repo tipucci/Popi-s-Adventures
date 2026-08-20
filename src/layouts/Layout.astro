@@ -1,7 +1,6 @@
 ---
 import "../styles/global.css";
 import { withBase } from "../utils/base.js";
-import { getEscursioni } from "../data/escursioni.js";
 import { siteImages } from "../data/imageRegistry.js";
 import { ArrowLeft, Backpack, Footprints, House, Map } from "@lucide/astro";
 import SpeedInsights from "@vercel/speed-insights/astro";
@@ -23,65 +22,9 @@ const navItems = [
   { id: "zaino", href: withBase("/prepara-lo-zaino"), label: "Zaino", Icon: Backpack }
 ];
 
-function getSeasonFromDate(value) {
-  if (!value) return "";
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
-
-  const month = date.getMonth() + 1;
-  if (month === 12 || month <= 2) return "inverno";
-  if (month >= 3 && month <= 5) return "primavera";
-  if (month >= 6 && month <= 8) return "estate";
-  return "autunno";
-}
-
-const seasonMeta = [
-  { slug: "primavera", label: "Primavera" },
-  { slug: "estate", label: "Estate" },
-  { slug: "autunno", label: "Autunno" },
-  { slug: "inverno", label: "Inverno" }
-];
-
-const escursioni = await getEscursioni();
-
-const provinceCounts = escursioni.reduce((groups, item) => {
-  const provincia = item.provincia?.trim();
-  if (!provincia) return groups;
-
-  groups[provincia] = (groups[provincia] || 0) + 1;
-  return groups;
-}, {});
-
-const seasonCounts = escursioni.reduce((groups, item) => {
-  const season = getSeasonFromDate(item.data);
-  if (!season) return groups;
-
-  groups[season] = (groups[season] || 0) + 1;
-  return groups;
-}, {});
-
-const allProvinceLinks = Object.entries(provinceCounts)
-  .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "it"))
-  .map(([name, count]) => ({
-    name,
-    count,
-    href: `${withBase("/escursioni")}?provincia=${encodeURIComponent(name)}`
-  }));
-
-const provinceLinks = allProvinceLinks.slice(0, 10);
-
-const seasonLinks = seasonMeta.map((item) => ({
-  ...item,
-  count: seasonCounts[item.slug] || 0,
-  href: `${withBase("/escursioni")}?stagione=${item.slug}`
-}));
-
-const footerQuickLinks = [
-  { label: "Passeggiate facili", href: `${withBase("/escursioni")}?difficolta=passeggiate` },
-  { label: "Mappa escursioni", href: withBase("/mappa") },
-  { label: "Escursioni con rifugio", href: `${withBase("/escursioni")}?soloRifugio=1` },
-  { label: "Escursioni con Gea", href: `${withBase("/escursioni")}?soloGea=1` },
+const footerLinks = [
+  { label: "Tutte le escursioni", href: withBase("/escursioni") },
+  { label: "Mappa", href: withBase("/mappa") },
   { label: "Gea Gang", href: withBase("/gea-gang") },
   { label: "Prepara lo zaino", href: withBase("/prepara-lo-zaino") }
 ];
@@ -159,11 +102,11 @@ const serviceWorkerUrl = withBase("/sw.js");
           </div>
         )}
       </div>
-        <header class="z-50 mb-6 hidden rounded-full border border-white/70 bg-white/85 px-4 py-3 shadow-card backdrop-blur md:grid md:grid-cols-[auto_minmax(0,1fr)_auto] md:items-center md:gap-4">
+        <header class="desktop-header z-50 mb-6 hidden border-b border-[#DDD7C9] bg-transparent px-1 pb-3 pt-2 font-sans text-[#25251F] md:grid md:grid-cols-[auto_minmax(0,1fr)_auto] md:items-center md:gap-4">
           <a
             href={withBase("/")}
             aria-label="Torna alla home"
-            class="inline-flex items-center justify-center rounded-full p-1 transition hover:bg-terracotta-50"
+            class="inline-flex h-[52px] w-[52px] items-center justify-center rounded-[10px] transition-colors duration-150 hover:bg-[#FFFDF7] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#F2C94C] motion-reduce:transition-none"
           >
             <span class="flex h-12 w-12 items-center justify-center">
               <img
@@ -173,7 +116,7 @@ const serviceWorkerUrl = withBase("/sw.js");
                 height={siteLogo.height}
                 loading="eager"
                 decoding="async"
-                class="h-12 w-12 object-contain drop-shadow-[0_10px_16px_rgba(95,44,29,0.18)]"
+                class="h-12 w-12 object-contain"
               />
             </span>
           </a>
@@ -183,21 +126,26 @@ const serviceWorkerUrl = withBase("/sw.js");
           </div>
 
           <nav aria-label="Navigazione principale">
-            <ul class="flex items-center gap-2">
+            <ul class="flex items-center gap-1">
               {navItems.map((item) => (
                 <li>
                   <a
                     href={item.href}
                     aria-current={active === item.id ? "page" : undefined}
                     class:list={[
-                      "inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold transition",
-                      active === item.id
-                        ? "bg-terracotta-500 text-[#fffaf3]"
-                        : "text-forest-700 hover:bg-terracotta-50"
+                      "inline-flex min-h-11 items-center gap-2 rounded-md px-3 py-2.5 text-sm font-bold tracking-[0.02em] transition-colors duration-150 hover:bg-[#FFFDF7] hover:text-[#3F6B4F] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#F2C94C] motion-reduce:transition-none",
+                      active === item.id ? "font-extrabold !text-[#3F6B4F]" : "text-[#25251F]"
                     ]}
                   >
-<item.Icon class={active === item.id ? "h-4 w-4 shrink-0 text-[#fffaf3]" : "h-4 w-4 shrink-0"} stroke-width={2} aria-hidden="true" />
-                    <span class={active === item.id ? "text-[#fffaf3]" : undefined}>{item.label}</span>
+                    <item.Icon class="h-4 w-4 shrink-0" stroke-width={2} aria-hidden="true" />
+                    <span
+                      class:list={[
+                        "relative isolate",
+                        active === item.id && "after:absolute after:-inset-x-0.5 after:-bottom-px after:-z-10 after:h-[5px] after:rounded-[50%] after:bg-[#F2C94C]/75 after:content-['']"
+                      ]}
+                    >
+                      {item.label}
+                    </span>
                   </a>
                 </li>
               ))}
@@ -209,127 +157,46 @@ const serviceWorkerUrl = withBase("/sw.js");
           <slot />
         </main>
 
-        <footer class="mt-16 overflow-hidden rounded-[2rem] border border-forest-950 bg-[#173328] text-sm text-slate-50 shadow-card">
-          <div class="px-6 py-8 sm:px-8 lg:px-10 lg:py-10">
-            <section class="border-b border-white/10 pb-6">
-              <div class="max-w-2xl">
-                <p class="font-display text-3xl text-white sm:text-[2.2rem]">Popi's Adventures</p>
-              </div>
-            </section>
+        <footer class="mt-20 border-t border-[#DDD7C9] py-10 font-sans text-[#25251F] sm:py-12">
+          <div class="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+            <div class="max-w-xl">
+              <p class="text-xl font-extrabold leading-tight sm:text-2xl">Popi's Adventures</p>
+              <p class="mt-3 text-base leading-relaxed text-[#25251F]/80">
+                Giornate semplici che ci lasciano con un {" "}
+                <span class="relative isolate inline-block font-bold after:absolute after:-inset-x-0.5 after:-bottom-px after:-z-10 after:h-[5px] after:rounded-[50%] after:bg-[#F2C94C]/75 after:content-['']">
+                  sorriso
+                </span>.
+              </p>
+            </div>
 
-            <div class="grid gap-8 pt-6 md:grid-cols-2 xl:grid-cols-3">
-              <section aria-labelledby="footer-shortcuts" class="space-y-4">
-                <div>
-                  <p
-                    id="footer-shortcuts"
-                    class="text-xs font-bold uppercase tracking-[0.22em] text-emerald-100/90"
-                  >
-                    Scorciatoie
-                  </p>
-                </div>
-
-                <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
-                  {footerQuickLinks.map((item) => (
+            <nav aria-label="Link nel piè di pagina">
+              <ul class="flex flex-wrap items-center gap-x-5 gap-y-1">
+                {footerLinks.map((item) => (
+                  <li>
                     <a
                       href={item.href}
-                      class="rounded-[1.1rem] border border-white/14 bg-white/8 px-4 py-3 font-semibold text-[#fffaf3] transition hover:border-white/28 hover:bg-white/14"
+                      class="inline-flex min-h-11 items-center text-sm font-bold !text-[#3F6B4F] underline-offset-4 transition-colors hover:!text-[#25251F] hover:underline focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#F2C94C] motion-reduce:transition-none"
                     >
                       {item.label}
                     </a>
-                  ))}
-                </div>
-              </section>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          </div>
 
-              <section aria-labelledby="footer-seasoni" class="space-y-4">
-                <div>
-                  <p
-                    id="footer-seasoni"
-                    class="text-xs font-bold uppercase tracking-[0.22em] text-emerald-100/90"
-                  >
-                    Per stagione
-                  </p>
-                </div>
-
-                <div class="grid grid-cols-2 gap-3">
-                  {seasonLinks.map((item) => (
-                    <a
-                      href={item.href}
-                      class="rounded-[1.1rem] border border-white/14 bg-white/8 px-4 py-3 transition hover:border-white/28 hover:bg-white/14"
-                    >
-                      <span class="block font-semibold text-white">{item.label}</span>
-                      <span class="mt-1 block text-xs font-medium text-slate-100/72">
-                        {item.count} escursioni
-                      </span>
-                    </a>
-                  ))}
-                </div>
-              </section>
-
-              <section aria-labelledby="footer-province" class="space-y-4 md:col-span-2 xl:col-span-1">
-                <div class="flex items-end justify-between gap-4">
-                  <div>
-                    <p
-                      id="footer-province"
-                      class="text-xs font-bold uppercase tracking-[0.22em] text-emerald-100/90"
-                    >
-                      Per provincia
-                    </p>
-                  </div>
-
-                  {allProvinceLinks.length > provinceLinks.length && (
-                    <a
-                      href={withBase("/escursioni")}
-                      class="hidden text-xs font-bold uppercase tracking-[0.18em] text-slate-100/80 transition hover:text-white sm:inline"
-                    >
-                      Vedi tutte
-                    </a>
-                  )}
-                </div>
-
-                {provinceLinks.length ? (
-                  <div class="flex flex-wrap gap-2">
-                    {provinceLinks.map((item) => (
-                      <a
-                        href={item.href}
-                        class="inline-flex items-center gap-2 rounded-full border border-white/16 bg-white/10 px-3 py-2 text-sm transition hover:border-white/28 hover:bg-white/16"
-                      >
-                        <span class="font-semibold text-white">{item.name}</span>
-                        <span class="rounded-full bg-white/14 px-2 py-0.5 text-[11px] font-bold text-slate-50/84">
-                          {item.count}
-                        </span>
-                      </a>
-                    ))}
-
-                    {allProvinceLinks.length > provinceLinks.length && (
-                      <a
-                        href={withBase("/escursioni")}
-                        class="inline-flex items-center rounded-full border border-white/16 px-3 py-2 text-sm font-semibold text-slate-100/82 transition hover:border-white/28 hover:bg-white/10 sm:hidden"
-                      >
-                        Vedi tutte
-                      </a>
-                    )}
-                  </div>
-                ) : (
-                  <p class="text-sm text-slate-100/76">
-                    Le province compariranno qui appena il diario riceve nuove escursioni dal foglio condiviso.
-                  </p>
-                )}
-              </section>
-            </div>
-
-            <div class="mt-8 border-t border-white/10 pt-5 text-center text-xs text-slate-100/70 sm:text-sm">
-              <p>
-                Sviluppato con <span aria-hidden="true">&hearts;</span> e un pizzico di AI da {" "}
-                <a
-                  href="https://tipucci.it"
-                  target="_blank"
-                  rel="noreferrer"
-                  class="font-semibold text-[#bfd9bf] transition hover:text-[#eef5ee]"
-                >
-                  Tiziano Pucci
-                </a>
-              </p>
-            </div>
+          <div class="mt-8 border-t border-[#DDD7C9] pt-5 text-xs leading-relaxed text-[#25251F]/70 sm:text-sm">
+            <p>
+              Sviluppato con <span aria-hidden="true">&hearts;</span> e un pizzico di AI da {" "}
+              <a
+                href="https://tipucci.it"
+                target="_blank"
+                rel="noreferrer"
+                class="font-bold !text-[#3F6B4F] underline-offset-4 transition-colors hover:!text-[#25251F] hover:underline focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#F2C94C] motion-reduce:transition-none"
+              >
+                Tiziano Pucci
+              </a>
+            </p>
           </div>
         </footer>
       </div>

@@ -110,7 +110,7 @@ export const siteImages = {
   heroHome: {
     source: heroHomeSource,
     src: normalizeImageSource(heroHomeSource),
-    alt: "Panorama naturale dal tono caldo usato come hero del sito Popi's Adventures."
+    alt: "Gea, una border collie bianca e nera, seduta su una roccia davanti a una valle di montagna."
   },
   aboutUs: {
     source: aboutUsSource,

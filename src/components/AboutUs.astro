@@ -24,8 +24,8 @@ const imageAlt = siteImages.aboutUs.alt;
       </figure>
 
       <div class="about-us__content">
-        <p class="about-us__eyebrow">Chi sono i popi?</p>
-        <h2 id="about-us-title" class="about-us__title">{title}</h2>
+        <h2 id="about-us-title" class="about-us__title">Chi sono i popi?</h2>
+        <p class="about-us__names">{title}</p>
         <p class="about-us__text">{description}</p>
         <p class="about-us__text">{descriptionSecond}</p>
         {descriptionThird && <p class="about-us__text">{descriptionThird}</p>}
@@ -47,36 +47,9 @@ const imageAlt = siteImages.aboutUs.alt;
 </section>
 
 <style>
-  .about-us {
-    --about-bg: linear-gradient(180deg, rgba(255, 249, 241, 0.92) 0%, rgba(245, 235, 220, 0.96) 100%);
-    --about-border: rgba(49, 83, 52, 0.1);
-    --about-shadow: 0 18px 40px rgba(95, 44, 29, 0.1);
-    --about-text: #243c26;
-    --about-muted: #5f2c1d;
-    --about-copy: #3f342d;
-    --about-radius: 2rem;
-  }
-
-  .about-us__shell {
-    overflow: hidden;
-    border: 1px solid var(--about-border);
-    border-radius: var(--about-radius);
-    background: var(--about-bg);
-    box-shadow: var(--about-shadow);
-    transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
-  }
-
-  .about-us__shell:hover,
-  .about-us__shell:focus-within {
-    transform: translateY(-2px);
-    box-shadow: 0 22px 46px rgba(95, 44, 29, 0.12);
-    border-color: rgba(49, 83, 52, 0.16);
-  }
-
   .about-us__layout {
     display: grid;
-    gap: 1.25rem;
-    padding: 1rem;
+    gap: 0;
   }
 
   .about-us__figure {
@@ -87,48 +60,47 @@ const imageAlt = siteImages.aboutUs.alt;
     width: 100%;
     aspect-ratio: 4 / 3;
     object-fit: cover;
-    border-radius: 1.5rem;
-    background: linear-gradient(135deg, #d8e8d7 0%, #e8d3ba 100%);
-    box-shadow: 0 14px 28px rgba(36, 60, 38, 0.1);
-    transition: transform 220ms ease, filter 220ms ease;
-  }
-
-  .about-us__shell:hover .about-us__image,
-  .about-us__shell:focus-within .about-us__image {
-    transform: scale(1.015);
-    filter: saturate(1.03);
+    border-radius: 14px;
+    background: var(--journal-moss, #91a66d);
   }
 
   .about-us__content {
     display: flex;
+    position: relative;
     flex-direction: column;
     justify-content: center;
-    gap: 0.85rem;
-    padding: 0.35rem 0.25rem 0.5rem;
-  }
-
-  .about-us__eyebrow {
-    margin: 0;
-    font-size: 0.78rem;
-    font-weight: 800;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--about-muted);
+    gap: 12px;
+    margin: -24px 12px 0;
+    border-radius: 10px;
+    background: var(--journal-paper, #fffdf7);
+    padding: 24px;
   }
 
   .about-us__title {
     margin: 0;
-    color: var(--about-text);
-    font-family: "Fraunces", Georgia, serif;
-    font-size: clamp(1.85rem, 4vw, 2.7rem);
-    line-height: 1.08;
+    color: var(--journal-ink, #25251f);
+    font-family: "Nunito", ui-sans-serif, system-ui, sans-serif;
+    font-size: clamp(2rem, 7vw, 3rem);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  .about-us__names {
+    margin: 0;
+    color: var(--journal-leaf, #3f6b4f);
+    font-size: 1.25rem;
+    font-weight: 800;
+    line-height: 1.2;
   }
 
   .about-us__text {
     margin: 0;
-    color: var(--about-copy);
+    max-width: 68ch;
+    color: var(--journal-ink, #25251f);
     font-size: 1rem;
-    line-height: 1.8;
+    line-height: 1.7;
     text-wrap: pretty;
   }
 
@@ -137,70 +109,47 @@ const imageAlt = siteImages.aboutUs.alt;
     width: fit-content;
     align-items: center;
     justify-content: center;
-    margin-top: 0.25rem;
-    border-radius: 999px;
-    background: #315334;
-    padding: 0.85rem 1.1rem;
-    color: #fffaf3;
-    font-size: 0.95rem;
+    min-height: 44px;
+    margin-top: 4px;
+    border-radius: 10px;
+    background: var(--journal-leaf, #3f6b4f);
+    padding: 12px 18px;
+    color: var(--journal-paper, #fffdf7);
+    font-size: 0.875rem;
     font-weight: 800;
-    line-height: 1;
-    box-shadow: 0 12px 24px rgba(49, 83, 52, 0.18);
-    transition: background 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+    line-height: 1.3;
+    transition: background 180ms ease;
   }
 
   .about-us__link:hover,
   .about-us__link:focus-visible {
-    background: #244528;
-    box-shadow: 0 16px 28px rgba(49, 83, 52, 0.22);
-    transform: translateY(-1px);
+    background: var(--journal-ink, #25251f);
   }
 
   .about-us__link:focus-visible {
-    outline: 2px solid #c96f49;
-    outline-offset: 3px;
+    outline: 3px solid var(--journal-sunshine, #f2c94c);
+    outline-offset: 4px;
   }
 
   @media (min-width: 768px) {
     .about-us__layout {
-      grid-template-columns: minmax(0, 1.02fr) minmax(0, 0.98fr);
-      gap: 2rem;
-      padding: 1.25rem;
+      grid-template-columns: minmax(0, 1.05fr) minmax(20rem, 0.95fr);
+      align-items: start;
     }
 
     .about-us__content {
-      padding: 0.5rem 0.5rem 0.5rem 0.25rem;
+      margin: 48px 0 0 -48px;
+      padding: 32px;
     }
 
     .about-us__image {
-      height: 100%;
-      min-height: 100%;
       aspect-ratio: 5 / 4;
     }
   }
 
-  @media (min-width: 1024px) {
-    .about-us__layout {
-      gap: 2.5rem;
-      padding: 1.5rem;
-    }
-  }
-
   @media (prefers-reduced-motion: reduce) {
-    .about-us__shell,
-    .about-us__image,
     .about-us__link {
       transition: none;
-    }
-
-    .about-us__shell:hover,
-    .about-us__shell:focus-within,
-    .about-us__shell:hover .about-us__image,
-    .about-us__shell:focus-within .about-us__image,
-    .about-us__link:hover,
-    .about-us__link:focus-visible {
-      transform: none;
-      filter: none;
     }
   }
 </style>
