@@ -4,7 +4,6 @@ import { withBase } from "../utils/base.js";
 import { siteImages } from "../data/imageRegistry.js";
 import { ArrowLeft, Backpack, Footprints, House, Map } from "@lucide/astro";
 import SpeedInsights from "@vercel/speed-insights/astro";
-import siteLogo from "../assets/images/site/logo/logo-horizontal.png";
 import siteMark from "../assets/images/site/logo/gea-brand-master.png";
 
 const {
@@ -55,7 +54,7 @@ const serviceWorkerUrl = withBase("/sw.js");
     <meta property="og:image" content={socialImage} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content={socialImage} />
-    <meta name="theme-color" content="#F5EBDC" />
+    <meta name="theme-color" content="#F7F1E3" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="Popi" />
@@ -68,7 +67,7 @@ const serviceWorkerUrl = withBase("/sw.js");
   </head>
 
   <body class="min-h-screen bg-cream text-forest-800 antialiased">
-    <div class="min-h-screen bg-hero-glow">
+    <div class="min-h-screen bg-[#F7F1E3]">
       <div class="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 pb-[calc(8rem+env(safe-area-inset-bottom))] pt-4 sm:px-6 md:pb-12 lg:px-8">
       <div class="mobile-topbar -mx-4 -mt-4 flex items-center justify-between gap-4 bg-[#F7F1E3] px-4 pb-4 pt-4 sm:-mx-6 sm:px-6 md:hidden">
         <a
@@ -76,15 +75,15 @@ const serviceWorkerUrl = withBase("/sw.js");
           aria-label="Torna alla home"
           class="inline-flex min-h-12 items-center justify-center rounded-[10px] px-1 transition"
         >
-          <span class="flex h-12 w-[140px] items-center justify-start">
+          <span class="flex h-12 w-12 items-center justify-start">
             <img
-              src={siteLogo.src}
-              alt="Logo di Popi's Adventures"
-              width={siteLogo.width}
-              height={siteLogo.height}
+              src={siteMark.src}
+              alt=""
+              width={siteMark.width}
+              height={siteMark.height}
               loading="eager"
               decoding="async"
-              class="h-auto w-[140px] object-contain"
+              class="h-12 w-12 object-contain"
             />
           </span>
         </a>
@@ -107,9 +106,9 @@ const serviceWorkerUrl = withBase("/sw.js");
           <a
             href={withBase("/")}
             aria-label="Torna alla home"
-            class="inline-flex h-[52px] w-[52px] items-center justify-center rounded-[10px] transition-colors duration-150 hover:bg-[#FFFDF7] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none lg:w-[166px]"
+            class="inline-flex h-[52px] w-[52px] items-center justify-center rounded-[10px] transition-colors duration-150 hover:bg-[#FFFDF7] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none"
           >
-            <span class="flex h-12 w-12 items-center justify-center lg:w-[162px] lg:justify-start">
+            <span class="flex h-12 w-12 items-center justify-center">
               <img
                 src={siteMark.src}
                 alt=""
@@ -117,16 +116,7 @@ const serviceWorkerUrl = withBase("/sw.js");
                 height={siteMark.height}
                 loading="eager"
                 decoding="async"
-                class="desktop-brand-mark h-12 w-12 object-contain"
-              />
-              <img
-                src={siteLogo.src}
-                alt=""
-                width={siteLogo.width}
-                height={siteLogo.height}
-                loading="eager"
-                decoding="async"
-                class="desktop-brand-logo h-auto w-[162px] object-contain"
+                class="h-12 w-12 object-contain"
               />
             </span>
           </a>
@@ -305,30 +295,8 @@ const serviceWorkerUrl = withBase("/sw.js");
         }
       </script>
     </div>
-  </body>
+  <!-- impeccable-live-start -->
+<script is:inline src="http://localhost:8400/live.js?token=bdd2da91-7597-483d-bc26-6e90edb30687"></script>
+<!-- impeccable-live-end -->
+</body>
 </html>
-
-<style>
-  .desktop-brand-mark {
-    display: block;
-  }
-
-  .desktop-brand-logo {
-    display: none;
-  }
-
-  @media (min-width: 1024px) {
-    .desktop-brand-mark {
-      display: none;
-    }
-
-    .desktop-brand-logo {
-      display: block;
-    }
-  }
-</style>
-
-
-
-
-

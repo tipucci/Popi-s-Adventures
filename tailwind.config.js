@@ -35,10 +35,6 @@ export default {
       },
       boxShadow: {
         card: "0 18px 40px rgba(95, 44, 29, 0.12)"
-      },
-      backgroundImage: {
-        "hero-glow":
-          "radial-gradient(circle at top, rgba(198, 94, 52, 0.18), transparent 45%), radial-gradient(circle at bottom right, rgba(77, 134, 80, 0.14), transparent 35%)"
       }
     }
   },
