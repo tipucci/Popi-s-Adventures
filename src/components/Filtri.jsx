@@ -1,6 +1,6 @@
 import { h } from "preact";
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
-import { ChevronLeft, ChevronRight } from "lucide-preact";
+import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-preact";
 import CardEscursione from "./CardEscursione.jsx";
 
 const seasonOptions = [
@@ -424,19 +424,19 @@ export default function Filtri({ escursioni = [], initialFilters = defaultFilter
           cursor: pointer;
         }
       `}</style>
-      <details class="group overflow-hidden rounded-[2rem] border border-white/70 bg-white/85 shadow-card backdrop-blur">
-        <summary class="flex min-h-[5.5rem] cursor-pointer list-none items-center justify-between gap-4 rounded-[2rem] px-5 py-4 text-left marker:hidden sm:min-h-[5.75rem] sm:px-6 sm:py-4">
-          <span class="text-lg font-black text-forest-800 sm:text-xl">Filtra le escursioni</span>
-          <span class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-sand bg-cream text-xl font-semibold leading-none text-forest-700 transition group-open:rotate-45">
-            +
+      <details class="group border-y border-sand/70">
+        <summary class="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 px-1 py-3 text-left marker:hidden focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-forest-600 sm:min-h-16">
+          <span class="text-base font-bold text-forest-700">Filtra le escursioni</span>
+          <span class="inline-flex h-8 w-8 shrink-0 items-center justify-center text-forest-600 transition-transform duration-200 group-open:rotate-180">
+            <ChevronDown size={18} strokeWidth={2} aria-hidden="true" />
           </span>
         </summary>
 
-        <div class="flex justify-end px-5 pb-5 sm:px-6 sm:pb-6">
+        <div class="flex justify-end px-5 pb-4 pt-3 sm:px-6">
           <button
             type="button"
             onClick={resetFilters}
-            class="inline-flex items-center justify-center rounded-full border border-terracotta-200 px-4 py-2 text-sm font-bold text-terracotta-700 transition hover:bg-terracotta-50"
+            class="text-sm font-semibold text-terracotta-700 underline decoration-terracotta-300 underline-offset-4 transition-colors hover:text-terracotta-800"
           >
             Reset filtri
           </button>
@@ -590,10 +590,17 @@ export default function Filtri({ escursioni = [], initialFilters = defaultFilter
         </div>
       </details>
 
-      <section class="space-y-4">
+      <section class="space-y-4" aria-labelledby="results-heading">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h3 ref={resultsHeadingRef} tabindex="-1" class="text-2xl font-black text-forest-800 outline-none">Risultati ({filtered.length})</h3>
+            <h2
+              id="results-heading"
+              ref={resultsHeadingRef}
+              tabindex="-1"
+              class="text-2xl font-extrabold text-[#25251f] outline-none"
+            >
+              Risultati ({filtered.length})
+            </h2>
           </div>
           <div class="sm:min-w-[240px]">
             <select

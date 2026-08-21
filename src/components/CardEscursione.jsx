@@ -14,7 +14,7 @@ function formatDate(value) {
   if (!value) return "Data da definire";
   const parsed = new Date(`${value}T00:00:00`);
   if (Number.isNaN(parsed.getTime())) return value;
-  return new Intl.DateTimeFormat("it-IT", { day: "2-digit", month: "short", year: "numeric" }).format(parsed);
+  return new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "long", year: "numeric" }).format(parsed);
 }
 
 function hasFeature(escursione, key) {
@@ -22,109 +22,105 @@ function hasFeature(escursione, key) {
   return Boolean(escursione[key]) || tags.includes(key);
 }
 
-function getDifficultyChipClass(value) {
-  const normalized = String(value || "").toLowerCase();
-  if (normalized.includes("passegg")) {
-    return "bg-emerald-100/95 text-emerald-900";
-  }
-
-  return "bg-forest-800/85 text-cream";
-}
-
 export default function CardEscursione({ escursione, hrefBase = "/escursioni" }) {
+  const coverSrc = escursione.coverCard || escursione.cover;
+  const isPlaceholder = typeof coverSrc === "string" && coverSrc.startsWith("data:image/svg+xml");
+  const difficulty = String(escursione.difficolta || "").trim();
+  const difficultyLabel = difficulty.toLowerCase() === "escursione" ? "" : difficulty;
   const partecipanti = (escursione.partecipanti || []).filter((item) => item === "gea");
-  const featureStates = featureBadges.map((item) => ({
-    ...item,
-    active: item.key === "gea" ? partecipanti.includes("gea") : hasFeature(escursione, item.key)
-  }));
-  const difficultyChipClass = getDifficultyChipClass(escursione.difficolta);
+  const activeFeatures = featureBadges.filter((item) =>
+    item.key === "gea" ? partecipanti.includes("gea") : hasFeature(escursione, item.key)
+  );
 
   const stats = [
     escursione.km > 0
       ? {
           label: "Km",
-          value: formatKilometers(escursione.km),
-          className: "bg-terracotta-50 text-terracotta-600",
-          active: true
+          value: formatKilometers(escursione.km)
         }
-      : {
-          label: "Km",
-          value: "--",
-          className: "bg-slate-100 text-slate-400",
-          active: false
-        },
+      : null,
     escursione.durata
       ? {
           label: "Durata",
-          value: escursione.durata,
-          className: "bg-forest-50 text-forest-600",
-          active: true
+          value: escursione.durata
         }
-      : {
-          label: "Durata",
-          value: "--",
-          className: "bg-slate-100 text-slate-400",
-          active: false
-        },
+      : null,
     escursione.dislivello > 0
       ? {
           label: "D+",
-          value: `${formatMeters(escursione.dislivello)} m`,
-          className: "bg-sand text-forest-700",
-          active: true
+          value: `${formatMeters(escursione.dislivello)} m`
         }
-      : {
-          label: "D+",
-          value: "--",
-          className: "bg-slate-100 text-slate-400",
-          active: false
-        }
-  ];
+      : null
+  ].filter(Boolean);
 
   return (
-    <article class="group overflow-hidden rounded-[1.75rem] border border-white/70 bg-white shadow-card transition hover:-translate-y-1 hover:shadow-2xl">
-      <a href={withBase(`${hrefBase}/${escursione.slug}`)} class="block">
-        <div class="relative aspect-[4/3] overflow-hidden">
-          <img src={escursione.coverCard || escursione.cover} srcSet={escursione.coverSrcSet || undefined} sizes="(min-width: 1280px) 31vw, (min-width: 768px) 47vw, 96vw" alt={escursione.coverAlt || escursione.titolo} width="720" height="540" loading="lazy" decoding="async" class="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
-          {escursione.difficolta && <div class={`absolute left-4 top-4 rounded-full px-3 py-1 text-xs font-bold ${difficultyChipClass}`}>{escursione.difficolta}</div>}
-        </div>
+    <article class="group">
+      <a
+        href={withBase(`${hrefBase}/${escursione.slug}`)}
+        class="block rounded-[14px] outline-none focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[5px] focus-visible:outline-[#3F6B4F]"
+      >
+        <figure class="relative m-0 aspect-[4/3] overflow-hidden rounded-[14px] bg-[#FFFDF7]">
+          <img
+            src={coverSrc}
+            srcSet={escursione.coverSrcSet || undefined}
+            sizes="(min-width: 1280px) 31vw, (min-width: 768px) 47vw, 96vw"
+            alt={escursione.coverAlt || escursione.titolo}
+            width="720"
+            height="540"
+            loading="lazy"
+            decoding="async"
+            class={`h-full w-full object-cover transition-[filter] duration-200 group-hover:saturate-105 ${isPlaceholder ? "opacity-60" : ""}`}
+          />
+          {isPlaceholder && (
+            <span class="absolute bottom-3 right-3 rounded-md bg-[#FFFDF7] px-2.5 py-1.5 text-xs font-extrabold text-[#25251F]">
+              Foto in arrivo
+            </span>
+          )}
+        </figure>
 
-        <div class="space-y-4 p-5">
-          <div class="flex items-start justify-between gap-4">
-            <div>
-              <p class="text-xs font-bold uppercase tracking-[0.16em] text-terracotta-600">{formatDate(escursione.data)}</p>
-              <h3 class="mt-1 text-xl font-black text-forest-800">{escursione.titolo}</h3>
-              <p class="mt-1 text-sm text-forest-700">{escursione.luogo}</p>
-            </div>
-          </div>
+        <div class="pt-4">
+          <h3 class="text-xl font-extrabold leading-tight tracking-[-0.02em] text-[#25251F] transition-colors duration-200 group-hover:text-[#3F6B4F]">
+            {escursione.titolo}
+          </h3>
+          <p class="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm leading-relaxed text-[#25251F]/70">
+            <span>{escursione.luogo}</span>
+            <span aria-hidden="true">·</span>
+            <time dateTime={escursione.data}>{formatDate(escursione.data)}</time>
+            {difficultyLabel && (
+              <>
+                <span aria-hidden="true">·</span>
+                <span>{difficultyLabel}</span>
+              </>
+            )}
+          </p>
 
-          <div class="grid min-h-[4.9rem] grid-cols-3 gap-3 text-sm text-forest-700">
-            {stats.map((stat) => {
-              const [bgClass, labelClass] = stat.className.split(" ");
-              return (
-                <div key={stat.label} class={`rounded-2xl px-3 py-2 ${bgClass} ${stat.active ? "" : "opacity-60"}`}>
-                  <p class={`text-xs uppercase tracking-wide ${labelClass}`}>{stat.label}</p>
-                  <p class={`font-bold ${stat.active ? "text-forest-800" : "text-slate-400"}`}>{stat.value}</p>
+          {stats.length > 0 && (
+            <dl class="mt-4 grid grid-cols-3 border-y border-[#DDD7C9] py-3 text-sm">
+              {stats.map((stat) => (
+                <div key={stat.label} class="border-r border-[#DDD7C9] px-3 first:pl-0 last:border-r-0 last:pr-0">
+                  <dt class="text-xs font-bold uppercase tracking-[0.04em] text-[#3F6B4F]">{stat.label}</dt>
+                  <dd class="mt-1 font-extrabold tabular-nums text-[#25251F]">{stat.value}</dd>
                 </div>
-              );
-            })}
-          </div>
+              ))}
+            </dl>
+          )}
 
-          <div class="flex flex-wrap gap-2">
-            {featureStates.map((item) => (
-              <span
-                class={`inline-flex h-12 w-12 items-center justify-center rounded-full border shadow-sm transition ${
-                  item.active
-                    ? "border-terracotta-300/80 bg-white text-terracotta-800"
-                    : "border-terracotta-200/60 bg-white/55 text-terracotta-800/35 opacity-55"
-                }`}
-                title={item.label}
-                aria-label={`${item.label}${item.active ? " disponibile" : " non disponibile"}`}
-              >
-                <item.Icon size={18} strokeWidth={2} class="shrink-0" aria-hidden="true" />
-              </span>
-            ))}
-          </div>
+          {activeFeatures.length > 0 && (
+            <div class="mt-3 flex flex-wrap gap-2">
+              {activeFeatures.map((item) => (
+                <span
+                  class={`inline-flex min-h-8 items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold ${
+                    item.key === "gea"
+                      ? "bg-[#F2C94C] text-[#25251F]"
+                      : "border border-[#DDD7C9] bg-[#FFFDF7]/65 text-[#3F6B4F]"
+                  }`}
+                >
+                  <item.Icon size={15} strokeWidth={2} class="shrink-0" aria-hidden="true" />
+                  <span>{item.label}</span>
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </a>
     </article>
