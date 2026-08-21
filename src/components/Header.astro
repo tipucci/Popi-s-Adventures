@@ -59,20 +59,21 @@ const curvedArrowSrc = typeof curvedArrow === "string" ? curvedArrow : curvedArr
       <p>{subtitle}</p>
 
       <div class="hero-journal__actions">
-        <a href={latestHref} class="hero-journal__primary">Scopri l’ultima avventura</a>
+        <div class="hero-journal__primary-wrap">
+          <a href={latestHref} class="hero-journal__primary">Scopri l’ultima avventura</a>
+          <img
+            src={curvedArrowSrc}
+            alt=""
+            width="96"
+            height="96"
+            class="hero-journal__cue"
+            aria-hidden="true"
+          />
+        </div>
         <a href={withBase("/mappa")} class="hero-journal__secondary">Apri la mappa</a>
       </div>
     </div>
   </div>
-
-  <img
-    src={curvedArrowSrc}
-    alt=""
-    width="96"
-    height="96"
-    class="hero-journal__cue"
-    aria-hidden="true"
-  />
 </section>
 
 <style>
@@ -162,6 +163,11 @@ const curvedArrowSrc = typeof curvedArrow === "string" ? curvedArrow : curvedArr
     margin-top: 24px;
   }
 
+  .hero-journal__primary-wrap {
+    position: relative;
+    display: inline-flex;
+  }
+
   .hero-journal__primary,
   .hero-journal__secondary {
     display: inline-flex;
@@ -202,11 +208,11 @@ const curvedArrowSrc = typeof curvedArrow === "string" ? curvedArrow : curvedArr
   .hero-journal__cue {
     position: absolute;
     z-index: 2;
-    bottom: -44px;
-    left: 16px;
-    width: 56px;
-    height: 56px;
-    transform: rotate(4deg);
+    top: calc(100% + 8px);
+    left: calc(100% - 42px);
+    width: 96px;
+    height: 96px;
+    transform: rotate(-4deg);
     pointer-events: none;
   }
 
@@ -221,10 +227,10 @@ const curvedArrowSrc = typeof curvedArrow === "string" ? curvedArrow : curvedArr
     }
 
     .hero-journal__cue {
-      bottom: -56px;
-      left: 32px;
-      width: 72px;
-      height: 72px;
+      top: calc(100% + 18px);
+      left: calc(100% - 48px);
+      width: 112px;
+      height: 112px;
     }
   }
 
