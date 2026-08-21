@@ -21,10 +21,10 @@ const desktopSource = imageDesktop || image || fallbackSource;
 const [heroMobile, heroDesktop] = await Promise.all([
   typeof mobileSource === "string"
     ? null
-    : getImage({ src: mobileSource, width: 900, format: "webp", quality: 68 }),
+    : getImage({ src: mobileSource, width: 900, format: "webp", quality: 72 }),
   typeof desktopSource === "string"
     ? null
-    : getImage({ src: desktopSource, width: 1440, format: "webp", quality: 74 })
+    : getImage({ src: desktopSource, width: 1440, format: "webp", quality: 78 })
 ]);
 
 const heroFallbackSrc = heroDesktop?.src || heroMobile?.src || siteImages.heroHome.src;
@@ -78,8 +78,9 @@ const curvedArrowSrc = typeof curvedArrow === "string" ? curvedArrow : curvedArr
 <style>
   .hero-journal {
     position: relative;
+    isolation: isolate;
     min-height: 340px;
-    overflow: hidden;
+    overflow: visible;
     border-radius: 14px;
     background: var(--journal-leaf, #3f6b4f);
     color: var(--journal-paper, #fffdf7);
@@ -89,6 +90,11 @@ const curvedArrowSrc = typeof curvedArrow === "string" ? curvedArrow : curvedArr
   .hero-journal__shade {
     position: absolute;
     inset: 0;
+  }
+
+  .hero-journal__media {
+    overflow: hidden;
+    border-radius: inherit;
   }
 
   .hero-journal__picture {
@@ -101,6 +107,9 @@ const curvedArrowSrc = typeof curvedArrow === "string" ? curvedArrow : curvedArr
     width: 100%;
     height: 100%;
     object-fit: cover;
+    object-position: left center;
+    transform: scale(1.08);
+    transform-origin: left center;
   }
 
   .hero-journal__shade {
@@ -114,6 +123,7 @@ const curvedArrowSrc = typeof curvedArrow === "string" ? curvedArrow : curvedArr
 
   .hero-journal__body {
     position: relative;
+    z-index: 1;
     display: flex;
     min-height: 340px;
     align-items: flex-end;
@@ -121,7 +131,7 @@ const curvedArrowSrc = typeof curvedArrow === "string" ? curvedArrow : curvedArr
   }
 
   .hero-journal__content {
-    max-width: 42rem;
+    max-width: 23rem;
   }
 
   .hero-journal h1 {
@@ -191,11 +201,12 @@ const curvedArrowSrc = typeof curvedArrow === "string" ? curvedArrow : curvedArr
 
   .hero-journal__cue {
     position: absolute;
-    right: 12px;
-    bottom: 8px;
+    z-index: 2;
+    bottom: -44px;
+    left: 16px;
     width: 56px;
     height: 56px;
-    transform: rotate(8deg);
+    transform: rotate(4deg);
     pointer-events: none;
   }
 
@@ -210,19 +221,25 @@ const curvedArrowSrc = typeof curvedArrow === "string" ? curvedArrow : curvedArr
     }
 
     .hero-journal__cue {
-      right: 24px;
-      bottom: 16px;
+      bottom: -56px;
+      left: 32px;
       width: 72px;
       height: 72px;
     }
   }
 
   @media (min-width: 768px) {
+    .hero-journal__image {
+      object-position: center center;
+      transform: none;
+    }
+
     .hero-journal__shade {
       background: linear-gradient(
         90deg,
-        rgba(37, 37, 31, 0.34) 0%,
-        rgba(37, 37, 31, 0.12) 48%,
+        rgba(37, 37, 31, 0.66) 0%,
+        rgba(37, 37, 31, 0.44) 36%,
+        rgba(37, 37, 31, 0.14) 58%,
         rgba(37, 37, 31, 0) 78%
       );
     }

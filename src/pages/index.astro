@@ -6,8 +6,7 @@ import AboutUs from "../components/AboutUs.astro";
 import HomeAdventureCard from "../components/HomeAdventureCard.astro";
 import { getEscursioni } from "../data/escursioni.js";
 import { siteImages } from "../data/imageRegistry.js";
-import heroHomeMobile from "../assets/images/site/home/popi-hero-mobile.webp";
-import heroHomeDesktop from "../assets/images/site/home/popi-hero-desktop.webp";
+import heroHome from "../assets/images/site/home/popi-hero-group.jpg";
 import { withBase } from "../utils/base.js";
 import { formatKilometers, formatMeters } from "../utils/format.js";
 
@@ -16,8 +15,8 @@ const recenti = escursioni.slice(0, 3);
 const [ultimaAvventura, ...altreRecenti] = recenti;
 const hasEscursioni = escursioni.length > 0;
 const [heroPreloadMobile, heroPreloadDesktop] = await Promise.all([
-  getImage({ src: heroHomeMobile, width: 900, format: "webp", quality: 68 }),
-  getImage({ src: heroHomeDesktop, width: 1440, format: "webp", quality: 74 })
+  getImage({ src: heroHome, width: 900, format: "webp", quality: 72 }),
+  getImage({ src: heroHome, width: 1440, format: "webp", quality: 78 })
 ]);
 
 
@@ -45,7 +44,10 @@ const stats = {
     />
   </Fragment>
   <div class="home-journal">
-    <Header imageMobile={heroHomeMobile} imageDesktop={heroHomeDesktop} />
+    <Header
+      image={heroHome}
+      imageAlt="Tizi, Meg e Gea insieme su un promontorio affacciato sul mare durante un’escursione."
+    />
 
     <section id="ultima-avventura" class="home-recent" aria-labelledby="recenti-title">
       <h2 id="recenti-title">Le avventure più recenti</h2>
@@ -98,7 +100,9 @@ const stats = {
       </section>
     )}
 
-    <AboutUs />
+    <div class="home-about">
+      <AboutUs />
+    </div>
   </div>
 </Layout>
 
@@ -114,8 +118,7 @@ const stats = {
     --journal-moss: #91a66d;
     --journal-border: #ddd7c9;
 
-    display: grid;
-    gap: 64px;
+    display: block;
     padding-inline: 4px;
     background: var(--journal-cream);
     box-shadow: 0 0 0 100vmax var(--journal-cream);
@@ -124,6 +127,7 @@ const stats = {
   }
 
   .home-recent {
+    margin-top: 48px;
     scroll-margin-top: 24px;
   }
 
@@ -145,13 +149,14 @@ const stats = {
 
   .home-recent__stories {
     display: grid;
-    gap: 40px;
+    gap: 32px;
     margin-top: 24px;
   }
 
   .home-recent__secondary {
     display: grid;
     gap: 32px;
+    margin-top: 8px;
   }
 
   .home-recent__all,
@@ -198,8 +203,13 @@ const stats = {
   .journal-facts {
     display: grid;
     gap: 24px;
+    margin-top: 32px;
     border-block: 1px solid var(--journal-border);
     padding-block: 24px;
+  }
+
+  .home-about {
+    margin-top: 64px;
   }
 
   .journal-facts h2 {
@@ -254,13 +264,19 @@ const stats = {
       padding-inline: 0;
     }
 
+    .home-recent {
+      margin-top: 64px;
+    }
+
     .home-recent__secondary {
       grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-top: 16px;
     }
 
     .journal-facts {
       grid-template-columns: minmax(10rem, 0.7fr) minmax(0, 2fr);
       align-items: center;
+      margin-top: 48px;
     }
 
     .journal-facts dl {
@@ -268,9 +284,9 @@ const stats = {
     }
   }
 
-  @media (max-width: 639px) {
-    .home-journal {
-      gap: 48px;
+  @media (min-width: 960px) {
+    .home-about {
+      margin-top: 96px;
     }
   }
 </style>

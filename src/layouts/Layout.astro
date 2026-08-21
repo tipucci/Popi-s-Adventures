@@ -4,7 +4,8 @@ import { withBase } from "../utils/base.js";
 import { siteImages } from "../data/imageRegistry.js";
 import { ArrowLeft, Backpack, Footprints, House, Map } from "@lucide/astro";
 import SpeedInsights from "@vercel/speed-insights/astro";
-import siteLogo from "../assets/images/site/logo/logo-popi.webp";
+import siteLogo from "../assets/images/site/logo/logo-horizontal.png";
+import siteMark from "../assets/images/site/logo/gea-brand-master.png";
 
 const {
   title = "Popi's Adventures",
@@ -32,9 +33,9 @@ const footerLinks = [
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const socialImage = image.startsWith("http") ? image : new URL(image, Astro.site).href;
 const manifestHref = withBase("/manifest.webmanifest");
-const appleTouchIconHref = withBase("/icons/apple-touch-icon-v3.png");
-const appleTouchIconFallbackHref = withBase("/apple-touch-icon.png");
-const faviconHref = withBase("/favicon-192.png");
+const appleTouchIconHref = withBase("/icons/apple-touch-icon.png");
+const faviconHref = withBase("/favicon-32.png");
+const faviconLargeHref = withBase("/favicon.png");
 const serviceWorkerUrl = withBase("/sw.js");
 ---
 
@@ -42,7 +43,7 @@ const serviceWorkerUrl = withBase("/sw.js");
 <html lang="it">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>{title}</title>
     <meta name="description" content={description} />
     <meta name="generator" content={Astro.generator} />
@@ -61,21 +62,21 @@ const serviceWorkerUrl = withBase("/sw.js");
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <link rel="manifest" href={manifestHref} />
     <link rel="apple-touch-icon" sizes="180x180" href={appleTouchIconHref} />
-    <link rel="apple-touch-icon" href={appleTouchIconFallbackHref} />
-    <link rel="icon" type="image/png" sizes="192x192" href={faviconHref} />
+    <link rel="icon" type="image/png" sizes="32x32" href={faviconHref} />
+    <link rel="icon" type="image/png" sizes="512x512" href={faviconLargeHref} />
     <slot name="head" />
   </head>
 
   <body class="min-h-screen bg-cream text-forest-800 antialiased">
     <div class="min-h-screen bg-hero-glow">
-      <div class="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 pb-32 pt-4 sm:px-6 md:pb-24 lg:px-8">
-      <div class="mobile-topbar mb-4 flex items-center justify-between gap-4 md:hidden">
+      <div class="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 pb-[calc(8rem+env(safe-area-inset-bottom))] pt-4 sm:px-6 md:pb-12 lg:px-8">
+      <div class="mobile-topbar -mx-4 -mt-4 flex items-center justify-between gap-4 bg-[#F7F1E3] px-4 pb-4 pt-4 sm:-mx-6 sm:px-6 md:hidden">
         <a
           href={withBase("/")}
           aria-label="Torna alla home"
-          class="inline-flex items-center justify-center rounded-full p-1 transition"
+          class="inline-flex min-h-12 items-center justify-center rounded-[10px] px-1 transition"
         >
-          <span class="flex h-12 w-12 items-center justify-center">
+          <span class="flex h-12 w-[140px] items-center justify-start">
             <img
               src={siteLogo.src}
               alt="Logo di Popi's Adventures"
@@ -83,7 +84,7 @@ const serviceWorkerUrl = withBase("/sw.js");
               height={siteLogo.height}
               loading="eager"
               decoding="async"
-              class="h-12 w-12 object-contain drop-shadow-[0_10px_16px_rgba(95,44,29,0.18)]"
+              class="h-auto w-[140px] object-contain"
             />
           </span>
         </a>
@@ -102,21 +103,30 @@ const serviceWorkerUrl = withBase("/sw.js");
           </div>
         )}
       </div>
-        <header class="desktop-header z-50 mb-6 hidden border-b border-[#DDD7C9] bg-transparent px-1 pb-3 pt-2 font-sans text-[#25251F] md:grid md:grid-cols-[auto_minmax(0,1fr)_auto] md:items-center md:gap-4">
+        <header class="desktop-header relative isolate z-50 -mt-4 mb-5 hidden border-b border-[#DDD7C9] bg-transparent pb-3 pt-6 font-sans text-[#25251F] before:absolute before:inset-y-0 before:left-1/2 before:-z-10 before:w-screen before:-translate-x-1/2 before:bg-[#F7F1E3] before:content-[''] md:grid md:grid-cols-[auto_minmax(0,1fr)_auto] md:items-center md:gap-4">
           <a
             href={withBase("/")}
             aria-label="Torna alla home"
-            class="inline-flex h-[52px] w-[52px] items-center justify-center rounded-[10px] transition-colors duration-150 hover:bg-[#FFFDF7] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#F2C94C] motion-reduce:transition-none"
+            class="inline-flex h-[52px] w-[52px] items-center justify-center rounded-[10px] transition-colors duration-150 hover:bg-[#FFFDF7] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none lg:w-[166px]"
           >
-            <span class="flex h-12 w-12 items-center justify-center">
+            <span class="flex h-12 w-12 items-center justify-center lg:w-[162px] lg:justify-start">
+              <img
+                src={siteMark.src}
+                alt=""
+                width={siteMark.width}
+                height={siteMark.height}
+                loading="eager"
+                decoding="async"
+                class="desktop-brand-mark h-12 w-12 object-contain"
+              />
               <img
                 src={siteLogo.src}
-                alt="Logo di Popi's Adventures"
+                alt=""
                 width={siteLogo.width}
                 height={siteLogo.height}
                 loading="eager"
                 decoding="async"
-                class="h-12 w-12 object-contain"
+                class="desktop-brand-logo h-auto w-[162px] object-contain"
               />
             </span>
           </a>
@@ -133,7 +143,7 @@ const serviceWorkerUrl = withBase("/sw.js");
                     href={item.href}
                     aria-current={active === item.id ? "page" : undefined}
                     class:list={[
-                      "inline-flex min-h-11 items-center gap-2 rounded-md px-3 py-2.5 text-sm font-bold tracking-[0.02em] transition-colors duration-150 hover:bg-[#FFFDF7] hover:text-[#3F6B4F] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#F2C94C] motion-reduce:transition-none",
+                      "inline-flex min-h-11 items-center gap-2 rounded-md px-3 py-2.5 text-sm font-bold tracking-[0.02em] transition-colors duration-150 hover:bg-[#FFFDF7] hover:text-[#3F6B4F] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none",
                       active === item.id ? "font-extrabold !text-[#3F6B4F]" : "text-[#25251F]"
                     ]}
                   >
@@ -153,12 +163,71 @@ const serviceWorkerUrl = withBase("/sw.js");
           </nav>
         </header>
 
+        <nav
+          aria-label="Navigazione principale"
+          class="mobile-bottom-nav fixed inset-x-0 bottom-[calc(1rem+env(safe-area-inset-bottom))] z-[1100] mx-auto w-[calc(100%-1.5rem)] max-w-md rounded-full border border-white/70 bg-white/90 p-2 shadow-card backdrop-blur md:hidden"
+        >
+          <ul class="grid grid-cols-4 gap-2">
+            {navItems.map((item) => (
+              <li>
+                <a
+                  href={item.href}
+                  aria-current={active === item.id ? "page" : undefined}
+                  class:list={[
+                    "flex min-h-14 flex-col items-center gap-1 rounded-full px-3 py-2 text-xs font-bold transition focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F]",
+                    active === item.id
+                      ? "bg-terracotta-600 text-[#fffaf3]"
+                      : "text-forest-700 hover:bg-terracotta-50"
+                  ]}
+                >
+                  <item.Icon class={active === item.id ? "h-5 w-5 shrink-0 text-[#fffaf3]" : "h-5 w-5 shrink-0"} stroke-width={2} aria-hidden="true" />
+                  <span class={active === item.id ? "text-[#fffaf3]" : undefined}>{item.label}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+        <script is:inline>
+          const mobileBottomNav = document.querySelector(".mobile-bottom-nav");
+          const mobileViewport = window.matchMedia("(max-width: 767px)");
+
+          document.addEventListener("focusin", (event) => {
+            const target = event.target;
+            if (
+              !mobileViewport.matches ||
+              !mobileBottomNav ||
+              !(target instanceof HTMLElement) ||
+              mobileBottomNav.contains(target)
+            ) {
+              return;
+            }
+
+            window.requestAnimationFrame(() => {
+              window.requestAnimationFrame(() => {
+                if (document.activeElement !== target) return;
+
+                const targetRect = target.getBoundingClientRect();
+                const navRect = mobileBottomNav.getBoundingClientRect();
+                const overlap = targetRect.bottom - (navRect.top - 16);
+
+                if (overlap > 0) {
+                  const root = document.documentElement;
+                  const previousScrollBehavior = root.style.scrollBehavior;
+                  root.style.scrollBehavior = "auto";
+                  window.scrollBy({ top: overlap, left: 0 });
+                  root.style.scrollBehavior = previousScrollBehavior;
+                }
+              });
+            });
+          });
+        </script>
+
         <main class="flex-1">
           <slot />
         </main>
 
-        <footer class="mt-20 border-t border-[#DDD7C9] py-10 font-sans text-[#25251F] sm:py-12">
-          <div class="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+        <footer class="relative isolate -mx-4 mt-16 border-t border-[#DDD7C9] bg-transparent px-5 py-8 font-sans text-[#25251F] before:absolute before:inset-y-0 before:left-1/2 before:-z-10 before:w-screen before:-translate-x-1/2 before:bg-[#F7F1E3] before:content-[''] sm:-mx-6 sm:px-6 sm:py-10 lg:-mx-8 lg:px-8">
+          <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between lg:gap-8">
             <div class="max-w-xl">
               <p class="text-xl font-extrabold leading-tight sm:text-2xl">Popi's Adventures</p>
               <p class="mt-3 text-base leading-relaxed text-[#25251F]/80">
@@ -175,7 +244,7 @@ const serviceWorkerUrl = withBase("/sw.js");
                   <li>
                     <a
                       href={item.href}
-                      class="inline-flex min-h-11 items-center text-sm font-bold !text-[#3F6B4F] underline-offset-4 transition-colors hover:!text-[#25251F] hover:underline focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#F2C94C] motion-reduce:transition-none"
+                      class="inline-flex min-h-11 items-center text-sm font-bold !text-[#3F6B4F] underline-offset-4 transition-colors hover:!text-[#25251F] hover:underline focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none"
                     >
                       {item.label}
                     </a>
@@ -185,14 +254,14 @@ const serviceWorkerUrl = withBase("/sw.js");
             </nav>
           </div>
 
-          <div class="mt-8 border-t border-[#DDD7C9] pt-5 text-xs leading-relaxed text-[#25251F]/70 sm:text-sm">
+          <div class="mt-6 border-t border-[#DDD7C9] pt-4 text-xs leading-relaxed text-[#25251F]/70 sm:text-sm">
             <p>
               Sviluppato con <span aria-hidden="true">&hearts;</span> e un pizzico di AI da {" "}
               <a
                 href="https://tipucci.it"
                 target="_blank"
                 rel="noreferrer"
-                class="font-bold !text-[#3F6B4F] underline-offset-4 transition-colors hover:!text-[#25251F] hover:underline focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#F2C94C] motion-reduce:transition-none"
+                class="font-bold !text-[#3F6B4F] underline-offset-4 transition-colors hover:!text-[#25251F] hover:underline focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none"
               >
                 Tiziano Pucci
               </a>
@@ -201,27 +270,6 @@ const serviceWorkerUrl = withBase("/sw.js");
         </footer>
       </div>
 
-      <nav class="mobile-bottom-nav fixed inset-x-0 bottom-4 z-[1100] mx-auto w-[calc(100%-1.5rem)] max-w-md rounded-full border border-white/70 bg-white/90 p-2 shadow-card backdrop-blur md:hidden">
-        <ul class="grid grid-cols-4 gap-2">
-          {navItems.map((item) => (
-            <li>
-              <a
-                href={item.href}
-                aria-current={active === item.id ? "page" : undefined}
-                class:list={[
-                  "flex flex-col items-center gap-1 rounded-full px-3 py-2 text-xs font-bold transition",
-                  active === item.id
-                    ? "bg-terracotta-500 text-[#fffaf3]"
-                    : "text-forest-700 hover:bg-terracotta-50"
-                ]}
-              >
-<item.Icon class={active === item.id ? "h-5 w-5 shrink-0 text-[#fffaf3]" : "h-5 w-5 shrink-0"} stroke-width={2} aria-hidden="true" />
-                <span class={active === item.id ? "text-[#fffaf3]" : undefined}>{item.label}</span>
-              </a>
-            </li>
-          ))}
-        </ul>
-      </nav>
       <SpeedInsights />
       <script is:inline define:vars={{ serviceWorkerUrl }}>
         if ("serviceWorker" in navigator) {
@@ -259,6 +307,26 @@ const serviceWorkerUrl = withBase("/sw.js");
     </div>
   </body>
 </html>
+
+<style>
+  .desktop-brand-mark {
+    display: block;
+  }
+
+  .desktop-brand-logo {
+    display: none;
+  }
+
+  @media (min-width: 1024px) {
+    .desktop-brand-mark {
+      display: none;
+    }
+
+    .desktop-brand-logo {
+      display: block;
+    }
+  }
+</style>
 
 
 

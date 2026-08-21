@@ -12,6 +12,19 @@ html {
   scroll-behavior: smooth;
 }
 
+@media (max-width: 767px) {
+  html,
+  body {
+    scroll-padding-bottom: calc(8rem + env(safe-area-inset-bottom));
+  }
+
+  main :where(a, button, [tabindex]):focus-visible,
+  main :target,
+  footer :where(a, button, [tabindex]):focus-visible {
+    scroll-margin-bottom: calc(8rem + env(safe-area-inset-bottom));
+  }
+}
+
 body {
   margin: 0;
   font-family: "Nunito", ui-sans-serif, system-ui, sans-serif;

@@ -103,14 +103,14 @@ function buildSrcSet(entries) {
     .join(", ");
 }
 
-const heroHomeSource = getPreferredSingleImage(siteImageModules, "../assets/images/site/home/popi-hero-desktop");
+const heroHomeSource = getPreferredSingleImage(siteImageModules, "../assets/images/site/home/popi-hero-group");
 const aboutUsSource = getPreferredSingleImage(siteImageModules, "../assets/images/site/about/chi-siamo");
 
 export const siteImages = {
   heroHome: {
     source: heroHomeSource,
     src: normalizeImageSource(heroHomeSource),
-    alt: "Gea, una border collie bianca e nera, seduta su una roccia davanti a una valle di montagna."
+    alt: "Tizi, Meg e Gea insieme su un promontorio affacciato sul mare durante un’escursione."
   },
   aboutUs: {
     source: aboutUsSource,
