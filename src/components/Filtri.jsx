@@ -1,6 +1,6 @@
 import { h } from "preact";
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
-import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-preact";
+import { ChevronDown, ChevronLeft, ChevronRight, X } from "lucide-preact";
 import CardEscursione from "./CardEscursione.jsx";
 
 const seasonOptions = [
@@ -19,7 +19,7 @@ const difficultyOptions = [
 
 const sortOptions = [
   { value: "date-desc", label: "Più recenti" },
-  { value: "date-asc", label: "Meno recenti" },
+  { value: "date-asc", label: "Dal meno recente" },
   { value: "km-desc", label: "Più lunghe" },
   { value: "km-asc", label: "Più corte" },
   { value: "gea-rating", label: "Gea Rating" }
@@ -73,6 +73,16 @@ function normalizeInitialFilters(input = {}) {
     sort: input.sort || "date-desc",
     page: normalizePage(input.page)
   };
+}
+
+function hasAdvancedFilters(filters) {
+  return Boolean(
+    filters.provincia ||
+    filters.stagione ||
+    filters.kmMin ||
+    filters.kmMax ||
+    filters.soloRifugio
+  );
 }
 
 function parseFiltersFromSearch(search) {
@@ -248,12 +258,17 @@ function sortItems(items, sort) {
 }
 export default function Filtri({ escursioni = [], initialFilters = defaultFilters }) {
   const [filters, setFilters] = useState(() => normalizeInitialFilters(initialFilters));
+  const [advancedOpen, setAdvancedOpen] = useState(() =>
+    hasAdvancedFilters(normalizeInitialFilters(initialFilters))
+  );
   const resultsHeadingRef = useRef(null);
   const shouldFocusResultsRef = useRef(false);
+  const hasMountedUrlSyncRef = useRef(false);
 
   useEffect(() => {
     const syncFilters = () => {
       const nextFilters = parseFiltersFromSearch(window.location.search);
+      if (hasAdvancedFilters(nextFilters)) setAdvancedOpen(true);
       setFilters((current) => (areFiltersEqual(current, nextFilters) ? current : nextFilters));
     };
 
@@ -295,6 +310,34 @@ export default function Filtri({ escursioni = [], initialFilters = defaultFilter
   const rangeStartPercent = maxKm > 0 ? (rangeKmMin / maxKm) * 100 : 0;
   const rangeEndPercent = maxKm > 0 ? (rangeKmMax / maxKm) * 100 : 100;
 
+  const activeFilters = [
+    filters.period && {
+      key: "period",
+      group: "primary",
+      label: `Periodo: ${periodOptions.find((item) => item.value === filters.period)?.label || filters.period}`
+    },
+    filters.difficolta && {
+      key: "difficolta",
+      group: "primary",
+      label: `Difficoltà: ${difficultyOptions.find((item) => item.value === filters.difficolta)?.label || filters.difficolta}`
+    },
+    filters.soloGea && { key: "soloGea", group: "primary", label: "Con Gea" },
+    filters.provincia && { key: "provincia", group: "advanced", label: `Provincia: ${filters.provincia}` },
+    filters.stagione && {
+      key: "stagione",
+      group: "advanced",
+      label: `Stagione: ${seasonOptions.find((item) => item.value === filters.stagione)?.label || filters.stagione}`
+    },
+    (filters.kmMin || filters.kmMax) && {
+      key: "km",
+      group: "advanced",
+      label: `Km: ${formatKilometerLabel(rangeKmMin)}–${formatKilometerLabel(rangeKmMax)}`
+    },
+    filters.soloRifugio && { key: "soloRifugio", group: "advanced", label: "Con rifugio" }
+  ].filter(Boolean);
+
+  const advancedFilterCount = activeFilters.filter((item) => item.group === "advanced").length;
+
   const filtered = useMemo(() => {
     return sortItems(
       escursioni.filter((item) => matchesFilters(item, filters)),
@@ -333,8 +376,14 @@ export default function Filtri({ escursioni = [], initialFilters = defaultFilter
   }
 
   useEffect(() => {
+    if (!hasMountedUrlSyncRef.current) {
+      hasMountedUrlSyncRef.current = true;
+      return;
+    }
+
     const nextUrl = buildPaginationUrl(currentPage);
     window.history.replaceState({}, "", nextUrl);
+    window.dispatchEvent(new CustomEvent("escursioni:filters-sync"));
   }, [filters, currentPage]);
 
   useEffect(() => {
@@ -379,7 +428,36 @@ export default function Filtri({ escursioni = [], initialFilters = defaultFilter
   }
 
   function resetFilters() {
-    setFilters(defaultFilters);
+    setFilters((current) => ({
+      ...defaultFilters,
+      search: current.search,
+      sort: current.sort
+    }));
+  }
+
+  function resetAllFilters() {
+    const nextFilters = {
+      ...defaultFilters,
+      sort: filters.sort
+    };
+
+    setFilters(nextFilters);
+
+    const params = new URLSearchParams();
+    if (nextFilters.sort !== defaultFilters.sort) params.set("sort", nextFilters.sort);
+    const query = params.toString();
+    const nextUrl = `${window.location.pathname}${query ? `?${query}` : ""}${window.location.hash}`;
+    window.history.replaceState({}, "", nextUrl);
+    window.dispatchEvent(new CustomEvent("escursioni:filters-sync"));
+  }
+
+  function clearFilter(key) {
+    if (key === "km") {
+      setFilters((current) => ({ ...current, kmMin: "", kmMax: "", page: 1 }));
+      return;
+    }
+
+    updateField(key, defaultFilters[key]);
   }
 
   return (
@@ -400,10 +478,10 @@ export default function Filtri({ escursioni = [], initialFilters = defaultFilter
           pointer-events: auto;
           width: 1.35rem;
           height: 1.35rem;
-          margin-top: 0.35rem;
+          margin-top: 0.7rem;
           border-radius: 9999px;
-          border: 2px solid #94b78e;
-          background: #f7f4ec;
+          border: 2px solid #3f6b4f;
+          background: #fffdf7;
           box-shadow: 0 1px 2px rgba(25, 44, 33, 0.12);
           cursor: pointer;
         }
@@ -418,177 +496,233 @@ export default function Filtri({ escursioni = [], initialFilters = defaultFilter
           width: 1.35rem;
           height: 1.35rem;
           border-radius: 9999px;
-          border: 2px solid #94b78e;
-          background: #f7f4ec;
+          border: 2px solid #3f6b4f;
+          background: #fffdf7;
           box-shadow: 0 1px 2px rgba(25, 44, 33, 0.12);
           cursor: pointer;
         }
       `}</style>
-      <details class="group border-y border-sand/70">
-        <summary class="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 px-1 py-3 text-left marker:hidden focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-forest-600 sm:min-h-16">
-          <span class="text-base font-bold text-forest-700">Filtra le escursioni</span>
-          <span class="inline-flex h-8 w-8 shrink-0 items-center justify-center text-forest-600 transition-transform duration-200 group-open:rotate-180">
-            <ChevronDown size={18} strokeWidth={2} aria-hidden="true" />
-          </span>
-        </summary>
+      <div class="space-y-3">
+        <details class="group border-y border-[#DDD7C9]">
+          <summary class="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 px-1 py-2 text-left marker:hidden focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] sm:min-h-16 sm:py-3">
+            <span class="flex flex-wrap items-baseline gap-x-1 text-base font-bold text-[#3F6B4F]">
+              <span>Filtri</span>
+              {activeFilters.length ? (
+                <span class="text-sm font-semibold text-[#25251F]/70">
+                  · {activeFilters.length} {activeFilters.length === 1 ? "attivo" : "attivi"}
+                </span>
+              ) : null}
+            </span>
+            <span class="inline-flex h-11 w-11 shrink-0 items-center justify-center text-[#3F6B4F] transition-transform duration-200 group-open:rotate-180 motion-reduce:transition-none">
+              <ChevronDown size={18} strokeWidth={2} aria-hidden="true" />
+            </span>
+          </summary>
 
-        <div class="flex justify-end px-5 pb-4 pt-3 sm:px-6">
-          <button
-            type="button"
-            onClick={resetFilters}
-            class="text-sm font-semibold text-terracotta-700 underline decoration-terracotta-300 underline-offset-4 transition-colors hover:text-terracotta-800"
+          <div
+            class={`px-1 pt-3 sm:px-2 sm:pt-4 ${
+              advancedOpen
+                ? "pb-[calc(6.5rem+env(safe-area-inset-bottom))] md:pb-6"
+                : "pb-5 sm:pb-6"
+            }`}
           >
-            Reset filtri
-          </button>
-        </div>
+            <div class="grid gap-3 md:grid-cols-3 md:gap-4">
+              <label class="space-y-2 text-sm font-bold text-[#25251F]">
+                <span>Periodo</span>
+                <select
+                  value={filters.period}
+                  onInput={(event) => updateField("period", event.currentTarget.value)}
+                  class="w-full rounded-2xl border border-[#DDD7C9] bg-[#FFFDF7] px-4 py-3 font-semibold text-[#25251F] outline-none transition-colors focus:border-[#3F6B4F] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none"
+                >
+                  {periodOptions.map((item) => (
+                    <option value={item.value}>{item.label}</option>
+                  ))}
+                </select>
+              </label>
 
-        <div class="grid gap-4 px-5 pb-5 md:grid-cols-2 xl:grid-cols-4 sm:px-6 sm:pb-6">
-          <label class="space-y-2 text-sm font-bold text-forest-800">
-            <span>Periodo</span>
-            <select
-              value={filters.period}
-              onInput={(event) => updateField("period", event.currentTarget.value)}
-              class="w-full rounded-2xl border border-sand bg-cream px-4 py-3 font-semibold text-forest-800 outline-none transition focus:border-terracotta-400"
-            >
-              {periodOptions.map((item) => (
-                <option value={item.value}>{item.label}</option>
-              ))}
-            </select>
-          </label>
+              <label class="space-y-2 text-sm font-bold text-[#25251F]">
+                <span>Difficolt&agrave;</span>
+                <select
+                  value={filters.difficolta}
+                  onInput={(event) => updateField("difficolta", event.currentTarget.value)}
+                  class="w-full rounded-2xl border border-[#DDD7C9] bg-[#FFFDF7] px-4 py-3 font-semibold text-[#25251F] outline-none transition-colors focus:border-[#3F6B4F] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none"
+                >
+                  {difficultyOptions.map((item) => (
+                    <option value={item.value}>{item.label}</option>
+                  ))}
+                </select>
+              </label>
 
-          <label class="space-y-2 text-sm font-bold text-forest-800">
-            <span>Difficolt&agrave;</span>
-            <select
-              value={filters.difficolta}
-              onInput={(event) => updateField("difficolta", event.currentTarget.value)}
-              class="w-full rounded-2xl border border-sand bg-cream px-4 py-3 font-semibold text-forest-800 outline-none transition focus:border-terracotta-400"
-            >
-              {difficultyOptions.map((item) => (
-                <option value={item.value}>{item.label}</option>
-              ))}
-            </select>
-          </label>
-
-          <label class="space-y-2 text-sm font-bold text-forest-800">
-            <span>Provincia</span>
-            <select
-              value={filters.provincia}
-              onInput={(event) => updateField("provincia", event.currentTarget.value)}
-              class="w-full rounded-2xl border border-sand bg-cream px-4 py-3 font-semibold text-forest-800 outline-none transition focus:border-terracotta-400"
-            >
-              <option value="">Tutte</option>
-              {provinceOptions.map((item) => (
-                <option value={item}>{item}</option>
-              ))}
-            </select>
-          </label>
-
-          <label class="space-y-2 text-sm font-bold text-forest-800">
-            <span>Stagione</span>
-            <select
-              value={filters.stagione}
-              onInput={(event) => updateField("stagione", event.currentTarget.value)}
-              class="w-full rounded-2xl border border-sand bg-cream px-4 py-3 font-semibold text-forest-800 outline-none transition focus:border-terracotta-400"
-            >
-              {seasonOptions.map((item) => (
-                <option value={item.value}>{item.label}</option>
-              ))}
-            </select>
-          </label>
-
-          <div class="space-y-2 text-sm font-bold text-forest-800 md:col-span-2 xl:col-span-2">
-            <span>Km</span>
-            <div class="rounded-[1.5rem] border border-sand bg-cream px-4 py-4">
-              <div class="flex items-center justify-between gap-4 text-sm font-bold text-forest-700">
-                <span>{formatKilometerLabel(rangeKmMin)} km</span>
-                <span>{formatKilometerLabel(rangeKmMax)} km</span>
+              <div class="space-y-2 text-sm font-bold text-[#25251F]">
+                <span>Con Gea</span>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={filters.soloGea}
+                  onClick={() => updateField("soloGea", !filters.soloGea)}
+                  class={`flex min-h-[54px] w-full items-center justify-between rounded-2xl border px-4 py-3 text-sm font-semibold transition focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none ${
+                    filters.soloGea
+                      ? "border-[#3F6B4F] bg-[#3F6B4F] text-[#FFFDF7]"
+                      : "border-[#DDD7C9] bg-[#FFFDF7] text-[#25251F]"
+                  }`}
+                >
+                  <span>Con Gea</span>
+                  <span
+                    class={`relative h-7 w-12 rounded-full transition motion-reduce:transition-none ${
+                      filters.soloGea ? "bg-white/30" : "bg-[#91A66D]/50"
+                    }`}
+                  >
+                    <span
+                      class={`absolute top-1 h-5 w-5 rounded-full bg-[#FFFDF7] shadow-sm transition motion-reduce:transition-none ${
+                        filters.soloGea ? "left-6" : "left-1"
+                      }`}
+                    ></span>
+                  </span>
+                </button>
               </div>
-              <div class="relative mt-4 h-8">
-                <div
-                  class="absolute left-0 right-0 top-1/2 h-2 -translate-y-1/2 rounded-full bg-forest-100"
-                  style={`background: linear-gradient(to right, #d7e4d2 0%, #d7e4d2 ${rangeStartPercent}%, #315f3d ${rangeStartPercent}%, #315f3d ${rangeEndPercent}%, #d7e4d2 ${rangeEndPercent}%, #d7e4d2 100%)`}
-                ></div>
-                <input
-                  type="range"
-                  min="0"
-                  max={maxKm}
-                  step="0.1"
-                  value={rangeKmMin}
-                  onInput={(event) => updateKmRange("min", event.currentTarget.value)}
-                  class="km-range-input km-range-input--min absolute inset-0 z-10 w-full appearance-none bg-transparent"
-                  aria-label="Km minimi"
+            </div>
+
+            <div class="mt-3 border-t border-[#DDD7C9] pt-2 md:mt-4 md:border-0 md:pt-0">
+              <button
+                type="button"
+                aria-expanded={advancedOpen}
+                aria-controls="advanced-filters"
+                onClick={() => setAdvancedOpen((current) => !current)}
+                class="flex min-h-11 w-full items-center justify-between gap-3 text-left text-sm font-bold text-[#3F6B4F] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] md:hidden"
+              >
+                <span>
+                  Altri criteri
+                  {advancedFilterCount ? ` · ${advancedFilterCount}` : ""}
+                </span>
+                <ChevronDown
+                  size={18}
+                  strokeWidth={2}
+                  aria-hidden="true"
+                  class={`transition-transform duration-200 motion-reduce:transition-none ${advancedOpen ? "rotate-180" : ""}`}
                 />
-                <input
-                  type="range"
-                  min="0"
-                  max={maxKm}
-                  step="0.1"
-                  value={rangeKmMax}
-                  onInput={(event) => updateKmRange("max", event.currentTarget.value)}
-                  class="km-range-input km-range-input--max absolute inset-0 z-20 w-full appearance-none bg-transparent"
-                  aria-label="Km massimi"
-                />
+              </button>
+
+              <div
+                id="advanced-filters"
+                class={`${advancedOpen ? "grid" : "hidden"} mt-4 gap-4 md:grid md:grid-cols-2 xl:grid-cols-4`}
+              >
+                <label class="space-y-2 text-sm font-bold text-[#25251F]">
+                  <span>Provincia</span>
+                  <select
+                    value={filters.provincia}
+                    onInput={(event) => updateField("provincia", event.currentTarget.value)}
+                    class="w-full rounded-2xl border border-[#DDD7C9] bg-[#FFFDF7] px-4 py-3 font-semibold text-[#25251F] outline-none transition-colors focus:border-[#3F6B4F] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none"
+                  >
+                    <option value="">Tutte</option>
+                    {provinceOptions.map((item) => (
+                      <option value={item}>{item}</option>
+                    ))}
+                  </select>
+                </label>
+
+                <label class="space-y-2 text-sm font-bold text-[#25251F]">
+                  <span>Stagione</span>
+                  <select
+                    value={filters.stagione}
+                    onInput={(event) => updateField("stagione", event.currentTarget.value)}
+                    class="w-full rounded-2xl border border-[#DDD7C9] bg-[#FFFDF7] px-4 py-3 font-semibold text-[#25251F] outline-none transition-colors focus:border-[#3F6B4F] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none"
+                  >
+                    {seasonOptions.map((item) => (
+                      <option value={item.value}>{item.label}</option>
+                    ))}
+                  </select>
+                </label>
+
+                <div class="space-y-2 text-sm font-bold text-[#25251F] xl:col-span-1">
+                  <span>Km</span>
+                  <div class="rounded-2xl border border-[#DDD7C9] bg-[#FFFDF7] px-4 py-4">
+                    <div class="flex items-center justify-between gap-4 text-sm font-bold text-forest-700">
+                      <span>{formatKilometerLabel(rangeKmMin)} km</span>
+                      <span>{formatKilometerLabel(rangeKmMax)} km</span>
+                    </div>
+                    <div class="relative mt-3 h-11">
+                      <div
+                        class="absolute left-0 right-0 top-1/2 h-2 -translate-y-1/2 rounded-full bg-forest-100"
+                        style={`background: linear-gradient(to right, #d7e4d2 0%, #d7e4d2 ${rangeStartPercent}%, #3f6b4f ${rangeStartPercent}%, #3f6b4f ${rangeEndPercent}%, #d7e4d2 ${rangeEndPercent}%, #d7e4d2 100%)`}
+                      ></div>
+                      <input
+                        type="range"
+                        min="0"
+                        max={maxKm}
+                        step="0.1"
+                        value={rangeKmMin}
+                        onInput={(event) => updateKmRange("min", event.currentTarget.value)}
+                        class="km-range-input km-range-input--min absolute inset-0 z-10 w-full appearance-none bg-transparent outline-none focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F]"
+                        aria-label="Km minimi"
+                      />
+                      <input
+                        type="range"
+                        min="0"
+                        max={maxKm}
+                        step="0.1"
+                        value={rangeKmMax}
+                        onInput={(event) => updateKmRange("max", event.currentTarget.value)}
+                        class="km-range-input km-range-input--max absolute inset-0 z-20 w-full appearance-none bg-transparent outline-none focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F]"
+                        aria-label="Km massimi"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div class="space-y-2 text-sm font-bold text-[#25251F]">
+                  <span>Con rifugio</span>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={filters.soloRifugio}
+                    onClick={() => updateField("soloRifugio", !filters.soloRifugio)}
+                    class={`flex min-h-[54px] w-full items-center justify-between rounded-2xl border px-4 py-3 text-sm font-semibold transition focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none ${
+                      filters.soloRifugio
+                        ? "border-[#3F6B4F] bg-[#3F6B4F] text-[#FFFDF7]"
+                        : "border-[#DDD7C9] bg-[#FFFDF7] text-[#25251F]"
+                    }`}
+                  >
+                    <span>Con rifugio</span>
+                    <span
+                      class={`relative h-7 w-12 rounded-full transition motion-reduce:transition-none ${
+                        filters.soloRifugio ? "bg-white/30" : "bg-[#91A66D]/50"
+                      }`}
+                    >
+                      <span
+                        class={`absolute top-1 h-5 w-5 rounded-full bg-[#FFFDF7] shadow-sm transition motion-reduce:transition-none ${
+                          filters.soloRifugio ? "left-6" : "left-1"
+                        }`}
+                      ></span>
+                    </span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
+        </details>
 
-          <label class="space-y-2 text-sm font-bold text-forest-800 md:col-span-2 xl:col-span-1">
-            <span>Con rifugio</span>
+        {activeFilters.length ? (
+          <div class="flex flex-wrap items-center gap-2" aria-label="Filtri attivi">
+            {activeFilters.map((item) => (
+              <button
+                type="button"
+                onClick={() => clearFilter(item.key)}
+                aria-label={`Rimuovi filtro ${item.label}`}
+                class="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#DDD7C9] bg-[#FFFDF7]/70 px-3 py-2 text-sm font-bold text-[#3F6B4F] transition-colors hover:bg-[#FFFDF7] hover:text-[#25251F] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F]"
+              >
+                <span>{item.label}</span>
+                <X size={15} strokeWidth={2.4} aria-hidden="true" />
+              </button>
+            ))}
             <button
               type="button"
-              role="switch"
-              aria-checked={filters.soloRifugio}
-              onClick={() => updateField("soloRifugio", !filters.soloRifugio)}
-              class={`flex min-h-[54px] w-full items-center justify-between rounded-2xl border px-4 py-3 text-sm font-semibold transition ${
-                filters.soloRifugio
-                  ? "border-forest-700 bg-forest-700 text-white"
-                  : "border-sand bg-cream text-forest-800"
-              }`}
+              onClick={resetFilters}
+              class="inline-flex min-h-11 items-center px-2 text-sm font-bold text-terracotta-700 underline decoration-terracotta-300 underline-offset-4 transition-colors hover:text-terracotta-800 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F]"
             >
-              <span>Con rifugio</span>
-              <span
-                class={`relative h-7 w-12 rounded-full transition ${
-                  filters.soloRifugio ? "bg-white/30" : "bg-forest-200"
-                }`}
-              >
-                <span
-                  class={`absolute top-1 h-5 w-5 rounded-full bg-white shadow-sm transition ${
-                    filters.soloRifugio ? "left-6" : "left-1"
-                  }`}
-                ></span>
-              </span>
+              Azzera filtri
             </button>
-          </label>
-
-          <label class="space-y-2 text-sm font-bold text-forest-800 md:col-span-2 xl:col-span-1">
-            <span>Con Gea</span>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={filters.soloGea}
-              onClick={() => updateField("soloGea", !filters.soloGea)}
-              class={`flex min-h-[54px] w-full items-center justify-between rounded-2xl border px-4 py-3 text-sm font-semibold transition ${
-                filters.soloGea
-                  ? "border-forest-700 bg-forest-700 text-white"
-                  : "border-sand bg-cream text-forest-800"
-              }`}
-            >
-              <span>Con Gea</span>
-              <span
-                class={`relative h-7 w-12 rounded-full transition ${
-                  filters.soloGea ? "bg-white/30" : "bg-forest-200"
-                }`}
-              >
-                <span
-                  class={`absolute top-1 h-5 w-5 rounded-full bg-white shadow-sm transition ${
-                    filters.soloGea ? "left-6" : "left-1"
-                  }`}
-                ></span>
-              </span>
-            </button>
-          </label>
-        </div>
-      </details>
+          </div>
+        ) : null}
+      </div>
 
       <section class="space-y-4" aria-labelledby="results-heading">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -597,7 +731,9 @@ export default function Filtri({ escursioni = [], initialFilters = defaultFilter
               id="results-heading"
               ref={resultsHeadingRef}
               tabindex="-1"
-              class="text-2xl font-extrabold text-[#25251f] outline-none"
+              aria-live="polite"
+              aria-atomic="true"
+              class="w-fit text-2xl font-extrabold text-[#25251f] outline-none focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F]"
             >
               Risultati ({filtered.length})
             </h2>
@@ -607,7 +743,7 @@ export default function Filtri({ escursioni = [], initialFilters = defaultFilter
               aria-label="Ordina risultati"
               value={filters.sort}
               onInput={(event) => updateField("sort", event.currentTarget.value)}
-              class="w-full rounded-2xl border border-sand bg-cream px-4 py-3 font-semibold text-forest-800 outline-none transition focus:border-terracotta-400"
+              class="w-full rounded-2xl border border-[#DDD7C9] bg-[#FFFDF7] px-4 py-3 font-semibold text-[#25251F] outline-none transition-colors focus:border-[#3F6B4F] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none"
             >
               {sortOptions.map((item) => (
                 <option value={item.value}>{item.label}</option>
@@ -623,15 +759,24 @@ export default function Filtri({ escursioni = [], initialFilters = defaultFilter
             ))}
           </div>
         ) : (
-          <div class="rounded-[1.75rem] border border-dashed border-terracotta-300 bg-white/70 p-8 text-center text-forest-700">
-            Nessuna escursione corrisponde ai filtri attuali. Prova ad allargare i criteri.
+          <div class="rounded-[14px] border border-[#DDD7C9] bg-[#FFFDF7]/70 p-6 text-center text-[#25251F] sm:p-8">
+            <p class="mx-auto max-w-xl leading-relaxed">
+              Nessuna escursione corrisponde alla ricerca e ai filtri attuali.
+            </p>
+            <button
+              type="button"
+              onClick={resetAllFilters}
+              class="mt-4 inline-flex min-h-11 items-center justify-center rounded-[10px] bg-[#3F6B4F] px-[18px] py-3 text-sm font-bold text-[#FFFDF7] transition-colors hover:bg-[#25251F] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none"
+            >
+              Azzera ricerca e filtri
+            </button>
           </div>
         )}
 
         {filtered.length > pageSize && (
-          <div class="flex items-center justify-center gap-2 overflow-x-auto pb-1">
+          <nav aria-label="Pagine dei risultati" class="flex items-center justify-center gap-2 overflow-x-auto pb-1">
             {currentPage === 1 ? (
-              <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-sand text-forest-700 opacity-40">
+              <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#DDD7C9] text-[#3F6B4F] opacity-40">
                 <ChevronLeft size={18} strokeWidth={2.4} aria-hidden="true" />
               </span>
             ) : (
@@ -642,7 +787,7 @@ export default function Filtri({ escursioni = [], initialFilters = defaultFilter
                   goToPage(currentPage - 1);
                 }}
                 aria-label="Pagina precedente"
-                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-sand bg-white text-forest-700 transition hover:bg-terracotta-50"
+                class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#DDD7C9] bg-[#FFFDF7] text-[#3F6B4F] transition-colors hover:bg-terracotta-50 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none"
               >
                 <ChevronLeft size={18} strokeWidth={2.4} aria-hidden="true" />
               </a>
@@ -657,10 +802,10 @@ export default function Filtri({ escursioni = [], initialFilters = defaultFilter
                   goToPage(page);
                 }}
                 aria-current={page === currentPage ? "page" : undefined}
-                class={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold transition ${
+                class={`flex h-11 w-11 items-center justify-center rounded-full text-sm font-bold transition-colors focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none ${
                   page === currentPage
-                    ? "bg-terracotta-500 text-white"
-                    : "bg-white text-forest-700 hover:bg-terracotta-50"
+                    ? "bg-[#E66A4E] text-[#FFFDF7]"
+                    : "bg-[#FFFDF7] text-[#3F6B4F] hover:bg-terracotta-50"
                 }`}
               >
                 {page}
@@ -669,7 +814,7 @@ export default function Filtri({ escursioni = [], initialFilters = defaultFilter
             </div>
 
             {currentPage === totalPages ? (
-              <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-sand text-forest-700 opacity-40">
+              <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#DDD7C9] text-[#3F6B4F] opacity-40">
                 <ChevronRight size={18} strokeWidth={2.4} aria-hidden="true" />
               </span>
             ) : (
@@ -680,12 +825,12 @@ export default function Filtri({ escursioni = [], initialFilters = defaultFilter
                   goToPage(currentPage + 1);
                 }}
                 aria-label="Pagina successiva"
-                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-sand bg-white text-forest-700 transition hover:bg-terracotta-50"
+                class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#DDD7C9] bg-[#FFFDF7] text-[#3F6B4F] transition-colors hover:bg-terracotta-50 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none"
               >
                 <ChevronRight size={18} strokeWidth={2.4} aria-hidden="true" />
               </a>
             )}
-          </div>
+          </nav>
         )}
       </section>
     </div>

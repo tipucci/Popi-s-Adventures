@@ -69,7 +69,7 @@ export default function CardEscursione({ escursione, hrefBase = "/escursioni" })
             height="540"
             loading="lazy"
             decoding="async"
-            class={`h-full w-full object-cover transition-[filter] duration-200 group-hover:saturate-105 ${isPlaceholder ? "opacity-60" : ""}`}
+            class={`h-full w-full object-cover transition-[filter] duration-200 group-hover:saturate-105 motion-reduce:transition-none ${isPlaceholder ? "opacity-60" : ""}`}
           />
           {isPlaceholder && (
             <span class="absolute bottom-3 right-3 rounded-md bg-[#FFFDF7] px-2.5 py-1.5 text-xs font-extrabold text-[#25251F]">
@@ -79,7 +79,7 @@ export default function CardEscursione({ escursione, hrefBase = "/escursioni" })
         </figure>
 
         <div class="pt-4">
-          <h3 class="text-xl font-extrabold leading-tight tracking-[-0.02em] text-[#25251F] transition-colors duration-200 group-hover:text-[#3F6B4F]">
+          <h3 class="text-xl font-extrabold leading-tight tracking-[-0.02em] text-[#25251F] transition-colors duration-200 group-hover:text-[#3F6B4F] motion-reduce:transition-none">
             {escursione.titolo}
           </h3>
           <p class="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm leading-relaxed text-[#25251F]/70">
@@ -98,7 +98,13 @@ export default function CardEscursione({ escursione, hrefBase = "/escursioni" })
             <dl class="mt-4 grid grid-cols-3 border-y border-[#DDD7C9] py-3 text-sm">
               {stats.map((stat) => (
                 <div key={stat.label} class="border-r border-[#DDD7C9] px-3 first:pl-0 last:border-r-0 last:pr-0">
-                  <dt class="text-xs font-bold uppercase tracking-[0.04em] text-[#3F6B4F]">{stat.label}</dt>
+                  <dt class="text-xs font-bold uppercase tracking-[0.04em] text-[#3F6B4F]">
+                    {stat.label === "D+" ? (
+                      <abbr title="Dislivello positivo" aria-label="Dislivello positivo" class="no-underline">
+                        D+
+                      </abbr>
+                    ) : stat.label}
+                  </dt>
                   <dd class="mt-1 font-extrabold tabular-nums text-[#25251F]">{stat.value}</dd>
                 </div>
               ))}
