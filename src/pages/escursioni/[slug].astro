@@ -43,6 +43,14 @@ function formatDurationValue(value) {
   if (!normalized || normalized === "0" || normalized === "0:00" || normalized === "00:00") {
     return "Non disponibile";
   }
+
+  const clockMatch = normalized.match(/^(\d{1,2}):(\d{2})$/);
+  if (clockMatch) {
+    const hours = Number(clockMatch[1]);
+    const minutes = Number(clockMatch[2]);
+    return [hours > 0 ? `${hours} h` : "", minutes > 0 ? `${minutes} min` : ""].filter(Boolean).join(" ");
+  }
+
   return normalized;
 }
 
@@ -75,9 +83,6 @@ const geaStars = Array.from({ length: 5 }, (_, index) => {
 const heroDescription = String(escursione.note || "").trim();
 const hasRealCover = typeof escursione.cover === "string" && !escursione.cover.startsWith("data:image/svg+xml");
 const galleryImages = Array.isArray(escursione.gallery) ? escursione.gallery : [];
-const detailGalleryImages = hasRealCover
-  ? [{ src: escursione.cover, alt: escursione.coverAlt || escursione.titolo, caption: "" }, ...galleryImages]
-  : galleryImages;
 const jsonLdImages = [escursione.cover, ...galleryImages.map((image) => image.src)]
   .filter((src) => typeof src === "string" && !src.startsWith("data:image/svg+xml"))
   .map((src) => new URL(src, Astro.site).href);
@@ -95,130 +100,489 @@ const uploadSlug = escursione.imageSlug || escursione.slug;
 <Layout title={`${escursione.titolo} | Popi's Adventures`} description={escursione.descrizione} image={escursione.cover} active="escursioni" mobileBackHref={withBase("/escursioni")} mobileBackLabel="Torna indietro">
   <script slot="head" type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
 
-  <article class="space-y-8">
-    <section class="overflow-hidden rounded-[2rem] bg-white shadow-card">
-      <div class="relative aspect-[4/4.8] sm:aspect-[16/6]">
-        <img src={escursione.cover} alt={escursione.coverAlt || escursione.titolo} class="h-full w-full object-cover" loading="eager" />
-        <div class="absolute inset-0 bg-gradient-to-t from-forest-800 via-forest-800/30 to-transparent"></div>
-        <div class="absolute right-4 top-4 z-10 sm:right-6 sm:top-6">
+  <article class="hike-journal">
+    <header class="hike-hero">
+      <div class="hike-hero__intro">
+        <h1>{escursione.titolo}</h1>
+        <p class="hike-hero__meta">
+          <span>{escursione.luogo}</span>
+          <span aria-hidden="true">·</span>
+          <time datetime={escursione.data}>{formatDate(escursione.data)}</time>
+        </p>
+        {heroDescription && <p class="hike-hero__description">{heroDescription}</p>}
+        <div class="hike-hero__edit">
           <PhotoUploadButton
             client:load
             slug={uploadSlug}
             target="cover"
-            iconOnly={true}
             apiUrl={withBase("/api/admin/upload-hike-photos")}
-            buttonClassName="h-10 w-10 rounded-full border border-white/70 bg-white/90 px-0 py-0 text-forest-800 shadow-lg backdrop-blur-sm hover:bg-white focus:ring-white/80 focus:ring-offset-forest-800 focus:ring-offset-2"
           />
         </div>
-
-        <div class="absolute inset-x-0 bottom-0 p-6 text-white sm:p-8">
-          <p class="text-sm font-bold uppercase tracking-[0.16em] text-cream/80">{escursione.luogo}</p>
-          <h1 class="mt-2 font-display text-4xl sm:text-5xl">{escursione.titolo}</h1>
-          {heroDescription && <p class="mt-3 max-w-3xl text-sm text-cream/90 sm:text-base">{heroDescription}</p>}
-        </div>
       </div>
+
+      <figure class:list={["hike-hero__figure", !hasRealCover && "hike-hero__figure--placeholder"]}>
+        <img
+          src={escursione.cover}
+          alt={escursione.coverAlt || escursione.titolo}
+          width="960"
+          height="720"
+          loading="eager"
+          decoding="async"
+        />
+        {!hasRealCover && <figcaption>Foto in arrivo</figcaption>}
+      </figure>
+    </header>
+
+    <section class="hike-facts" aria-label="Dati dell’escursione">
+      <dl>
+        <div>
+          <dt>Distanza</dt>
+          <dd>{formatMetricValue(escursione.km, formatKilometers, " km")}</dd>
+        </div>
+        <div>
+          <dt>Durata</dt>
+          <dd>{formatDurationValue(escursione.durata)}</dd>
+        </div>
+        <div>
+          <dt>Dislivello</dt>
+          <dd>{formatMetricValue(escursione.dislivello, formatMeters, " m D+")}</dd>
+        </div>
+      </dl>
     </section>
 
-    <section class="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-      <div class="grid gap-4 sm:grid-cols-2">
-        <article class="rounded-[1.75rem] bg-white p-5 shadow-card"><p class="text-xs uppercase tracking-[0.16em] text-terracotta-600">Data</p><p class="mt-2 text-2xl font-black text-forest-800">{formatDate(escursione.data)}</p></article>
-        <article class="rounded-[1.75rem] bg-white p-5 shadow-card"><p class="text-xs uppercase tracking-[0.16em] text-terracotta-600">Distanza</p><p class="mt-2 text-2xl font-black text-forest-800">{formatMetricValue(escursione.km, formatKilometers, " km")}</p></article>
-        <article class="rounded-[1.75rem] bg-white p-5 shadow-card"><p class="text-xs uppercase tracking-[0.16em] text-terracotta-600">Durata</p><p class="mt-2 text-2xl font-black text-forest-800">{formatDurationValue(escursione.durata)}</p></article>
-        <article class="rounded-[1.75rem] bg-white p-5 shadow-card"><p class="text-xs uppercase tracking-[0.16em] text-terracotta-600">Dislivello</p><p class="mt-2 text-2xl font-black text-forest-800">{formatMetricValue(escursione.dislivello, formatMeters, " m")}</p></article>
-      </div>
+    {(showCompagnia || escursione.nome_rifugio || showGeaRating) && (
+      <section class="hike-company" aria-labelledby="hike-company-title">
+        <div class="hike-section-heading">
+          <h2 id="hike-company-title">La squadra di oggi</h2>
+        </div>
 
-      <div class="space-y-4 rounded-[2rem] bg-white p-6 shadow-card">
-        {showCompagnia && (
-          <div>
-            <p class="text-xs font-bold uppercase tracking-[0.16em] text-terracotta-600">Compagnia</p>
-            <div class="mt-3 flex flex-wrap gap-2">
+        <div class="hike-company__content">
+          {showCompagnia && (
+            <ul class="hike-company__people" aria-label="Compagnia dell’escursione">
               {compagnia.map((item) => (
-                item.href ? (
-                  <a
-                    href={item.href}
-                    class={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold transition hover:-translate-y-0.5 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-terracotta-400 focus:ring-offset-2 focus:ring-offset-white ${
-                      item.type === "dog"
-                        ? "bg-[#eef4ea] text-forest-800"
-                        : "bg-[#fff1e8] text-[#8a4d2d]"
-                    }`}
-                  >
-                    {item.type === "dog" ? (
-                      <PawPrint size={16} strokeWidth={2.2} class="shrink-0" aria-hidden="true" />
-                    ) : (
-                      <UserRound size={16} strokeWidth={2.2} class="shrink-0" aria-hidden="true" />
-                    )}
-                    <span>{item.name}</span>
-                  </a>
-                ) : (
-                  <span class={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold ${
-                    item.type === "dog"
-                      ? "bg-[#eef4ea] text-forest-800"
-                      : "bg-[#fff1e8] text-[#8a4d2d]"
-                  }`}>
-                    {item.type === "dog" ? (
-                      <PawPrint size={16} strokeWidth={2.2} class="shrink-0" aria-hidden="true" />
-                    ) : (
-                      <UserRound size={16} strokeWidth={2.2} class="shrink-0" aria-hidden="true" />
-                    )}
-                    <span>{item.name}</span>
-                  </span>
-                )
-              ))}
-            </div>
-          </div>
-        )}
-
-        <div class="grid gap-4 lg:grid-cols-2">
-          {escursione.nome_rifugio && (
-            <div class="rounded-[1.5rem] bg-forest-50 p-5">
-              <p class="text-xs font-bold uppercase tracking-[0.16em] text-terracotta-600">Rifugio</p>
-              <p class="mt-2 text-2xl font-black text-forest-800">{escursione.nome_rifugio}</p>
-            </div>
-          )}
-
-          {showGeaRating && (
-            <div class="rounded-[1.5rem] bg-forest-50 p-5">
-              <p class="text-xs font-bold uppercase tracking-[0.16em] text-terracotta-600">Gea Rating</p>
-              <div class="mt-3 flex items-center gap-2" aria-label={`Gea Rating: ${geaRating} su 5`}>
-                {geaStars.map((starType) => (
-                  starType === "full" ? (
-                    <Star
-                      size={28}
-                      strokeWidth={2}
-                      class="text-terracotta-500 fill-terracotta-500"
-                      aria-hidden="true"
-                    />
-                  ) : starType === "half" ? (
-                    <StarHalf
-                      size={28}
-                      strokeWidth={2}
-                      class="text-terracotta-500 fill-terracotta-500"
-                      aria-hidden="true"
-                    />
+                <li>
+                  {item.href ? (
+                    <a href={item.href}>
+                      {item.type === "dog" ? (
+                        <PawPrint size={18} strokeWidth={2.2} aria-hidden="true" />
+                      ) : (
+                        <UserRound size={18} strokeWidth={2.2} aria-hidden="true" />
+                      )}
+                      <span>{item.name}</span>
+                    </a>
                   ) : (
-                    <Star
-                      size={28}
-                      strokeWidth={2}
-                      class="text-forest-200"
-                      aria-hidden="true"
-                    />
-                  )
-                ))}
-              </div>
-            </div>
+                    <span>
+                      {item.type === "dog" ? (
+                        <PawPrint size={18} strokeWidth={2.2} aria-hidden="true" />
+                      ) : (
+                        <UserRound size={18} strokeWidth={2.2} aria-hidden="true" />
+                      )}
+                      <span>{item.name}</span>
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
           )}
+
+          <div class="hike-company__notes">
+            {escursione.nome_rifugio && (
+              <div>
+                <p>Una tappa del giorno</p>
+                <strong>{escursione.nome_rifugio}</strong>
+              </div>
+            )}
+
+            {showGeaRating && (
+              <div class="hike-gea-rating">
+                <p>Il voto di Gea</p>
+                <div class="hike-gea-rating__row" aria-label={`Il voto di Gea: ${geaRating} su 5`}>
+                  <span class="hike-gea-rating__stars" aria-hidden="true">
+                    {geaStars.map((starType) => (
+                      starType === "full" ? (
+                        <Star size={25} strokeWidth={2} class="fill-current" />
+                      ) : starType === "half" ? (
+                        <StarHalf size={25} strokeWidth={2} class="fill-current" />
+                      ) : (
+                        <Star size={25} strokeWidth={2} class="hike-gea-rating__empty" />
+                      )
+                    ))}
+                  </span>
+                  <strong>{geaRating}/5</strong>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
+      </section>
+    )}
+
+    <section class="hike-route" aria-labelledby="hike-route-title">
+      <div class="hike-section-heading">
+        <h2 id="hike-route-title">Il percorso</h2>
       </div>
+      <Mappa
+        client:load
+        escursioni={[escursione]}
+        height="360px"
+        title={`Il percorso di ${escursione.titolo}`}
+        showHeader={false}
+        variant="journal"
+      />
     </section>
 
-    <Mappa client:load escursioni={[escursione]} height="420px" />
-
-    {detailGalleryImages.length > 0 && (
-      <HikeGallery images={detailGalleryImages}>
-        <PhotoUploadButton slot="footer" client:load slug={uploadSlug} target="gallery" apiUrl={withBase("/api/admin/upload-hike-photos")} />
-      </HikeGallery>
-    )}
+    <HikeGallery images={galleryImages}>
+      <PhotoUploadButton
+        slot="footer"
+        client:load
+        slug={uploadSlug}
+        target="gallery"
+        apiUrl={withBase("/api/admin/upload-hike-photos")}
+      />
+    </HikeGallery>
   </article>
 </Layout>
+
+<style>
+  .hike-journal {
+    --journal-paper: #fffdf7;
+    --journal-ink: #25251f;
+    --journal-leaf: #3f6b4f;
+    --journal-sunshine: #f2c94c;
+    --journal-tomato: #e66a4e;
+    --journal-moss: #91a66d;
+    --journal-border: #ddd7c9;
+
+    color: var(--journal-ink);
+  }
+
+  .hike-hero {
+    display: grid;
+    gap: 28px;
+  }
+
+  .hike-hero__intro {
+    align-self: center;
+    min-width: 0;
+  }
+
+  .hike-hero h1,
+  .hike-section-heading h2 {
+    margin: 0;
+    color: var(--journal-ink);
+    font-family: "Nunito", ui-sans-serif, system-ui, sans-serif;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    text-wrap: balance;
+  }
+
+  .hike-hero h1 {
+    position: relative;
+    width: fit-content;
+    max-width: 100%;
+    padding-bottom: 14px;
+    font-size: clamp(2.5rem, 10vw, 3.75rem);
+    line-height: 1.04;
+    overflow-wrap: anywhere;
+  }
+
+  .hike-hero h1::after {
+    position: absolute;
+    bottom: 2px;
+    left: 0;
+    width: min(34%, 128px);
+    height: 6px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--journal-sunshine) 82%, transparent);
+    transform: rotate(-1.5deg);
+    content: "";
+  }
+
+  .hike-hero__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 9px;
+    margin: 12px 0 0;
+    color: color-mix(in srgb, var(--journal-ink) 70%, transparent);
+    font-size: 0.875rem;
+    font-weight: 700;
+    line-height: 1.5;
+  }
+
+  .hike-hero__description {
+    max-width: 68ch;
+    margin: 20px 0 0;
+    color: color-mix(in srgb, var(--journal-ink) 84%, transparent);
+    font-size: 1rem;
+    line-height: 1.7;
+    text-wrap: pretty;
+  }
+
+  .hike-hero__edit {
+    margin-top: 20px;
+  }
+
+  .hike-hero__figure {
+    position: relative;
+    min-width: 0;
+    margin: 0;
+    overflow: hidden;
+    border-radius: 14px;
+    background: var(--journal-paper);
+    aspect-ratio: 4 / 3;
+  }
+
+  .hike-hero__figure img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .hike-hero__figure figcaption {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    border-radius: 6px;
+    background: var(--journal-paper);
+    padding: 6px 10px;
+    color: var(--journal-ink);
+    font-size: 0.875rem;
+    font-weight: 800;
+  }
+
+  .hike-hero__figure--placeholder img {
+    opacity: 0.58;
+  }
+
+  .hike-facts {
+    margin-top: 40px;
+    border-block: 1px solid var(--journal-border);
+    padding-block: 20px;
+  }
+
+  .hike-facts dl {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    margin: 0;
+  }
+
+  .hike-facts dl > div {
+    min-width: 0;
+  }
+
+  .hike-facts dt,
+  .hike-facts dd {
+    margin: 0;
+  }
+
+  .hike-facts dt,
+  .hike-company__notes p {
+    color: color-mix(in srgb, var(--journal-ink) 62%, transparent);
+    font-size: 0.875rem;
+    font-weight: 700;
+    line-height: 1.35;
+  }
+
+  .hike-facts dd {
+    margin-top: 5px;
+    color: var(--journal-leaf);
+    font-size: clamp(1rem, 4.2vw, 1.25rem);
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+
+  .hike-company,
+  .hike-route,
+  :global(.hike-gallery) {
+    margin-top: 64px;
+  }
+
+  .hike-section-heading h2 {
+    font-size: clamp(2rem, 7vw, 3rem);
+    line-height: 1.08;
+  }
+
+  .hike-section-heading > p {
+    max-width: 68ch;
+    margin: 10px 0 0;
+    color: color-mix(in srgb, var(--journal-ink) 68%, transparent);
+    line-height: 1.65;
+  }
+
+  .hike-company__content {
+    display: grid;
+    gap: 32px;
+    margin-top: 28px;
+  }
+
+  .hike-company__people {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .hike-company__people a,
+  .hike-company__people li > span {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    gap: 9px;
+    border-radius: 9999px;
+    background: var(--journal-paper);
+    padding: 10px 14px;
+    color: var(--journal-leaf);
+    font-size: 0.875rem;
+    font-weight: 800;
+    line-height: 1.3;
+  }
+
+  .hike-company__people a {
+    outline: none;
+    transition: color 160ms ease, background 160ms ease;
+  }
+
+  .hike-company__people a:hover {
+    background: color-mix(in srgb, var(--journal-moss) 18%, var(--journal-paper));
+    color: var(--journal-ink);
+  }
+
+  .hike-company__people a:focus-visible {
+    outline: 3px solid var(--journal-leaf);
+    outline-offset: 3px;
+  }
+
+  .hike-company__notes {
+    display: grid;
+    gap: 24px;
+  }
+
+  .hike-company__notes > div {
+    min-width: 0;
+  }
+
+  .hike-company__notes p,
+  .hike-company__notes strong {
+    margin: 0;
+  }
+
+  .hike-company__notes strong {
+    display: block;
+    margin-top: 6px;
+    color: var(--journal-ink);
+    font-size: 1.25rem;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+  }
+
+  .hike-gea-rating {
+    width: fit-content;
+  }
+
+  .hike-gea-rating__row {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 7px;
+  }
+
+  .hike-gea-rating__row::after {
+    position: absolute;
+    right: -4px;
+    bottom: -3px;
+    left: -4px;
+    z-index: -1;
+    height: 8px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--journal-sunshine) 64%, transparent);
+    transform: rotate(-1deg);
+    content: "";
+  }
+
+  .hike-gea-rating__stars {
+    display: inline-flex;
+    gap: 3px;
+    color: var(--journal-tomato);
+  }
+
+  .hike-gea-rating__empty {
+    color: color-mix(in srgb, var(--journal-ink) 22%, transparent);
+  }
+
+  .hike-gea-rating__row strong {
+    margin: 0;
+    font-size: 0.875rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .hike-route :global(.leaflet-host) {
+    margin-top: 24px;
+  }
+
+  .hike-route :global(.leaflet-host--journal .leaflet-control-zoom) {
+    border: 1px solid color-mix(in srgb, var(--journal-leaf) 24%, var(--journal-border));
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(37, 37, 31, 0.08);
+  }
+
+  .hike-route :global(.leaflet-host--journal .leaflet-control-attribution) {
+    border-radius: 6px 0 0 0;
+    background: color-mix(in srgb, var(--journal-paper) 92%, transparent);
+    padding: 2px 5px;
+  }
+
+  @media (max-width: 419px) {
+    .hike-facts dl {
+      gap: 12px;
+    }
+  }
+
+  @media (min-width: 640px) {
+    .hike-facts {
+      margin-top: 48px;
+      padding-block: 24px;
+    }
+
+    .hike-facts dl {
+      gap: 24px;
+    }
+
+    .hike-company__content {
+      grid-template-columns: minmax(0, 1.15fr) minmax(16rem, 0.85fr);
+      align-items: start;
+    }
+
+    .hike-company__notes {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 900px) {
+    .hike-hero {
+      grid-template-columns: minmax(17rem, 0.72fr) minmax(0, 1.28fr);
+      align-items: center;
+      gap: 56px;
+      min-height: 480px;
+    }
+
+    .hike-company,
+    .hike-route,
+    :global(.hike-gallery) {
+      margin-top: 96px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hike-company__people a {
+      transition: none;
+    }
+  }
+</style>
 
 

@@ -1,6 +1,6 @@
 import { h } from "preact";
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
-import { SquarePen } from "lucide-preact";
+import { SquarePen, X } from "lucide-preact";
 
 type PreviewImage = {
   id: string;
@@ -113,22 +113,82 @@ export default function PhotoUploadButton({
   const [message, setMessage] = useState("");
   const [createdFiles, setCreatedFiles] = useState<string[]>([]);
   const [busyLabel, setBusyLabel] = useState("");
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const dialogRef = useRef<HTMLDivElement | null>(null);
+  const passwordInputRef = useRef<HTMLInputElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const previewsRef = useRef<PreviewImage[]>([]);
   const maxFiles = target === "cover" ? 1 : MAX_GALLERY_FILES;
   const isCoverUpload = target === "cover";
-  const eyebrow = isCoverUpload ? "Cover escursione" : "Upload foto";
   const title = isCoverUpload ? "Aggiorna l'immagine di copertina" : "Aggiungi immagini a questa escursione";
-  const buttonLabel = isCoverUpload ? "Aggiungi cover" : "Aggiungi foto";
+  const buttonLabel = isCoverUpload ? "Modifica cover" : "Aggiungi foto";
   const confirmLabel = isCoverUpload ? "Salva cover" : "Conferma";
+  const dialogId = `photo-upload-${target}-${slug.replace(/[^a-z0-9-]/gi, "-")}`;
+  const dialogTitleId = `${dialogId}-title`;
+  const isBusy = status === "compressing" || status === "uploading";
+  const busyRef = useRef(isBusy);
+  busyRef.current = isBusy;
+
+  useEffect(() => {
+    previewsRef.current = previews;
+  }, [previews]);
 
   useEffect(() => {
     return () => {
-      previews.forEach((preview) => URL.revokeObjectURL(preview.url));
+      previewsRef.current.forEach((preview) => URL.revokeObjectURL(preview.url));
       document.body.classList.remove("upload-modal-open");
     };
-  }, [previews]);
+  }, []);
 
-  const isBusy = status === "compressing" || status === "uploading";
+  useEffect(() => {
+    if (!isOpen) return undefined;
+
+    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : triggerRef.current;
+    const focusableSelector = [
+      "button:not([disabled])",
+      "input:not([disabled])",
+      "select:not([disabled])",
+      "textarea:not([disabled])",
+      "a[href]",
+      '[tabindex]:not([tabindex="-1"])'
+    ].join(",");
+
+    const focusPassword = window.requestAnimationFrame(() => passwordInputRef.current?.focus());
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        if (busyRef.current) return;
+        event.preventDefault();
+        closePanel();
+        return;
+      }
+
+      if (event.key !== "Tab" || !dialogRef.current) return;
+
+      const focusable = Array.from(dialogRef.current.querySelectorAll<HTMLElement>(focusableSelector));
+      if (focusable.length === 0) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.cancelAnimationFrame(focusPassword);
+      document.removeEventListener("keydown", handleKeyDown);
+      previousFocus?.focus();
+    };
+  }, [isOpen]);
+
   const canSubmit = password.trim().length > 0 && selectedFiles.length > 0 && !isBusy;
   const statusLabel = useMemo(() => getStatusLabel(status), [status]);
 
@@ -235,35 +295,62 @@ export default function PhotoUploadButton({
   return (
     <div>
       <button
+        ref={triggerRef}
         type="button"
-        class={`inline-flex items-center justify-center rounded-full bg-forest-700 px-5 py-3 text-sm font-bold leading-none text-[#fffaf3] shadow-card transition hover:bg-forest-600 focus:outline-none focus:ring-2 focus:ring-terracotta-400 focus:ring-offset-2 focus:ring-offset-[#f5ebdc] [&_svg]:block [&_svg]:shrink-0 ${buttonClassName}`.trim()}
+        class={`inline-flex min-h-11 items-center justify-center gap-2 rounded-[10px] border border-[#DDD7C9] bg-[#FFFDF7] px-4 py-2.5 text-sm font-bold leading-none text-[#3F6B4F] transition-colors hover:bg-[#F7F1E3] hover:text-[#25251F] focus:outline-none focus:ring-2 focus:ring-[#3F6B4F] focus:ring-offset-2 focus:ring-offset-[#F7F1E3] motion-reduce:transition-none [&_svg]:block [&_svg]:shrink-0 ${buttonClassName}`.trim()}
         onClick={() => {
           document.body.classList.add("upload-modal-open");
           setIsOpen(true);
         }}
         aria-label={buttonLabel}
+        aria-haspopup="dialog"
+        aria-expanded={isOpen}
+        aria-controls={dialogId}
       >
-        {iconOnly ? <SquarePen size={18} strokeWidth={2.2} color="currentColor" aria-hidden="true" /> : buttonLabel}
+        <SquarePen size={18} strokeWidth={2.2} color="currentColor" aria-hidden="true" />
+        {!iconOnly && <span>{buttonLabel}</span>}
       </button>
 
       {isOpen && (
-        <div class="fixed inset-0 z-[1300] flex items-end justify-center bg-[#173328]/55 px-4 pb-4 pt-6 sm:items-center sm:py-8">
-          <div class="max-h-[calc(100vh-1.5rem)] w-full max-w-md overflow-y-auto rounded-[1.75rem] border border-white/70 bg-[#fffaf4] shadow-2xl">
-            <div class="border-b border-[#eadac8] px-5 py-4">
-              <p class="text-xs font-bold uppercase tracking-[0.16em] text-terracotta-600">{eyebrow}</p>
-              <h2 class="mt-1 text-2xl font-black text-forest-800">{title}</h2>
+        <div
+          class="fixed inset-0 z-[1300] flex items-end justify-center bg-[#25251F]/68 px-4 pb-4 pt-6 sm:items-center sm:py-8"
+          onClick={(event) => {
+            if (event.currentTarget === event.target && !busyRef.current) closePanel();
+          }}
+        >
+          <div
+            ref={dialogRef}
+            id={dialogId}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={dialogTitleId}
+            class="max-h-[calc(100vh-1.5rem)] w-full max-w-md overflow-y-auto rounded-[14px] bg-[#FFFDF7] shadow-[0_8px_24px_rgba(37,37,31,0.16)]"
+          >
+            <div class="flex items-start justify-between gap-4 border-b border-[#DDD7C9] px-5 py-4">
+              <h2 id={dialogTitleId} class="m-0 text-2xl font-extrabold leading-tight text-[#25251F]">{title}</h2>
+              <button
+                type="button"
+                onClick={closePanel}
+                disabled={isBusy}
+                aria-label="Chiudi caricamento foto"
+                class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-[10px] text-[#3F6B4F] transition-colors hover:bg-[#F7F1E3] focus:outline-none focus:ring-2 focus:ring-[#3F6B4F] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <X size={20} strokeWidth={2.2} aria-hidden="true" />
+              </button>
             </div>
 
             <form class="space-y-4 px-5 py-5" onSubmit={handleSubmit}>
               <label class="block space-y-2">
                 <span class="text-sm font-bold text-forest-800">Password</span>
                 <input
+                  ref={passwordInputRef}
                   type="password"
                   value={password}
                   onInput={(event) => setPassword((event.currentTarget as HTMLInputElement).value)}
-                  class="w-full rounded-[1rem] border border-[#d8c5ae] bg-white px-4 py-3 text-base text-forest-800 outline-none transition placeholder:text-forest-700/55 focus:border-terracotta-400"
+                  class="w-full rounded-[10px] border border-[#DDD7C9] bg-white px-4 py-3 text-base text-[#25251F] outline-none transition-colors placeholder:text-[#25251F]/55 focus:border-[#3F6B4F] focus:ring-2 focus:ring-[#3F6B4F]/20"
                   placeholder="Inserisci la password"
                   autoComplete="current-password"
+                  required
                 />
               </label>
 
@@ -275,14 +362,15 @@ export default function PhotoUploadButton({
                   accept="image/*"
                   multiple={!isCoverUpload}
                   onChange={handleFilesChange}
-                  class="block w-full rounded-[1rem] border border-dashed border-[#d8c5ae] bg-white px-4 py-3 text-sm text-forest-700 file:mr-3 file:rounded-full file:border-0 file:bg-terracotta-50 file:px-4 file:py-2 file:font-bold file:text-terracotta-700"
+                  class="block w-full rounded-[10px] border border-dashed border-[#DDD7C9] bg-white px-4 py-3 text-sm text-[#3F6B4F] file:mr-3 file:rounded-[6px] file:border-0 file:bg-[#F7F1E3] file:px-4 file:py-2 file:font-bold file:text-[#3F6B4F]"
+                  required
                 />
               </label>
 
               {previews.length > 0 && (
-                <div class="grid grid-cols-3 gap-2 rounded-[1.25rem] bg-cream p-2">
+                <div class="grid grid-cols-3 gap-2 rounded-[10px] bg-[#F7F1E3] p-2">
                   {previews.map((preview) => (
-                    <figure key={preview.id} class="overflow-hidden rounded-[1rem] bg-white shadow-sm">
+                    <figure key={preview.id} class="overflow-hidden rounded-[6px] bg-white">
                       <img src={preview.url} alt={preview.fileName} class="aspect-square h-full w-full object-cover" />
                     </figure>
                   ))}
@@ -291,7 +379,9 @@ export default function PhotoUploadButton({
 
               {(statusLabel || message || busyLabel) && (
                 <div
-                  class={`rounded-[1.25rem] px-4 py-3 text-sm ${
+                  role={status === "error" ? "alert" : "status"}
+                  aria-live={status === "error" ? "assertive" : "polite"}
+                  class={`rounded-[10px] px-4 py-3 text-sm ${
                     status === "error"
                       ? "bg-[#fff1eb] text-[#8a3e24]"
                       : status === "success"
@@ -310,19 +400,19 @@ export default function PhotoUploadButton({
                 </div>
               )}
 
-              <div class="sticky bottom-0 -mx-5 flex gap-3 border-t border-[#eadac8] bg-[#fffaf4] px-5 pb-1 pt-4">
+              <div class="sticky bottom-0 -mx-5 flex gap-3 border-t border-[#DDD7C9] bg-[#FFFDF7] px-5 pb-1 pt-4">
                 <button
                   type="button"
                   onClick={closePanel}
                   disabled={isBusy}
-                  class="inline-flex min-h-12 flex-1 items-center justify-center rounded-full border border-[#d9c7b2] bg-white px-4 py-3 text-sm font-bold text-forest-800 transition hover:bg-[#fffdfa] disabled:cursor-not-allowed disabled:opacity-60"
+                  class="inline-flex min-h-12 flex-1 items-center justify-center rounded-[10px] border border-[#DDD7C9] bg-white px-4 py-3 text-sm font-bold text-[#3F6B4F] transition-colors hover:bg-[#F7F1E3] focus:outline-none focus:ring-2 focus:ring-[#3F6B4F] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   Chiudi
                 </button>
                 <button
                   type="submit"
                   disabled={!canSubmit}
-                  class="inline-flex min-h-12 flex-1 items-center justify-center rounded-full bg-forest-700 px-4 py-3 text-sm font-bold text-[#fffaf3] transition hover:bg-forest-600 disabled:cursor-not-allowed disabled:opacity-60"
+                  class="inline-flex min-h-12 flex-1 items-center justify-center rounded-[10px] bg-[#3F6B4F] px-4 py-3 text-sm font-bold text-[#FFFDF7] transition-colors hover:bg-[#25251F] focus:outline-none focus:ring-2 focus:ring-[#3F6B4F] focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {confirmLabel}
                 </button>

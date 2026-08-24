@@ -28,10 +28,16 @@ function getDirectionsUrl(item) {
 function createPopupContent(item) {
   const detailUrl = withBase(`/escursioni/${item.slug}`);
   const directionsUrl = getDirectionsUrl(item);
+  const compactStats = [
+    Number(item.km) > 0 ? `${new Intl.NumberFormat("it-IT", { maximumFractionDigits: 1 }).format(item.km)} km` : "",
+    Number(item.dislivello) > 0 ? `${new Intl.NumberFormat("it-IT").format(item.dislivello)} m D+` : "",
+    hasGea(item) ? "Con Gea" : ""
+  ].filter(Boolean);
 
   return `
     <strong>${escapeHtml(item.titolo)}</strong><br/>
     ${escapeHtml(item.luogo)}<br/>
+    ${compactStats.length ? `<span>${escapeHtml(compactStats.join(" · "))}</span><br/>` : ""}
     <a href="${detailUrl}">Apri dettaglio</a><br/>
     <a href="${directionsUrl}" target="_blank" rel="noreferrer noopener">Indicazioni stradali</a>
   `;
@@ -52,9 +58,9 @@ function createStandardMarkerIcon(L) {
     className: "popi-map-marker popi-map-marker--standard",
     html: `
       <span style="position:relative;display:block;width:44px;height:54px;">
-        <span style="position:absolute;left:50%;bottom:1px;transform:translateX(-50%);width:0;height:0;border-left:10px solid transparent;border-right:10px solid transparent;border-top:16px solid #c9633d;filter:drop-shadow(0 7px 10px rgba(23,51,40,.24));"></span>
-        <span style="position:relative;display:flex;width:42px;height:42px;align-items:center;justify-content:center;border:3px solid #fffaf3;border-radius:9999px;background:#c9633d;box-shadow:0 8px 18px rgba(23,51,40,.24);">
-          <span style="display:block;width:14px;height:14px;border-radius:9999px;background:#fffaf3;"></span>
+        <span style="position:absolute;left:50%;bottom:1px;transform:translateX(-50%);width:0;height:0;border-left:10px solid transparent;border-right:10px solid transparent;border-top:16px solid #E66A4E;filter:drop-shadow(0 7px 10px color-mix(in srgb, #25251F 18%, transparent));"></span>
+        <span style="position:relative;display:flex;width:42px;height:42px;align-items:center;justify-content:center;border:3px solid #FFFDF7;border-radius:9999px;background:#E66A4E;box-shadow:0 8px 18px color-mix(in srgb, #25251F 18%, transparent);">
+          <span style="display:block;width:14px;height:14px;border-radius:9999px;background:#FFFDF7;"></span>
         </span>
       </span>
     `,
@@ -69,9 +75,9 @@ function createGeaMarkerIcon(L) {
     className: "popi-map-marker popi-map-marker--gea",
     html: `
       <span style="position:relative;display:block;width:48px;height:58px;">
-        <span style="position:absolute;left:50%;bottom:1px;transform:translateX(-50%);width:0;height:0;border-left:11px solid transparent;border-right:11px solid transparent;border-top:17px solid #315334;filter:drop-shadow(0 8px 12px rgba(23,51,40,.28));"></span>
-        <span style="position:relative;display:flex;width:46px;height:46px;align-items:center;justify-content:center;border:3px solid #fffaf3;border-radius:9999px;background:#315334;box-shadow:0 10px 20px rgba(23,51,40,.26);">
-          <span style="display:flex;width:34px;height:34px;align-items:center;justify-content:center;border-radius:9999px;background:#fffaf3;overflow:hidden;">
+        <span style="position:absolute;left:50%;bottom:1px;transform:translateX(-50%);width:0;height:0;border-left:11px solid transparent;border-right:11px solid transparent;border-top:17px solid #3F6B4F;filter:drop-shadow(0 8px 12px color-mix(in srgb, #25251F 20%, transparent));"></span>
+        <span style="position:relative;display:flex;width:46px;height:46px;align-items:center;justify-content:center;border:3px solid #FFFDF7;border-radius:9999px;background:#3F6B4F;box-shadow:0 10px 20px color-mix(in srgb, #25251F 20%, transparent);">
+          <span style="display:flex;width:34px;height:34px;align-items:center;justify-content:center;border-radius:9999px;background:#FFFDF7;overflow:hidden;">
             <img src="${geaMarkerLogoUrl}" alt="" style="display:block;width:32px;height:32px;object-fit:contain;" />
           </span>
         </span>
@@ -87,7 +93,7 @@ function createClusterIcon(L, count) {
   return L.divIcon({
     className: "escursioni-cluster-marker",
     html: `
-      <span style="display:flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:9999px;border:3px solid #ffffff;background:#315334;box-shadow:0 12px 24px rgba(23,51,40,.30);color:#fffaf3;font-weight:800;font-size:15px;line-height:1;">
+      <span style="display:flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:9999px;border:3px solid #FFFDF7;background:#3F6B4F;box-shadow:0 12px 24px color-mix(in srgb, #25251F 22%, transparent);color:#FFFDF7;font-weight:800;font-size:0.875rem;line-height:1;">
         ${count}
       </span>
     `,
@@ -152,19 +158,35 @@ function buildClusters(map, points) {
 function renderMarkers({ L, map, layer, points, standardMarkerIcon, geaMarkerIcon }) {
   layer.clearLayers();
 
+  function applyAccessibleLabel(marker, label) {
+    const element = marker.getElement();
+    if (!element) return;
+    element.setAttribute("aria-label", label);
+    element.setAttribute("title", label);
+  }
+
   buildClusters(map, points).forEach((cluster) => {
     if (cluster.items.length === 1) {
       const [item] = cluster.items;
+      const markerLabel = `Apri ${item.titolo}, ${item.luogo}`;
       const marker = L.marker([item.lat, item.lng], {
-        icon: hasGea(item) ? geaMarkerIcon : standardMarkerIcon
+        icon: hasGea(item) ? geaMarkerIcon : standardMarkerIcon,
+        title: markerLabel,
+        alt: markerLabel,
+        keyboard: true
       });
       marker.bindPopup(createPopupContent(item));
       layer.addLayer(marker);
+      applyAccessibleLabel(marker, markerLabel);
       return;
     }
 
+    const clusterLabel = `${cluster.items.length} escursioni in quest'area`;
     const clusterMarker = L.marker([cluster.lat, cluster.lng], {
-      icon: createClusterIcon(L, cluster.items.length)
+      icon: createClusterIcon(L, cluster.items.length),
+      title: clusterLabel,
+      alt: clusterLabel,
+      keyboard: true
     });
 
     clusterMarker.on("click", () => {
@@ -183,31 +205,56 @@ function renderMarkers({ L, map, layer, points, standardMarkerIcon, geaMarkerIco
       );
     });
 
-    clusterMarker.bindTooltip(`${cluster.items.length} escursioni`, {
+    clusterMarker.bindTooltip(clusterLabel, {
       direction: "top",
       offset: [0, -18]
     });
 
     layer.addLayer(clusterMarker);
+    applyAccessibleLabel(clusterMarker, clusterLabel);
   });
+}
+
+function fitMapToPoints(map, items, padding = 40) {
+  if (!map || !items.length) return;
+
+  const bounds = items.map((item) => [item.lat, item.lng]);
+  if (bounds.length === 1) {
+    map.setView(bounds[0], 11);
+    return;
+  }
+
+  map.fitBounds(bounds, { padding: [padding, padding], maxZoom: 11 });
 }
 
 export default function Mappa({
   escursioni = [],
   height = "420px",
   eyebrow = "Mappa delle escursioni",
-  title = "In giro per il mondo"
+  title = "In giro per il mondo",
+  selectedArea = "",
+  showHeader = true,
+  variant = "default"
 }) {
   const mapElement = useRef(null);
   const mapInstance = useRef(null);
   const markerLayerRef = useRef(null);
   const redrawMarkersRef = useRef(null);
   const viewStateRef = useRef(null);
+  const sectionRef = useRef(null);
+  const fullscreenCloseRef = useRef(null);
+  const fullscreenTriggerRef = useRef(null);
   const [loadError, setLoadError] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [retryNonce, setRetryNonce] = useState(0);
 
   const points = escursioni.filter((item) => Number.isFinite(item.lat) && Number.isFinite(item.lng));
   const hasCoordinates = points.length > 0;
+  const normalizedArea = String(selectedArea || "").trim().toLocaleLowerCase("it");
+  const focusedPoints = normalizedArea
+    ? points.filter((item) => String(item.provincia || "").trim().toLocaleLowerCase("it") === normalizedArea)
+    : points;
 
   useEffect(() => {
     let cancelled = false;
@@ -218,6 +265,7 @@ export default function Mappa({
 
       try {
         setLoadError("");
+        setIsLoading(true);
         const L = (await import("leaflet")).default;
         if (cancelled || mapInstance.current) return;
 
@@ -237,19 +285,21 @@ export default function Mappa({
         redrawMarkersRef.current = redrawMarkers;
         map.on("zoomend moveend", redrawMarkers);
 
-        if (viewStateRef.current) {
+        if (normalizedArea && focusedPoints.length) {
+          fitMapToPoints(map, focusedPoints);
+        } else if (viewStateRef.current) {
           map.setView(viewStateRef.current.center, viewStateRef.current.zoom);
         } else {
-          const bounds = points.map((item) => [item.lat, item.lng]);
-          if (bounds.length === 1) map.setView(bounds[0], 11);
-          else map.fitBounds(bounds, { padding: [40, 40] });
+          fitMapToPoints(map, points);
         }
 
         redrawMarkers();
         requestAnimationFrame(() => map.invalidateSize());
         setTimeout(() => map.invalidateSize(), 250);
+        setIsLoading(false);
       } catch (error) {
         if (!cancelled) {
+          setIsLoading(false);
           setLoadError("La mappa non è riuscita a caricarsi correttamente.");
           console.error("[mappa] Errore nel caricamento della mappa", error);
         }
@@ -280,7 +330,12 @@ export default function Mappa({
       markerLayerRef.current = null;
       redrawMarkersRef.current = null;
     };
-  }, [escursioni, isFullscreen]);
+  }, [escursioni, isFullscreen, retryNonce]);
+
+  useEffect(() => {
+    if (!mapInstance.current || !focusedPoints.length) return;
+    fitMapToPoints(mapInstance.current, focusedPoints, 56);
+  }, [selectedArea]);
 
   useEffect(() => {
     if (typeof document === "undefined") return undefined;
@@ -295,31 +350,116 @@ export default function Mappa({
   }, [isFullscreen]);
 
   useEffect(() => {
-    if (!isFullscreen || typeof window === "undefined") return undefined;
+    if (!isFullscreen || typeof document === "undefined") return undefined;
+
+    const dialog = sectionRef.current;
+    if (!dialog) return undefined;
+
+    const inertElements = new Map();
+    let current = dialog;
+
+    while (current && current !== document.body) {
+      const parent = current.parentElement;
+      if (!parent) break;
+
+      Array.from(parent.children).forEach((sibling) => {
+        if (!(sibling instanceof HTMLElement) || sibling === current || inertElements.has(sibling)) return;
+
+        inertElements.set(sibling, {
+          inert: sibling.inert,
+          ariaHidden: sibling.getAttribute("aria-hidden")
+        });
+        sibling.inert = true;
+        sibling.setAttribute("aria-hidden", "true");
+      });
+
+      current = parent;
+    }
+
+    const focusFrame = requestAnimationFrame(() => fullscreenCloseRef.current?.focus());
 
     function handleKeyDown(event) {
-      if (event.key === "Escape") setIsFullscreen(false);
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setIsFullscreen(false);
+        return;
+      }
+
+      if (event.key !== "Tab") return;
+
+      const focusable = Array.from(
+        dialog.querySelectorAll(
+          'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        )
+      ).filter((element) => element instanceof HTMLElement && element.getAttribute("aria-hidden") !== "true");
+
+      if (!focusable.length) {
+        event.preventDefault();
+        dialog.focus();
+        return;
+      }
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const activeElement = document.activeElement;
+
+      if (event.shiftKey && (activeElement === first || !dialog.contains(activeElement))) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && (activeElement === last || !dialog.contains(activeElement))) {
+        event.preventDefault();
+        first.focus();
+      }
     }
 
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+
+    return () => {
+      cancelAnimationFrame(focusFrame);
+      window.removeEventListener("keydown", handleKeyDown);
+
+      inertElements.forEach((previous, element) => {
+        element.inert = previous.inert;
+        if (previous.ariaHidden === null) element.removeAttribute("aria-hidden");
+        else element.setAttribute("aria-hidden", previous.ariaHidden);
+      });
+
+      requestAnimationFrame(() => fullscreenTriggerRef.current?.focus());
+    };
   }, [isFullscreen]);
 
+  function openFullscreen() {
+    setIsFullscreen(true);
+  }
+
+  const isJournal = variant === "journal";
   const sectionClass = isFullscreen
     ? "fixed inset-0 z-[1300] bg-[#173328]/92 p-3 backdrop-blur-sm sm:p-5"
-    : "mb-6 sm:mb-8";
+    : isJournal
+      ? ""
+      : "mb-6 sm:mb-8";
   const frameClass = isFullscreen
     ? "relative h-full"
-    : "rounded-[2rem] border border-forest-950 bg-[#173328] p-3 shadow-card sm:p-4";
-  const mapWrapperClass = isFullscreen ? "h-full min-h-0" : "";
+    : isJournal
+      ? "relative"
+      : "rounded-[2rem] border border-forest-950 bg-[#173328] p-3 shadow-card sm:p-4";
+  const mapWrapperClass = isFullscreen ? "relative h-full min-h-0" : "relative";
   const mapHeight = isFullscreen ? "100%" : height;
   const mapMinHeight = isFullscreen ? "0" : "260px";
 
   return (
-    <section class={sectionClass}>
+    <section
+      ref={sectionRef}
+      class={sectionClass}
+      role={isFullscreen ? "dialog" : undefined}
+      aria-modal={isFullscreen ? "true" : undefined}
+      aria-label={isFullscreen ? "Mappa delle escursioni a schermo intero" : title}
+      tabIndex={isFullscreen ? -1 : undefined}
+    >
       <div class={frameClass}>
         {isFullscreen ? (
           <button
+            ref={fullscreenCloseRef}
             type="button"
             onClick={() => setIsFullscreen(false)}
             aria-label="Chiudi mappa a schermo intero"
@@ -327,13 +467,14 @@ export default function Mappa({
           >
             <Shrink size={18} strokeWidth={2.2} aria-hidden="true" />
           </button>
-        ) : (
+        ) : showHeader ? (
           <div class="px-3 pb-4 pt-2 sm:px-4 sm:pb-5">
             <div class="flex items-center justify-between gap-3">
               <p class="text-sm font-bold uppercase tracking-[0.16em] text-emerald-100/90">{eyebrow}</p>
               <button
+                ref={fullscreenTriggerRef}
                 type="button"
-                onClick={() => setIsFullscreen(true)}
+                onClick={openFullscreen}
                 aria-label="Apri mappa a schermo intero"
                 class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white transition hover:bg-white/18 focus:outline-none focus:ring-2 focus:ring-white/70"
               >
@@ -342,26 +483,60 @@ export default function Mappa({
             </div>
             <h1 class="mt-2 font-display text-4xl text-white sm:text-5xl">{title}</h1>
           </div>
+        ) : (
+          <button
+            ref={fullscreenTriggerRef}
+            type="button"
+            onClick={openFullscreen}
+            aria-label="Apri mappa a schermo intero"
+            class="absolute right-5 top-5 z-[1200] inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#DDD7C9] bg-[#FFFDF7] text-[#3F6B4F] shadow-[0_8px_24px_rgba(37,37,31,0.08)] transition-colors hover:bg-[#F7F1E3] focus:outline-none focus:ring-2 focus:ring-[#3F6B4F] focus:ring-offset-2 motion-reduce:transition-none"
+          >
+            <Expand size={18} strokeWidth={2.2} aria-hidden="true" />
+          </button>
         )}
 
         <div class={mapWrapperClass}>
           {!hasCoordinates ? (
             <div class="flex h-full min-h-[260px] w-full min-w-0 items-center justify-center rounded-[1.75rem] border border-dashed border-forest-300 bg-white/70 p-6 text-center text-sm text-forest-700 sm:min-h-[320px]">
-              Nessuna coordinata disponibile. Aggiungi `lat` e `lng` al foglio Google per vedere la mappa.
+              {isJournal ? "Nessuna escursione è ancora visibile sulla mappa." : "Nessuna coordinata disponibile."}
             </div>
           ) : loadError ? (
-            <div class="flex h-full min-h-[260px] w-full min-w-0 items-center justify-center rounded-[1.75rem] border border-dashed border-cream/30 bg-white/10 p-6 text-center text-sm text-cream sm:min-h-[320px]">
-              {loadError}
+            <div class={`flex h-full min-h-[260px] w-full min-w-0 flex-col items-center justify-center gap-4 rounded-[14px] border border-dashed p-6 text-center text-sm sm:min-h-[320px] ${
+              isJournal ? "border-[#DDD7C9] bg-[#FFFDF7] text-[#25251F]" : "border-cream/30 bg-white/10 text-cream"
+            }`}>
+              <p>{loadError}</p>
+              <button
+                type="button"
+                onClick={() => {
+                  setLoadError("");
+                  setIsLoading(true);
+                  setRetryNonce((value) => value + 1);
+                }}
+                class="min-h-11 rounded-[10px] bg-[#3F6B4F] px-4 py-2 font-bold text-[#FFFDF7] focus:outline-none focus:ring-2 focus:ring-[#3F6B4F] focus:ring-offset-2"
+              >
+                Riprova
+              </button>
             </div>
           ) : (
-            <div
-              key={isFullscreen ? "map-fullscreen" : "map-inline"}
-              ref={mapElement}
-              class={`leaflet-host h-full w-full min-w-0 max-w-full overflow-hidden shadow-card ${
-                isFullscreen ? "rounded-[1.5rem]" : "rounded-[1.75rem] border border-white/70"
-              }`}
-              style={{ height: mapHeight, minHeight: mapMinHeight }}
-            />
+            <>
+              <div
+                key={isFullscreen ? "map-fullscreen" : "map-inline"}
+                ref={mapElement}
+                class={`leaflet-host h-full w-full min-w-0 max-w-full overflow-hidden ${
+                  isFullscreen
+                    ? "rounded-[1.5rem]"
+                    : isJournal
+                      ? "leaflet-host--journal rounded-[14px] border border-[#DDD7C9]"
+                      : "rounded-[1.75rem] border border-white/70 shadow-card"
+                }`}
+                style={{ height: mapHeight, minHeight: mapMinHeight }}
+              />
+              {isLoading && (
+                <div class={`pointer-events-none absolute flex items-center justify-center rounded-[14px] bg-[#FFFDF7]/90 text-sm font-bold text-[#3F6B4F] ${isJournal ? "inset-0" : "inset-2"}`} role="status">
+                  Sto aprendo la mappa…
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

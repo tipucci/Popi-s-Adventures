@@ -1,18 +1,17 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import Mappa from "../components/Mappa.jsx";
+import TracceDashboard from "../components/TracceDashboard.jsx";
 import { getEscursioni } from "../data/escursioni.js";
 
 const escursioni = await getEscursioni();
+const initialArea = Astro.url.searchParams.get("area") || "";
 ---
 
 <Layout
-  title="Mappa | Popi's Adventures"
-  description="Mappa dedicata con tutte le escursioni del diario che hanno coordinate disponibili."
+  title="Le nostre tracce | Popi's Adventures"
+  description="Mappa, aree esplorate e giornate da ricordare del nostro diario di escursioni."
   active="mappa"
 >
-  <section>
-    <Mappa client:load escursioni={escursioni} height="560px" />
-  </section>
+  <TracceDashboard client:load escursioni={escursioni} initialArea={initialArea} />
 </Layout>
 

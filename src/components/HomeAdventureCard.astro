@@ -281,6 +281,22 @@ const isWithGea = (escursione.partecipanti || []).includes("gea");
       padding-top: 0;
     }
 
+    .home-adventure--featured .home-adventure__heading-row--with-gea {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .home-adventure--featured .home-adventure__heading-row--with-gea .home-adventure__title {
+      overflow: visible;
+      text-overflow: clip;
+      text-wrap: balance;
+      white-space: normal;
+    }
+
+    .home-adventure--featured .home-adventure__heading-row--with-gea .home-adventure__gea {
+      margin-left: 0;
+    }
+
     .home-adventure--featured.home-adventure--placeholder .home-adventure__link {
       grid-template-columns: minmax(0, 0.75fr) minmax(19rem, 1.25fr);
     }

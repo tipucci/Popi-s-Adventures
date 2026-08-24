@@ -1,62 +1,94 @@
 ---
-import { ChevronLeft, ChevronRight } from "@lucide/astro";
+import { ChevronLeft, ChevronRight, X } from "@lucide/astro";
 
 const {
-  title = "Galleria",
-  subtitle = "Foto della giornata",
+  title = "Le foto della giornata",
+  subtitle = "",
   images = []
 } = Astro.props;
 
 const galleryId = `gallery-${Math.random().toString(36).slice(2, 10)}`;
+const hasMultipleImages = images.length > 1;
+const hasFooter = Astro.slots.has("footer");
 ---
 
-<section class="space-y-4" id={galleryId} data-gallery-root>
-  <div class="space-y-2">
-    <p class="text-sm font-bold uppercase tracking-[0.16em] text-terracotta-600">{title}</p>
-    <h2 class="text-3xl font-black text-forest-800 sm:text-[2.2rem]">{subtitle}</h2>
+<section class="hike-gallery" id={galleryId} data-gallery-root>
+  <div class="hike-gallery__heading">
+    <h2>{title}</h2>
+    {subtitle && <p>{subtitle}</p>}
   </div>
 
-  <div class="grid gap-4 md:grid-cols-2">
-    {images.map((image, index) => (
-      <figure class="overflow-hidden rounded-[1.75rem] bg-white shadow-card">
-        <button
-          type="button"
-          class="group block w-full text-left"
-          data-lightbox-trigger
-          data-lightbox-index={index}
-          data-lightbox-src={image.src}
-          data-lightbox-alt={image.alt}
-          data-lightbox-caption={image.caption || ""}
-          aria-label={`Apri immagine ${index + 1} in grande`}
+  {images.length > 0 ? (
+    <div class="hike-gallery__grid">
+      {images.map((image, index) => (
+        <figure
+          class:list={[
+            "hike-gallery__item",
+            index % 4 === 0 || index % 4 === 3
+              ? "hike-gallery__item--wide"
+              : "hike-gallery__item--narrow"
+          ]}
         >
-          <img
-            src={image.src}
-            alt={image.alt}
-            loading="lazy"
-            class="aspect-[4/3] w-full object-cover transition duration-300 group-hover:scale-[1.02]"
-          />
-        </button>
-        {image.caption && <figcaption class="px-5 py-4 text-sm text-forest-700">{image.caption}</figcaption>}
-      </figure>
-    ))}
-  </div>
-
-  <div class="flex justify-end">
-    <slot name="footer" />
-  </div>
-
-  <dialog data-lightbox-dialog class="gallery-lightbox m-0 h-full w-full max-h-none max-w-none overflow-y-auto border-0 bg-transparent p-0 text-left text-white">
-    <div data-lightbox-overlay class="gallery-lightbox__shell relative flex min-h-screen w-full items-center justify-center px-1 py-6 sm:px-6 sm:py-8">
-      <div class="relative z-10 flex w-full max-w-[min(100vw,1600px)] items-start justify-center">
-        <figure data-lightbox-content class="relative flex w-full flex-col items-center justify-center px-0 sm:px-16 lg:px-20">
           <button
             type="button"
-            class="absolute left-0 top-1/2 inline-flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-white/25 bg-white/10 text-white backdrop-blur-sm transition hover:bg-white/16 sm:left-2 sm:h-14 sm:w-14"
+            data-lightbox-trigger
+            data-lightbox-index={index}
+            data-lightbox-src={image.src}
+            data-lightbox-alt={image.alt}
+            data-lightbox-caption={image.caption || ""}
+            aria-label={`Apri la foto ${index + 1} di ${images.length}`}
+          >
+            <img
+              src={image.src}
+              alt={image.alt}
+              width="720"
+              height="540"
+              loading="lazy"
+              decoding="async"
+            />
+          </button>
+          {image.caption && <figcaption>{image.caption}</figcaption>}
+        </figure>
+      ))}
+    </div>
+  ) : (
+    <div class="hike-gallery__empty">
+      <p>Le foto di questa giornata devono ancora arrivare.</p>
+    </div>
+  )}
+
+  {hasFooter && (
+    <div class="hike-gallery__footer">
+      <slot name="footer" />
+    </div>
+  )}
+
+  {images.length > 0 && (
+  <dialog
+    data-lightbox-dialog
+    aria-label="Foto dell’escursione"
+    class="gallery-lightbox m-0 h-full w-full max-h-none max-w-none overflow-y-auto border-0 bg-transparent p-0 text-left text-white"
+  >
+    <div data-lightbox-overlay class="gallery-lightbox__shell relative flex min-h-screen w-full items-center justify-center px-1 py-6 sm:px-6 sm:py-8">
+      <div class="gallery-lightbox__toolbar">
+        <span data-lightbox-counter aria-live="polite">1 / {images.length}</span>
+        <button type="button" data-lightbox-close aria-label="Chiudi la foto">
+          <X class="h-5 w-5" stroke-width={2.4} aria-hidden="true" />
+        </button>
+      </div>
+
+      <div class="relative z-10 flex w-full max-w-[min(100vw,1600px)] items-start justify-center">
+        <figure data-lightbox-content class="relative flex w-full flex-col items-center justify-center px-0 sm:px-16 lg:px-20">
+          {hasMultipleImages && (
+          <button
+            type="button"
+            class="gallery-lightbox__previous absolute left-0 top-1/2 inline-flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-white/25 bg-[#25251f]/78 text-white transition hover:bg-[#25251f] sm:left-2 sm:h-14 sm:w-14"
             data-lightbox-prev
             aria-label="Immagine precedente"
           >
             <ChevronLeft class="h-6 w-6" stroke-width={2.4} aria-hidden="true" />
           </button>
+          )}
 
           <div data-lightbox-media class="flex flex-col items-center">
             <img
@@ -66,26 +98,118 @@ const galleryId = `gallery-${Math.random().toString(36).slice(2, 10)}`;
               class="max-h-[82vh] w-full max-w-full object-contain sm:max-h-[86vh] sm:w-auto"
             />
 
-            <figcaption class="mt-4 hidden w-full max-w-xl flex-col gap-1 rounded-[1.5rem] bg-cream/92 px-4 py-3 text-center text-forest-800 shadow-lg backdrop-blur-sm empty:hidden">
-              <p class="text-sm font-medium text-forest-800" data-lightbox-caption></p>
+            <figcaption class="gallery-lightbox__caption mt-4 hidden w-full max-w-xl flex-col gap-1 px-4 py-3 text-center empty:hidden">
+              <p class="text-sm font-medium" data-lightbox-caption></p>
             </figcaption>
           </div>
 
+          {hasMultipleImages && (
           <button
             type="button"
-            class="absolute right-0 top-1/2 inline-flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-white/25 bg-white/10 text-white backdrop-blur-sm transition hover:bg-white/16 sm:right-2 sm:h-14 sm:w-14"
+            class="gallery-lightbox__next absolute right-0 top-1/2 inline-flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-white/25 bg-[#25251f]/78 text-white transition hover:bg-[#25251f] sm:right-2 sm:h-14 sm:w-14"
             data-lightbox-next
             aria-label="Immagine successiva"
           >
             <ChevronRight class="h-6 w-6" stroke-width={2.4} aria-hidden="true" />
           </button>
+          )}
         </figure>
       </div>
     </div>
   </dialog>
+  )}
 </section>
 
 <style>
+  .hike-gallery {
+    color: var(--journal-ink, #25251f);
+  }
+
+  .hike-gallery__heading h2 {
+    margin: 0;
+    color: var(--journal-ink, #25251f);
+    font-family: "Nunito", ui-sans-serif, system-ui, sans-serif;
+    font-size: clamp(2rem, 7vw, 3rem);
+    font-weight: 800;
+    line-height: 1.08;
+    letter-spacing: -0.025em;
+    text-wrap: balance;
+  }
+
+  .hike-gallery__heading p {
+    max-width: 68ch;
+    margin: 10px 0 0;
+    color: color-mix(in srgb, var(--journal-ink, #25251f) 68%, transparent);
+    line-height: 1.65;
+  }
+
+  .hike-gallery__grid {
+    display: grid;
+    gap: 24px;
+    margin-top: 28px;
+  }
+
+  .hike-gallery__item {
+    min-width: 0;
+    margin: 0;
+  }
+
+  .hike-gallery__item button {
+    display: block;
+    width: 100%;
+    overflow: hidden;
+    border: 0;
+    border-radius: 14px;
+    background: var(--journal-paper, #fffdf7);
+    padding: 0;
+    cursor: zoom-in;
+    outline: none;
+  }
+
+  .hike-gallery__item button:focus-visible {
+    outline: 3px solid var(--journal-leaf, #3f6b4f);
+    outline-offset: 4px;
+  }
+
+  .hike-gallery__item img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    transition: filter 180ms ease;
+  }
+
+  .hike-gallery__item button:hover img {
+    filter: saturate(1.06);
+  }
+
+  .hike-gallery__item figcaption {
+    max-width: 65ch;
+    margin-top: 10px;
+    color: color-mix(in srgb, var(--journal-ink, #25251f) 72%, transparent);
+    font-size: 1rem;
+    line-height: 1.55;
+  }
+
+  .hike-gallery__empty {
+    margin-top: 28px;
+    border: 1px dashed var(--journal-border, #ddd7c9);
+    border-radius: 14px;
+    background: var(--journal-paper, #fffdf7);
+    padding: 28px 20px;
+  }
+
+  .hike-gallery__empty p {
+    max-width: 42rem;
+    margin: 0;
+    line-height: 1.7;
+  }
+
+  .hike-gallery__footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+  }
+
   .gallery-lightbox::backdrop {
     background: rgba(9, 16, 13, 0.94);
   }
@@ -94,6 +218,81 @@ const galleryId = `gallery-${Math.random().toString(36).slice(2, 10)}`;
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+
+  .gallery-lightbox__toolbar {
+    position: fixed;
+    top: max(16px, env(safe-area-inset-top));
+    right: max(16px, env(safe-area-inset-right));
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .gallery-lightbox__toolbar span {
+    min-width: 54px;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.875rem;
+    font-variant-numeric: tabular-nums;
+    font-weight: 800;
+    text-align: right;
+  }
+
+  .gallery-lightbox__toolbar button {
+    display: inline-flex;
+    width: 48px;
+    height: 48px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 9999px;
+    background: rgba(37, 37, 31, 0.78);
+    color: #fff;
+  }
+
+  .gallery-lightbox__toolbar button:hover {
+    background: #25251f;
+  }
+
+  .gallery-lightbox__toolbar button:focus-visible,
+  .gallery-lightbox__previous:focus-visible,
+  .gallery-lightbox__next:focus-visible {
+    outline: 3px solid #f2c94c;
+    outline-offset: 3px;
+  }
+
+  .gallery-lightbox__caption {
+    color: rgba(255, 255, 255, 0.92);
+  }
+
+  @media (min-width: 720px) {
+    .hike-gallery__grid {
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: 32px 24px;
+    }
+
+    .hike-gallery__item--wide {
+      grid-column: span 7;
+    }
+
+    .hike-gallery__item--narrow {
+      grid-column: span 5;
+    }
+
+    .hike-gallery__item--wide img {
+      aspect-ratio: 16 / 10;
+    }
+
+    .hike-gallery__item--narrow img {
+      aspect-ratio: 4 / 5;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hike-gallery__item img {
+      transition: none;
+    }
   }
 </style>
 
@@ -105,6 +304,8 @@ const galleryId = `gallery-${Math.random().toString(36).slice(2, 10)}`;
     const triggers = Array.from(root.querySelectorAll('[data-lightbox-trigger]'));
     const image = dialog?.querySelector('[data-lightbox-image]');
     const caption = dialog?.querySelector('[data-lightbox-caption]');
+    const counter = dialog?.querySelector('[data-lightbox-counter]');
+    const closeButton = dialog?.querySelector('[data-lightbox-close]');
     const prevButton = dialog?.querySelector('[data-lightbox-prev]');
     const nextButton = dialog?.querySelector('[data-lightbox-next]');
     const content = dialog?.querySelector('[data-lightbox-content]');
@@ -119,18 +320,24 @@ const galleryId = `gallery-${Math.random().toString(36).slice(2, 10)}`;
     }));
 
     let currentIndex = 0;
+    let lastTrigger = null;
 
     const render = () => {
       const item = items[currentIndex];
       image.src = item.src;
       image.alt = item.alt;
       caption.textContent = item.caption;
+      if (counter) counter.textContent = `${currentIndex + 1} / ${items.length}`;
     };
 
     const open = (index) => {
       currentIndex = index;
+      lastTrigger = triggers[index];
       render();
-      if (!dialog.open) dialog.showModal();
+      if (!dialog.open) {
+        dialog.showModal();
+        closeButton?.focus();
+      }
     };
 
     const close = () => {
@@ -146,14 +353,19 @@ const galleryId = `gallery-${Math.random().toString(36).slice(2, 10)}`;
       trigger.addEventListener('click', () => open(index));
     });
 
+    closeButton?.addEventListener('click', close);
     prevButton?.addEventListener('click', () => goTo(-1));
     nextButton?.addEventListener('click', () => goTo(1));
     dialog.addEventListener('click', (event) => {
       const target = event.target;
       const clickedMedia = media.contains(target);
-      const clickedControl = target.closest('[data-lightbox-prev], [data-lightbox-next]');
+      const clickedControl = target.closest('[data-lightbox-close], [data-lightbox-prev], [data-lightbox-next]');
 
       if (!clickedMedia && !clickedControl) close();
+    });
+
+    dialog.addEventListener('close', () => {
+      lastTrigger?.focus();
     });
 
     dialog.addEventListener('keydown', (event) => {

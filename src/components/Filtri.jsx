@@ -784,9 +784,15 @@ export default function Filtri({ escursioni = [], initialFilters = defaultFilter
         )}
 
         {filtered.length > pageSize && (
-          <nav aria-label="Pagine dei risultati" class="flex items-center justify-center gap-2 overflow-x-auto pb-1">
+          <nav
+            aria-label="Pagine dei risultati"
+            class="!mt-8 mx-auto flex w-fit max-w-full items-center gap-1 overflow-x-auto rounded-[14px] border border-[#DDD7C9] bg-[#FFFDF7]/80 p-1.5"
+          >
             {currentPage === 1 ? (
-              <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#DDD7C9] text-[#3F6B4F] opacity-40">
+              <span
+                class="flex h-11 w-11 shrink-0 items-center justify-center rounded-[10px] text-[#3F6B4F] opacity-35"
+                aria-hidden="true"
+              >
                 <ChevronLeft size={18} strokeWidth={2.4} aria-hidden="true" />
               </span>
             ) : (
@@ -797,13 +803,13 @@ export default function Filtri({ escursioni = [], initialFilters = defaultFilter
                   goToPage(currentPage - 1);
                 }}
                 aria-label="Pagina precedente"
-                class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#DDD7C9] bg-[#FFFDF7] text-[#3F6B4F] transition-colors hover:bg-terracotta-50 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none"
+                class="flex h-11 w-11 shrink-0 items-center justify-center rounded-[10px] text-[#3F6B4F] transition-colors hover:bg-[#F7F1E3] hover:text-[#25251F] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none"
               >
                 <ChevronLeft size={18} strokeWidth={2.4} aria-hidden="true" />
               </a>
             )}
 
-            <div class="flex items-center gap-2 whitespace-nowrap">
+            <div class="flex items-center gap-1 whitespace-nowrap">
               {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
               <a
                 href={buildPaginationUrl(page)}
@@ -812,10 +818,10 @@ export default function Filtri({ escursioni = [], initialFilters = defaultFilter
                   goToPage(page);
                 }}
                 aria-current={page === currentPage ? "page" : undefined}
-                class={`flex h-11 w-11 items-center justify-center rounded-full text-sm font-bold transition-colors focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none ${
+                class={`flex h-11 min-w-11 items-center justify-center rounded-[10px] border px-2 text-sm font-extrabold tabular-nums transition-colors focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none ${
                   page === currentPage
-                    ? "bg-[#E66A4E] text-[#FFFDF7]"
-                    : "bg-[#FFFDF7] text-[#3F6B4F] hover:bg-terracotta-50"
+                    ? "border-[#E0B733] bg-[#F2C94C] text-[#25251F]"
+                    : "border-transparent text-[#3F6B4F] hover:bg-[#F7F1E3] hover:text-[#25251F]"
                 }`}
               >
                 {page}
@@ -824,7 +830,10 @@ export default function Filtri({ escursioni = [], initialFilters = defaultFilter
             </div>
 
             {currentPage === totalPages ? (
-              <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#DDD7C9] text-[#3F6B4F] opacity-40">
+              <span
+                class="flex h-11 w-11 shrink-0 items-center justify-center rounded-[10px] text-[#3F6B4F] opacity-35"
+                aria-hidden="true"
+              >
                 <ChevronRight size={18} strokeWidth={2.4} aria-hidden="true" />
               </span>
             ) : (
@@ -835,7 +844,7 @@ export default function Filtri({ escursioni = [], initialFilters = defaultFilter
                   goToPage(currentPage + 1);
                 }}
                 aria-label="Pagina successiva"
-                class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#DDD7C9] bg-[#FFFDF7] text-[#3F6B4F] transition-colors hover:bg-terracotta-50 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none"
+                class="flex h-11 w-11 shrink-0 items-center justify-center rounded-[10px] text-[#3F6B4F] transition-colors hover:bg-[#F7F1E3] hover:text-[#25251F] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none"
               >
                 <ChevronRight size={18} strokeWidth={2.4} aria-hidden="true" />
               </a>
