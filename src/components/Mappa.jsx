@@ -1,15 +1,12 @@
 import { h } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 import { Expand, Shrink } from "lucide-preact";
-import siteLogo from "../assets/images/site/logo/gea-brand-master.png";
+import geaMarkerLogo from "../assets/images/site/logo/gea-brand-master.png";
 import { withBase } from "../utils/base.js";
 
-const markerIconRetinaUrl = withBase("/leaflet/marker-icon-2x.png");
-const markerIconUrl = withBase("/leaflet/marker-icon.png");
-const markerShadowUrl = withBase("/leaflet/marker-shadow.png");
-const geaMarkerLogoUrl = siteLogo.src;
 const CLUSTER_DISTANCE = 52;
 const CLUSTER_MAX_ZOOM = 17;
+const geaMarkerLogoUrl = geaMarkerLogo.src;
 
 function escapeHtml(value = "") {
   return String(value)
@@ -50,20 +47,39 @@ function hasGea(item) {
   return partecipanti.some((participant) => String(participant).trim().toLowerCase() === "gea");
 }
 
-function createGeaMarkerIcon(L) {
+function createStandardMarkerIcon(L) {
   return L.divIcon({
-    className: "gea-map-marker",
+    className: "popi-map-marker popi-map-marker--standard",
     html: `
-      <span style="position:relative;display:flex;align-items:center;justify-content:center;width:52px;height:62px;">
-        <span style="position:absolute;left:50%;bottom:1px;transform:translateX(-50%);width:0;height:0;border-left:11px solid transparent;border-right:11px solid transparent;border-top:17px solid #315334;filter:drop-shadow(0 8px 10px rgba(23,51,40,.28));"></span>
-        <span style="position:relative;display:flex;width:46px;height:46px;align-items:center;justify-content:center;border:3px solid #ffffff;border-radius:9999px;background:#315334;box-shadow:0 10px 20px rgba(23,51,40,.28);">
-          <img src="${geaMarkerLogoUrl}" alt="" style="display:block;width:28px;height:28px;object-fit:contain;" />
+      <span style="position:relative;display:block;width:44px;height:54px;">
+        <span style="position:absolute;left:50%;bottom:1px;transform:translateX(-50%);width:0;height:0;border-left:10px solid transparent;border-right:10px solid transparent;border-top:16px solid #c9633d;filter:drop-shadow(0 7px 10px rgba(23,51,40,.24));"></span>
+        <span style="position:relative;display:flex;width:42px;height:42px;align-items:center;justify-content:center;border:3px solid #fffaf3;border-radius:9999px;background:#c9633d;box-shadow:0 8px 18px rgba(23,51,40,.24);">
+          <span style="display:block;width:14px;height:14px;border-radius:9999px;background:#fffaf3;"></span>
         </span>
       </span>
     `,
-    iconSize: [52, 62],
-    iconAnchor: [26, 60],
-    popupAnchor: [0, -56]
+    iconSize: [44, 54],
+    iconAnchor: [22, 52],
+    popupAnchor: [0, -48]
+  });
+}
+
+function createGeaMarkerIcon(L) {
+  return L.divIcon({
+    className: "popi-map-marker popi-map-marker--gea",
+    html: `
+      <span style="position:relative;display:block;width:48px;height:58px;">
+        <span style="position:absolute;left:50%;bottom:1px;transform:translateX(-50%);width:0;height:0;border-left:11px solid transparent;border-right:11px solid transparent;border-top:17px solid #315334;filter:drop-shadow(0 8px 12px rgba(23,51,40,.28));"></span>
+        <span style="position:relative;display:flex;width:46px;height:46px;align-items:center;justify-content:center;border:3px solid #fffaf3;border-radius:9999px;background:#315334;box-shadow:0 10px 20px rgba(23,51,40,.26);">
+          <span style="display:flex;width:34px;height:34px;align-items:center;justify-content:center;border-radius:9999px;background:#fffaf3;overflow:hidden;">
+            <img src="${geaMarkerLogoUrl}" alt="" style="display:block;width:32px;height:32px;object-fit:contain;" />
+          </span>
+        </span>
+      </span>
+    `,
+    iconSize: [48, 58],
+    iconAnchor: [24, 56],
+    popupAnchor: [0, -52]
   });
 }
 
@@ -133,13 +149,15 @@ function buildClusters(map, points) {
   });
 }
 
-function renderMarkers({ L, map, layer, points, geaMarkerIcon }) {
+function renderMarkers({ L, map, layer, points, standardMarkerIcon, geaMarkerIcon }) {
   layer.clearLayers();
 
   buildClusters(map, points).forEach((cluster) => {
     if (cluster.items.length === 1) {
       const [item] = cluster.items;
-      const marker = L.marker([item.lat, item.lng], hasGea(item) ? { icon: geaMarkerIcon } : undefined);
+      const marker = L.marker([item.lat, item.lng], {
+        icon: hasGea(item) ? geaMarkerIcon : standardMarkerIcon
+      });
       marker.bindPopup(createPopupContent(item));
       layer.addLayer(marker);
       return;
@@ -203,13 +221,7 @@ export default function Mappa({
         const L = (await import("leaflet")).default;
         if (cancelled || mapInstance.current) return;
 
-        delete L.Icon.Default.prototype._getIconUrl;
-        L.Icon.Default.mergeOptions({
-          iconRetinaUrl: markerIconRetinaUrl,
-          iconUrl: markerIconUrl,
-          shadowUrl: markerShadowUrl
-        });
-
+        const standardMarkerIcon = createStandardMarkerIcon(L);
         const geaMarkerIcon = createGeaMarkerIcon(L);
         const map = L.map(mapElement.current, { scrollWheelZoom: isFullscreen });
         const markerLayer = L.layerGroup().addTo(map);
@@ -221,7 +233,7 @@ export default function Mappa({
           attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(map);
 
-        redrawMarkers = () => renderMarkers({ L, map, layer: markerLayer, points, geaMarkerIcon });
+        redrawMarkers = () => renderMarkers({ L, map, layer: markerLayer, points, standardMarkerIcon, geaMarkerIcon });
         redrawMarkersRef.current = redrawMarkers;
         map.on("zoomend moveend", redrawMarkers);
 

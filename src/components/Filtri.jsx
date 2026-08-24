@@ -1,6 +1,6 @@
 import { h } from "preact";
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
-import { ChevronDown, ChevronLeft, ChevronRight, X } from "lucide-preact";
+import { ArrowDownUp, ChevronDown, ChevronLeft, ChevronRight, X } from "lucide-preact";
 import CardEscursione from "./CardEscursione.jsx";
 
 const seasonOptions = [
@@ -19,7 +19,7 @@ const difficultyOptions = [
 
 const sortOptions = [
   { value: "date-desc", label: "Più recenti" },
-  { value: "date-asc", label: "Dal meno recente" },
+  { value: "date-asc", label: "Meno recenti" },
   { value: "km-desc", label: "Più lunghe" },
   { value: "km-asc", label: "Più corte" },
   { value: "gea-rating", label: "Gea Rating" }
@@ -725,35 +725,45 @@ export default function Filtri({ escursioni = [], initialFilters = defaultFilter
       </div>
 
       <section class="space-y-4" aria-labelledby="results-heading">
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h2
-              id="results-heading"
-              ref={resultsHeadingRef}
-              tabindex="-1"
-              aria-live="polite"
-              aria-atomic="true"
-              class="w-fit text-2xl font-extrabold text-[#25251f] outline-none focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F]"
+        <div class="flex items-center justify-between gap-2 sm:gap-3">
+          <h2
+            id="results-heading"
+            ref={resultsHeadingRef}
+            tabindex="-1"
+            aria-live="polite"
+            aria-atomic="true"
+            class="min-w-0 whitespace-nowrap text-xl font-extrabold text-[#25251f] outline-none focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] sm:text-2xl"
+          >
+            {filtered.length} {filtered.length === 1 ? "Escursione" : "Escursioni"}
+          </h2>
+          <div class="relative w-48 shrink-0 sm:w-auto sm:min-w-[13rem]">
+            <span
+              class="pointer-events-none absolute left-2 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-[6px] bg-[#F2C94C] text-[#25251F]"
+              aria-hidden="true"
             >
-              Risultati ({filtered.length})
-            </h2>
-          </div>
-          <div class="sm:min-w-[240px]">
+              <ArrowDownUp size={15} strokeWidth={2.4} />
+            </span>
             <select
               aria-label="Ordina risultati"
               value={filters.sort}
               onInput={(event) => updateField("sort", event.currentTarget.value)}
-              class="w-full rounded-2xl border border-[#DDD7C9] bg-[#FFFDF7] px-4 py-3 font-semibold text-[#25251F] outline-none transition-colors focus:border-[#3F6B4F] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none"
+              class="min-h-12 w-full appearance-none rounded-[10px] border border-[#DDD7C9] bg-[#FFFDF7] py-3 pl-11 pr-9 text-sm font-extrabold text-[#3F6B4F] outline-none transition-colors hover:border-[#91A66D] focus:border-[#3F6B4F] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none"
             >
               {sortOptions.map((item) => (
                 <option value={item.value}>{item.label}</option>
               ))}
             </select>
+            <span
+              class="pointer-events-none absolute right-3 top-1/2 flex -translate-y-1/2 items-center text-[#3F6B4F]"
+              aria-hidden="true"
+            >
+              <ChevronDown size={18} strokeWidth={2.4} />
+            </span>
           </div>
         </div>
 
         {paginated.length ? (
-          <div class="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+          <div class="grid gap-x-6 gap-y-10 md:grid-cols-2 md:gap-y-12 xl:grid-cols-3">
             {paginated.map((item) => (
               <CardEscursione escursione={item} />
             ))}

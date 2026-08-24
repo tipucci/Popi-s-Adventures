@@ -55,7 +55,15 @@ const isWithGea = (escursione.partecipanti || []).includes("gea");
     </figure>
 
     <div class="home-adventure__content">
-      <h3 class="home-adventure__title">{escursione.titolo}</h3>
+      <div
+        class:list={[
+          "home-adventure__heading-row",
+          isWithGea && "home-adventure__heading-row--with-gea"
+        ]}
+      >
+        <h3 class="home-adventure__title">{escursione.titolo}</h3>
+        {isWithGea && <span class="home-adventure__gea">Con Gea</span>}
+      </div>
       <p class="home-adventure__place-date">
         <span>{escursione.luogo}</span>
         <span aria-hidden="true">·</span>
@@ -73,7 +81,6 @@ const isWithGea = (escursione.partecipanti || []).includes("gea");
         </p>
       )}
 
-      {isWithGea && <p class="home-adventure__gea">Con Gea</p>}
       <span class="home-adventure__entry">Apri il ricordo <span aria-hidden="true">→</span></span>
     </div>
   </a>
@@ -124,6 +131,22 @@ const isWithGea = (escursione.partecipanti || []).includes("gea");
 
   .home-adventure__content {
     padding-top: 16px;
+  }
+
+  .home-adventure__heading-row {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .home-adventure__heading-row--with-gea .home-adventure__title {
+    min-width: 0;
+    overflow: hidden;
+    overflow-wrap: normal;
+    text-overflow: ellipsis;
+    text-wrap: nowrap;
+    white-space: nowrap;
   }
 
   .home-adventure__title {
@@ -182,8 +205,9 @@ const isWithGea = (escursione.partecipanti || []).includes("gea");
   }
 
   .home-adventure__gea {
+    flex: 0 0 auto;
     width: fit-content;
-    margin: 12px 0 0;
+    margin: 0 0 0 auto;
     border-radius: 9999px;
     background: var(--journal-sunshine, #f2c94c);
     padding: 6px 10px;
@@ -194,17 +218,26 @@ const isWithGea = (escursione.partecipanti || []).includes("gea");
   }
 
   .home-adventure__entry {
+    position: relative;
     display: inline-flex;
     align-items: center;
     gap: 8px;
     margin-top: 16px;
+    padding-bottom: 5px;
     color: var(--journal-leaf, #3f6b4f);
     font-size: 0.9375rem;
     font-weight: 800;
-    text-decoration: underline;
-    text-decoration-color: var(--journal-sunshine, #f2c94c);
-    text-decoration-thickness: 3px;
-    text-underline-offset: 5px;
+  }
+
+  .home-adventure__entry::after {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--journal-sunshine, #f2c94c);
+    content: "";
   }
 
   .home-adventure__placeholder-label {

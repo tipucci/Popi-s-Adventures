@@ -4,8 +4,8 @@ import { withBase } from "../utils/base.js";
 import { formatKilometers, formatMeters } from "../utils/format.js";
 
 const featureBadges = [
-  { key: "anello", label: "Sentiero ad anello", Icon: RotateCcw },
   { key: "gea", label: "Con Gea", Icon: PawPrint },
+  { key: "anello", label: "Anello", Icon: RotateCcw },
   { key: "rifugio", label: "Rifugio", Icon: Utensils },
   { key: "acqua", label: "Acqua", Icon: Droplets }
 ];

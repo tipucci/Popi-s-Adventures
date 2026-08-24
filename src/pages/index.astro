@@ -26,6 +26,7 @@ const stats = {
   dislivello: formatMeters(escursioni.reduce((total, item) => total + item.dislivello, 0)),
   conGea: escursioni.filter((item) => item.partecipanti.includes("gea")).length
 };
+const geaArchiveHref = `${withBase("/escursioni")}?soloGea=1`;
 ---
 
 <Layout
@@ -64,9 +65,6 @@ const stats = {
             </div>
           )}
 
-          <a href={withBase("/escursioni")} class="home-recent__all">
-            Tutte le escursioni <span aria-hidden="true">→</span>
-          </a>
         </div>
       ) : (
         <div class="home-recent__empty">
@@ -78,11 +76,19 @@ const stats = {
 
     {hasEscursioni && (
       <section class="journal-facts" aria-labelledby="journal-facts-title">
-        <h2 id="journal-facts-title">Il diario, fin qui</h2>
+        <h2 id="journal-facts-title">Le statistiche del diario</h2>
         <dl>
           <div>
             <dt>Uscite</dt>
             <dd>{stats.uscite}</dd>
+          </div>
+          <div class="journal-facts__gea">
+            <dt>Con Gea</dt>
+            <dd>
+              <a href={geaArchiveHref} aria-label={`Vedi le ${stats.conGea} escursioni con Gea`}>
+                {stats.conGea}
+              </a>
+            </dd>
           </div>
           <div>
             <dt>Km totali</dt>
@@ -91,10 +97,6 @@ const stats = {
           <div>
             <dt>Dislivello</dt>
             <dd>{stats.dislivello} m</dd>
-          </div>
-          <div class="journal-facts__gea">
-            <dt>Con Gea</dt>
-            <dd>{stats.conGea}</dd>
           </div>
         </dl>
       </section>
@@ -162,7 +164,6 @@ const stats = {
     margin-top: 8px;
   }
 
-  .home-recent__all,
   .home-recent__empty a {
     display: inline-flex;
     width: fit-content;
@@ -178,12 +179,10 @@ const stats = {
     line-height: 1.3;
   }
 
-  .home-recent__all:hover,
   .home-recent__empty a:hover {
     background: var(--journal-ink);
   }
 
-  .home-recent__all:focus-visible,
   .home-recent__empty a:focus-visible {
     outline: 3px solid var(--journal-leaf);
     outline-offset: 4px;
@@ -260,6 +259,36 @@ const stats = {
       transparent 56%,
       color-mix(in srgb, var(--journal-sunshine) 70%, transparent) 56%
     );
+  }
+
+  .journal-facts__gea {
+    position: relative;
+    border-radius: 6px;
+  }
+
+  .journal-facts__gea a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .journal-facts__gea a::after {
+    position: absolute;
+    inset: 0;
+    content: "";
+  }
+
+  .journal-facts__gea:hover dt,
+  .journal-facts__gea:focus-within dt {
+    color: var(--journal-leaf);
+  }
+
+  .journal-facts__gea:focus-within {
+    outline: 3px solid var(--journal-leaf);
+    outline-offset: 4px;
+  }
+
+  .journal-facts__gea a:focus-visible {
+    outline: none;
   }
 
   @media (min-width: 640px) {
