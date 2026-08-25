@@ -9,6 +9,7 @@ const {
 
 const galleryId = `gallery-${Math.random().toString(36).slice(2, 10)}`;
 const hasMultipleImages = images.length > 1;
+const hasOddEnding = images.length > 1 && images.length % 2 === 1;
 const hasFooter = Astro.slots.has("footer");
 ---
 
@@ -24,9 +25,11 @@ const hasFooter = Astro.slots.has("footer");
         <figure
           class:list={[
             "hike-gallery__item",
-            index % 4 === 0 || index % 4 === 3
-              ? "hike-gallery__item--wide"
-              : "hike-gallery__item--narrow"
+            hasOddEnding && index === images.length - 1
+              ? "hike-gallery__item--ending"
+              : index % 4 === 0 || index % 4 === 3
+                ? "hike-gallery__item--wide"
+                : "hike-gallery__item--narrow"
           ]}
         >
           <button
@@ -39,7 +42,9 @@ const hasFooter = Astro.slots.has("footer");
             aria-label={`Apri la foto ${index + 1} di ${images.length}`}
           >
             <img
-              src={image.src}
+              src={image.thumbnailSrc || image.src}
+              srcset={image.thumbnailSrcSet || undefined}
+              sizes="(min-width: 1152px) 640px, (min-width: 720px) 58vw, calc(100vw - 2rem)"
               alt={image.alt}
               width="720"
               height="540"
@@ -280,12 +285,20 @@ const hasFooter = Astro.slots.has("footer");
       grid-column: span 5;
     }
 
+    .hike-gallery__item--ending {
+      grid-column: 3 / span 8;
+    }
+
     .hike-gallery__item--wide img {
       aspect-ratio: 16 / 10;
     }
 
     .hike-gallery__item--narrow img {
       aspect-ratio: 4 / 5;
+    }
+
+    .hike-gallery__item--ending img {
+      aspect-ratio: 4 / 3;
     }
   }
 

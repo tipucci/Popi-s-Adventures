@@ -3,7 +3,7 @@ import Layout from "../../layouts/Layout.astro";
 import HikeGallery from "../../components/HikeGallery.astro";
 import Mappa from "../../components/Mappa.jsx";
 import PhotoUploadButton from "../../components/PhotoUploadButton.tsx";
-import { PawPrint, Star, StarHalf, UserRound } from "@lucide/astro";
+import { Mountain, PawPrint, Star, StarHalf, UserRound } from "@lucide/astro";
 import { getDogFriendByName, getDogFriends } from "../../data/dogFriends.js";
 import { getEscursioni } from "../../data/escursioni.js";
 import { withBase } from "../../utils/base.js";
@@ -123,10 +123,13 @@ const uploadSlug = escursione.imageSlug || escursione.slug;
       <figure class:list={["hike-hero__figure", !hasRealCover && "hike-hero__figure--placeholder"]}>
         <img
           src={escursione.cover}
+          srcset={escursione.coverSrcSet || undefined}
+          sizes="(min-width: 900px) 62vw, calc(100vw - 2rem)"
           alt={escursione.coverAlt || escursione.titolo}
           width="960"
           height="720"
           loading="eager"
+          fetchpriority="high"
           decoding="async"
         />
         {!hasRealCover && <figcaption>Foto in arrivo</figcaption>}
@@ -187,8 +190,10 @@ const uploadSlug = escursione.imageSlug || escursione.slug;
 
           <div class="hike-company__notes">
             {escursione.nome_rifugio && (
-              <div>
-                <p>Una tappa del giorno</p>
+              <div class="hike-refuge">
+                <span class="hike-refuge__marker" aria-hidden="true">
+                  <Mountain size={22} strokeWidth={2.2} />
+                </span>
                 <strong>{escursione.nome_rifugio}</strong>
               </div>
             )}
@@ -219,13 +224,13 @@ const uploadSlug = escursione.imageSlug || escursione.slug;
 
     <section class="hike-route" aria-labelledby="hike-route-title">
       <div class="hike-section-heading">
-        <h2 id="hike-route-title">Il percorso</h2>
+        <h2 id="hike-route-title">Dove siamo stati</h2>
       </div>
       <Mappa
         client:load
         escursioni={[escursione]}
-        height="360px"
-        title={`Il percorso di ${escursione.titolo}`}
+        height="clamp(260px, 52vw, 320px)"
+        title={`Posizione di ${escursione.titolo}`}
         showHeader={false}
         variant="journal"
       />
@@ -378,7 +383,7 @@ const uploadSlug = escursione.imageSlug || escursione.slug;
 
   .hike-facts dt,
   .hike-company__notes p {
-    color: color-mix(in srgb, var(--journal-ink) 62%, transparent);
+    color: color-mix(in srgb, var(--journal-ink) 70%, transparent);
     font-size: 0.875rem;
     font-weight: 700;
     line-height: 1.35;
@@ -466,6 +471,35 @@ const uploadSlug = escursione.imageSlug || escursione.slug;
     min-width: 0;
   }
 
+  .hike-refuge {
+    display: grid;
+    width: fit-content;
+    max-width: 100%;
+    grid-template-columns: 42px minmax(0, 1fr);
+    align-items: center;
+    gap: 12px;
+  }
+
+  .hike-refuge__marker {
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    width: 42px;
+    height: 42px;
+    place-items: center;
+    color: var(--journal-leaf);
+  }
+
+  .hike-refuge__marker::before {
+    position: absolute;
+    inset: 3px;
+    z-index: -1;
+    border-radius: 48% 52% 44% 56%;
+    background: color-mix(in srgb, var(--journal-sunshine) 44%, transparent);
+    transform: rotate(-6deg);
+    content: "";
+  }
+
   .hike-company__notes p,
   .hike-company__notes strong {
     margin: 0;
@@ -478,6 +512,28 @@ const uploadSlug = escursione.imageSlug || escursione.slug;
     font-size: 1.25rem;
     line-height: 1.35;
     overflow-wrap: anywhere;
+  }
+
+  .hike-refuge > strong {
+    position: relative;
+    isolation: isolate;
+    width: fit-content;
+    max-width: 100%;
+    margin-top: 0;
+    padding-bottom: 3px;
+  }
+
+  .hike-refuge > strong::after {
+    position: absolute;
+    right: -4px;
+    bottom: -2px;
+    left: -2px;
+    z-index: -1;
+    height: 6px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--journal-sunshine) 68%, transparent);
+    transform: rotate(-1deg);
+    content: "";
   }
 
   .hike-gea-rating {

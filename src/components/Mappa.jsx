@@ -38,7 +38,7 @@ function createPopupContent(item) {
     <strong>${escapeHtml(item.titolo)}</strong><br/>
     ${escapeHtml(item.luogo)}<br/>
     ${compactStats.length ? `<span>${escapeHtml(compactStats.join(" · "))}</span><br/>` : ""}
-    <a href="${detailUrl}">Apri dettaglio</a><br/>
+    <a href="${detailUrl}">Apri il racconto</a><br/>
     <a href="${directionsUrl}" target="_blank" rel="noreferrer noopener">Indicazioni stradali</a>
   `;
 }

@@ -12,7 +12,8 @@ const {
   active = "home",
   image = siteImages.heroHome.src,
   mobileBackHref = "",
-  mobileBackLabel = ""
+  mobileBackLabel = "",
+  mobileTitle = ""
 } = Astro.props;
 
 const navItems = [
@@ -21,6 +22,10 @@ const navItems = [
   { id: "mappa", href: withBase("/mappa"), label: "Mappa", Icon: Map },
   { id: "zaino", href: withBase("/prepara-lo-zaino"), label: "Zaino", Icon: Backpack }
 ];
+
+const activeNavItem = navItems.find((item) => item.id === active);
+const resolvedMobileTitle = mobileTitle || title.split(" | ")[0] || activeNavItem?.label || "";
+const hasMobileHeaderEnd = Astro.slots.has("mobile-header-end");
 
 const footerLinks = [
   { label: "Tutte le escursioni", href: withBase("/escursioni") },
@@ -69,13 +74,21 @@ const serviceWorkerUrl = withBase("/sw.js");
   <body class="min-h-screen bg-cream text-forest-800 antialiased">
     <div class="min-h-screen bg-[#F7F1E3]">
       <div class="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 pb-[calc(8rem+env(safe-area-inset-bottom))] pt-4 sm:px-6 md:pb-12 lg:px-8">
-      <div class="mobile-topbar -mx-4 -mt-4 flex items-center justify-between gap-4 bg-[#F7F1E3] px-4 pb-4 pt-4 sm:-mx-6 sm:px-6 md:hidden">
-        <a
-          href={withBase("/")}
-          aria-label="Torna alla home"
-          class="inline-flex min-h-12 items-center justify-center rounded-[10px] px-1 transition"
-        >
-          <span class="flex h-12 w-12 items-center justify-start">
+      <div class="mobile-topbar -mx-4 -mt-4 flex items-center justify-between gap-4 bg-[#F7F1E3] px-4 pb-4 pt-[calc(1rem+env(safe-area-inset-top))] sm:-mx-6 sm:px-6 md:hidden">
+        {mobileBackHref && mobileBackLabel ? (
+          <a
+            href={mobileBackHref}
+            class="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-[10px] border border-[#DDD7C9] bg-[#FFFDF7] px-3.5 py-2 text-sm font-extrabold text-[#3F6B4F] transition-colors duration-150 hover:border-[#3F6B4F]/35 hover:bg-[#F2C94C]/20 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none"
+          >
+            <ArrowLeft class="h-4 w-4 shrink-0" stroke-width={2.2} aria-hidden="true" />
+            <span>{mobileBackLabel}</span>
+          </a>
+        ) : (
+          <a
+            href={withBase("/")}
+            aria-label="Torna alla home"
+            class="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-[10px] transition-colors duration-150 hover:bg-[#FFFDF7] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none"
+          >
             <img
               src={siteMark.src}
               alt=""
@@ -85,22 +98,20 @@ const serviceWorkerUrl = withBase("/sw.js");
               decoding="async"
               class="h-12 w-12 object-contain"
             />
-          </span>
-        </a>
-
-        {mobileBackHref && mobileBackLabel ? (
-          <a
-            href={mobileBackHref}
-            class="inline-flex items-center justify-center gap-2 rounded-full bg-forest-700 px-4 py-2 text-sm font-bold text-[#fffaf3] shadow-card transition hover:bg-forest-600"
-          >
-            <ArrowLeft class="h-4 w-4 shrink-0 text-[#fffaf3]" stroke-width={2.2} aria-hidden="true" />
-            <span class="text-[#fffaf3]">{mobileBackLabel}</span>
           </a>
-        ) : (
-          <div class="min-w-0 flex-1">
-            <slot name="mobile-header-end" />
-          </div>
         )}
+
+        <div class="min-w-0 flex-1">
+          {hasMobileHeaderEnd ? (
+            <slot name="mobile-header-end" />
+          ) : (
+            <p class="truncate text-right text-sm font-extrabold tracking-[0.02em] text-[#3F6B4F]">
+              <span class="relative isolate inline-block after:absolute after:-inset-x-0.5 after:-bottom-px after:-z-10 after:h-[5px] after:rotate-[-1deg] after:rounded-[50%] after:bg-[#F2C94C]/75 after:content-['']">
+                {resolvedMobileTitle}
+              </span>
+            </p>
+          )}
+        </div>
       </div>
         <header class="desktop-header relative isolate z-50 -mt-4 mb-5 hidden border-b border-[#DDD7C9] bg-transparent pb-3 pt-6 font-sans text-[#25251F] before:absolute before:inset-y-0 before:left-1/2 before:-z-10 before:w-screen before:-translate-x-1/2 before:bg-[#F7F1E3] before:content-[''] md:grid md:grid-cols-[auto_minmax(0,1fr)_auto] md:items-center md:gap-4">
           <a
@@ -155,23 +166,23 @@ const serviceWorkerUrl = withBase("/sw.js");
 
         <nav
           aria-label="Navigazione principale"
-          class="mobile-bottom-nav fixed inset-x-0 bottom-[calc(1rem+env(safe-area-inset-bottom))] z-[1100] mx-auto w-[calc(100%-1.5rem)] max-w-md rounded-full border border-white/70 bg-white/90 p-2 shadow-card backdrop-blur md:hidden"
+          class="mobile-bottom-nav fixed inset-x-0 bottom-[calc(1rem+env(safe-area-inset-bottom))] z-[1100] mx-auto w-[calc(100%-2.5rem)] max-w-md rounded-[14px] border border-[#DDD7C9] bg-[#FFFDF7] p-1.5 md:hidden"
         >
-          <ul class="grid grid-cols-4 gap-2">
+          <ul class="grid grid-cols-4 gap-1">
             {navItems.map((item) => (
               <li>
                 <a
                   href={item.href}
                   aria-current={active === item.id ? "page" : undefined}
                   class:list={[
-                    "flex min-h-14 flex-col items-center gap-1 rounded-full px-3 py-2 text-xs font-bold transition focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F]",
+                    "relative isolate flex min-h-14 flex-col items-center gap-1 rounded-[10px] px-1 py-2 text-xs font-bold tracking-[0.02em] transition-colors duration-150 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none",
                     active === item.id
-                      ? "bg-terracotta-600 text-[#fffaf3]"
-                      : "text-forest-700 hover:bg-terracotta-50"
+                      ? "font-extrabold text-[#3F6B4F] after:absolute after:bottom-1 after:left-1/2 after:-z-10 after:h-[5px] after:w-9 after:-translate-x-1/2 after:rotate-[-2deg] after:rounded-[50%] after:bg-[#F2C94C]/80 after:content-['']"
+                      : "text-[#25251F]/75 hover:bg-[#F7F1E3] hover:text-[#3F6B4F]"
                   ]}
                 >
-                  <item.Icon class={active === item.id ? "h-5 w-5 shrink-0 text-[#fffaf3]" : "h-5 w-5 shrink-0"} stroke-width={2} aria-hidden="true" />
-                  <span class={active === item.id ? "text-[#fffaf3]" : undefined}>{item.label}</span>
+                  <item.Icon class="h-5 w-5 shrink-0" stroke-width={active === item.id ? 2.4 : 2} aria-hidden="true" />
+                  <span>{item.label}</span>
                 </a>
               </li>
             ))}

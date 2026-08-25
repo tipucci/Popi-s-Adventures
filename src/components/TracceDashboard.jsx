@@ -10,6 +10,7 @@ const dateFormatter = new Intl.DateTimeFormat("it-IT", {
   month: "short",
   year: "numeric"
 });
+const AREA_PREVIEW_COUNT = 4;
 
 function normalizeArea(value) {
   return String(value || "").trim().toLocaleLowerCase("it");
@@ -78,7 +79,15 @@ function RecordFeature({ hike, label, value, variant = "wide" }) {
             <h3 class="mt-1 text-xl font-extrabold leading-tight tracking-[-0.02em] text-[#25251F] group-hover:text-[#3F6B4F]">
               {hike.titolo}
             </h3>
-            <p class="mt-1 text-sm text-[#25251F]/70">{hike.luogo}</p>
+            <p class="mt-1 text-sm text-[#25251F]/70">
+              {hike.luogo}
+              {hike.data && (
+                <>
+                  <span aria-hidden="true"> · </span>
+                  <time dateTime={hike.data}>{formatDate(hike.data)}</time>
+                </>
+              )}
+            </p>
           </div>
           <p class="whitespace-nowrap text-2xl font-black tabular-nums tracking-[-0.02em] text-[#25251F]">{value}</p>
         </div>
@@ -112,8 +121,11 @@ export default function TracceDashboard({ escursioni = [], initialArea = "" }) {
 
   const areaByKey = useMemo(() => new Map(areas.map((area) => [normalizeArea(area.name), area.name])), [areas]);
   const resolveArea = (value) => areaByKey.get(normalizeArea(value)) || "";
-  const [selectedArea, setSelectedArea] = useState(() => resolveArea(initialArea));
-  const [showAllAreas, setShowAllAreas] = useState(false);
+  const initialResolvedArea = resolveArea(initialArea);
+  const [selectedArea, setSelectedArea] = useState(() => initialResolvedArea);
+  const [showAllAreas, setShowAllAreas] = useState(
+    () => Boolean(initialResolvedArea && !areas.slice(0, AREA_PREVIEW_COUNT).some((area) => area.name === initialResolvedArea))
+  );
 
   const longestHike = useMemo(() => pickRecord(escursioni, "km"), [escursioni]);
   const highestClimb = useMemo(() => pickRecord(escursioni, "dislivello"), [escursioni]);
@@ -141,18 +153,24 @@ export default function TracceDashboard({ escursioni = [], initialArea = "" }) {
     [mappedHikes, selectedArea]
   );
 
-  const visibleAreas = showAllAreas ? areas : areas.slice(0, 5);
+  const mapHikes = selectedArea ? selectedHikes : mappedHikes;
+  const visibleAreas = showAllAreas ? areas : areas.slice(0, AREA_PREVIEW_COUNT);
   const maxAreaCount = Math.max(1, ...areas.map((area) => area.count));
 
   useEffect(() => {
     function syncFromUrl() {
       const params = new URLSearchParams(window.location.search);
-      setSelectedArea(resolveArea(params.get("area")));
+      const nextArea = resolveArea(params.get("area"));
+      setSelectedArea(nextArea);
+
+      if (nextArea && !areas.slice(0, AREA_PREVIEW_COUNT).some((area) => area.name === nextArea)) {
+        setShowAllAreas(true);
+      }
     }
 
     window.addEventListener("popstate", syncFromUrl);
     return () => window.removeEventListener("popstate", syncFromUrl);
-  }, [areaByKey]);
+  }, [areaByKey, areas]);
 
   function chooseArea(area) {
     const nextArea = selectedArea === area ? "" : area;
@@ -171,7 +189,7 @@ export default function TracceDashboard({ escursioni = [], initialArea = "" }) {
 
   return (
     <div class="traces-dashboard text-[#25251F]">
-      <header class="max-w-3xl pb-8 pt-2 sm:pb-10 sm:pt-5">
+      <header class="max-w-3xl pb-7 pt-2 sm:pb-9 sm:pt-5">
         <h1 class="text-balance text-4xl font-black leading-[1.05] tracking-[-0.03em] sm:text-5xl lg:text-6xl">
           Le nostre{" "}
           <span class="relative inline-block">
@@ -179,15 +197,14 @@ export default function TracceDashboard({ escursioni = [], initialArea = "" }) {
             <span class="absolute -inset-x-1 bottom-[0.04em] z-0 h-[0.24em] rounded-[50%] bg-[#F2C94C]/80" aria-hidden="true"></span>
           </span>
         </h1>
-        <p class="mt-4 text-lg text-[#25251F]/72">Ogni punto, un’avventura.</p>
       </header>
 
       <section class="grid items-start gap-5 lg:grid-cols-[minmax(0,1.55fr)_minmax(18rem,0.65fr)] lg:gap-8" aria-label="Mappa e aree esplorate">
-        <div class="order-2 min-w-0 lg:order-1">
+        <div class="min-w-0">
           <Mappa
-            escursioni={escursioni}
-            height="clamp(380px, 58svh, 580px)"
-            title="Mappa delle escursioni"
+            escursioni={mapHikes}
+            height="clamp(280px, calc(100svh - 350px), 580px)"
+            title={selectedArea ? `Escursioni in ${selectedArea}` : "Mappa delle escursioni"}
             selectedArea={selectedArea}
             showHeader={false}
             variant="journal"
@@ -201,17 +218,20 @@ export default function TracceDashboard({ escursioni = [], initialArea = "" }) {
               <PawPrint size={15} strokeWidth={2.2} class="text-[#3F6B4F]" aria-hidden="true" />
               Con Gea
             </span>
-            <span class="ml-auto tabular-nums">{mappedHikes.length} uscite</span>
+            <span class="ml-auto tabular-nums">
+              {selectedArea ? `${mapHikes.length} a ${selectedArea}` : `${mappedHikes.length} uscite`}
+            </span>
           </div>
         </div>
 
-        <aside class="order-1 min-w-0 border-y border-[#DDD7C9] py-5 lg:order-2 lg:border-b-0 lg:border-t-0 lg:py-2" aria-labelledby="areas-title">
+        <aside class="mt-16 min-w-0 border-y border-[#DDD7C9] py-5 md:mt-0 lg:border-b-0 lg:border-t-0 lg:py-2" aria-labelledby="areas-title">
           <div class="flex items-center justify-between gap-3">
             <h2 id="areas-title" class="text-2xl font-black tracking-[-0.02em]">Aree esplorate</h2>
             {selectedArea && (
               <button
                 type="button"
                 onClick={() => chooseArea(selectedArea)}
+                aria-label="Mostra tutte le escursioni sulla mappa"
                 class="inline-flex min-h-11 items-center gap-2 rounded-[10px] px-2 text-sm font-bold text-[#3F6B4F] focus:outline-none focus:ring-2 focus:ring-[#3F6B4F] focus:ring-offset-2"
               >
                 <RotateCcw size={16} aria-hidden="true" />
@@ -229,6 +249,7 @@ export default function TracceDashboard({ escursioni = [], initialArea = "" }) {
                     type="button"
                     onClick={() => chooseArea(area.name)}
                     aria-pressed={isActive}
+                    aria-label={`${area.name}: ${area.count} escursioni. Filtra la mappa`}
                     class={`relative grid min-h-12 w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-4 border-b border-[#DDD7C9] px-1 text-left outline-none transition-colors focus-visible:bg-[#FFFDF7] focus-visible:ring-2 focus-visible:ring-[#3F6B4F] motion-reduce:transition-none ${
                       isActive ? "text-[#3F6B4F]" : "hover:text-[#3F6B4F]"
                     }`}
@@ -246,13 +267,13 @@ export default function TracceDashboard({ escursioni = [], initialArea = "" }) {
             })}
           </ol>
 
-          {areas.length > 5 && (
+          {areas.length > AREA_PREVIEW_COUNT && (
             <button
               type="button"
               onClick={() => setShowAllAreas((value) => !value)}
               class="mt-3 min-h-11 text-sm font-extrabold text-[#3F6B4F] underline decoration-2 underline-offset-4 focus:outline-none focus:ring-2 focus:ring-[#3F6B4F] focus:ring-offset-2"
             >
-              {showAllAreas ? "Mostra meno" : `Tutte le ${areas.length} aree`}
+              {showAllAreas ? "Mostra meno" : `Altre ${areas.length - AREA_PREVIEW_COUNT} aree`}
             </button>
           )}
 
@@ -284,7 +305,7 @@ export default function TracceDashboard({ escursioni = [], initialArea = "" }) {
           )}
 
           <p class="sr-only" aria-live="polite">
-            {selectedArea ? `Mappa centrata su ${selectedArea}, ${selectedHikes.length} escursioni.` : "Vista completa della mappa."}
+            {selectedArea ? `Mappa filtrata: ${selectedHikes.length} escursioni in ${selectedArea}.` : "Mappa con tutte le escursioni."}
           </p>
         </aside>
       </section>
@@ -310,14 +331,9 @@ export default function TracceDashboard({ escursioni = [], initialArea = "" }) {
 
       {geaTopThree.length > 0 && (
         <section class="mt-20 border-t border-[#DDD7C9] pt-10 sm:mt-24 sm:pt-12" aria-labelledby="gea-top-title">
-          <div class="flex flex-wrap items-end justify-between gap-3">
-            <div>
-              <div class="flex items-center gap-3">
-                <PawPrint size={24} strokeWidth={2.2} class="text-[#3F6B4F]" aria-hidden="true" />
-                <h2 id="gea-top-title" class="text-3xl font-black tracking-[-0.025em] sm:text-4xl">Le preferite di Gea</h2>
-              </div>
-              <p class="mt-2 text-sm text-[#25251F]/65">A parità di voto, prima la più recente.</p>
-            </div>
+          <div class="flex items-center gap-3">
+            <PawPrint size={24} strokeWidth={2.2} class="text-[#3F6B4F]" aria-hidden="true" />
+            <h2 id="gea-top-title" class="text-3xl font-black tracking-[-0.025em] sm:text-4xl">Le preferite di Gea</h2>
           </div>
 
           <ol class="mt-7 grid gap-7 sm:grid-cols-3">

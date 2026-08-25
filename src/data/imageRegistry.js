@@ -89,11 +89,16 @@ async function createOptimizedVariant(source, options) {
     return null;
   }
 
-  return getImage({
+  const variant = await getImage({
     src: source,
     format: "webp",
     ...options
   });
+
+  return {
+    ...variant,
+    width: options.width
+  };
 }
 
 function buildSrcSet(entries) {
@@ -125,26 +130,33 @@ export async function getHikeImages(slug, title) {
   const meta = hikeImageMeta[slug] || {};
   const cover = getPreferredImage(hikeImageModules, folderPrefix, "cover", coverExtensionPriority);
 
-  const gallery = [...new Set(
+  const galleryBaseNames = [...new Set(
     Object.keys(hikeImageModules)
       .filter((path) => path.startsWith(folderPrefix) && /gallery-\d+\.(jpg|jpeg|png|webp|avif|svg)$/i.test(path))
       .map((path) => path.split("/").at(-1).replace(/\.(jpg|jpeg|png|webp|avif|svg)$/i, ""))
-  )]
-    .sort((a, b) => a.localeCompare(b, "en"))
-    .map((baseName, index) => {
+  )].sort((a, b) => a.localeCompare(b, "en"));
+
+  const gallery = (await Promise.all(
+    galleryBaseNames.map(async (baseName, index) => {
       const image = getPreferredImage(hikeImageModules, folderPrefix, baseName);
       if (!image) return null;
 
       const entry = meta.gallery?.find((item) => item.file.replace(/\.(jpg|jpeg|png|webp|avif|svg)$/i, "") === baseName);
+      const [smallVariant, mediumVariant] = await Promise.all([
+        createOptimizedVariant(image.source, { width: 480, quality: 68 }),
+        createOptimizedVariant(image.source, { width: 960, quality: 74 })
+      ]);
 
       return {
         source: image.source,
         src: normalizeImageSource(image.source),
+        thumbnailSrc: mediumVariant?.src || normalizeImageSource(image.source),
+        thumbnailSrcSet: buildSrcSet([smallVariant, mediumVariant]),
         alt: entry?.alt || defaultGalleryAlt(title, index + 1),
         caption: entry?.caption || ""
       };
     })
-    .filter(Boolean);
+  )).filter(Boolean);
 
   const coverImage = cover
     ? (() => ({
