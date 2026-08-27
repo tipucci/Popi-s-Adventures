@@ -1,17 +1,39 @@
 ---
+import { getImage } from "astro:assets";
+import { ArrowUpRight, PawPrint } from "@lucide/astro";
 import Layout from "../layouts/Layout.astro";
-import { ChevronLeft, ChevronRight, PawPrint } from "@lucide/astro";
 import { getDogFriendImage, getDogFriends } from "../data/dogFriends.js";
 import { withBase } from "../utils/base.js";
 
-const dogs = (await getDogFriends()).map((dog) => ({
-  ...dog,
-  imageAsset: getDogFriendImage(dog.image)
-}));
+async function createDogImageSources(imageAsset) {
+  if (!imageAsset) return [];
 
-function formatCardNumber(index) {
-  return `#${String(index + 1).padStart(3, "0")}`;
+  return Promise.all(
+    [480, 768, 1200].map((width) =>
+      getImage({
+        src: imageAsset,
+        width,
+        format: "webp",
+        quality: width === 1200 ? 78 : 74
+      })
+    )
+  );
 }
+
+const dogs = await Promise.all(
+  (await getDogFriends()).map(async (dog) => {
+    const imageAsset = getDogFriendImage(dog.image);
+    const imageSources = await createDogImageSources(imageAsset);
+
+    return {
+      ...dog,
+      imageAsset,
+      imageSources,
+      imageSrc: imageSources[1]?.src || imageSources[0]?.src || imageAsset?.src || "",
+      imageSrcSet: imageSources.map((source) => `${source.src} ${source.width}w`).join(", ")
+    };
+  })
+);
 
 function getDogAgeLabel(value) {
   if (!value) return "";
@@ -30,216 +52,683 @@ function getDogAgeLabel(value) {
   if (years <= 0) return "meno di 1 anno";
   return `${years} ${years === 1 ? "anno" : "anni"}`;
 }
+
+function getDogFacts(dog) {
+  return [
+    getDogAgeLabel(dog.birthDate),
+    dog.weightKg ? `${dog.weightKg} kg` : ""
+  ].filter(Boolean);
+}
+
+const homeHref = withBase("/");
 ---
 
 <Layout
   title="Gea Gang | Popi's Adventures"
   description="La piccola gang canina che accompagna le avventure di Popi's Adventures."
   active="gea-gang"
-  mobileBackHref={withBase("/")}
+  mobileBackHref={homeHref}
   mobileBackLabel="Torna alla home"
+  mobileTitle="Gea Gang"
 >
-  <section class="space-y-6">
-    <section aria-labelledby="gea-gang-carousel">
-      <div class="flex items-end justify-between gap-4">
-        <div>
-          <p id="gea-gang-carousel" class="text-sm font-bold uppercase tracking-[0.16em] text-terracotta-600">Gea Gang</p>
-          <h1 class="mt-2 text-3xl font-black text-forest-800 sm:text-4xl">La banda a quattro zampe</h1>
+  <article class="gang-page" aria-labelledby="gang-title">
+    <header class="gang-intro">
+      <nav class="gang-breadcrumb" aria-label="Percorso">
+        <a href={homeHref}>Home</a>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">Gea Gang</span>
+      </nav>
+
+      <div class="gang-intro__scene">
+        <div class="gang-intro__copy">
+          <h1 id="gang-title">
+            La banda a
+            <span>quattro zampe</span>
+          </h1>
+          <p>
+            Gea e i suoi compagni di sentiero, raccontati come sono davvero.
+            Apri un ritratto per conoscere carattere, abitudini e avventure condivise.
+          </p>
         </div>
 
-        {dogs.length > 1 && (
-          <div class="hidden items-center gap-2 md:flex" aria-label="Controlli carousel Gea Gang">
-            <button
-              type="button"
-              class="dog-carousel-button inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#eadac8] bg-white/85 text-forest-800 shadow-sm transition hover:bg-[#fffaf4] focus:outline-none focus:ring-2 focus:ring-terracotta-400 focus:ring-offset-2 focus:ring-offset-[#f5ebdc]"
-              data-dog-carousel-prev
-              aria-label="Mostra le card precedenti"
-            >
-              <ChevronLeft class="h-5 w-5" stroke-width={2.2} aria-hidden="true" />
-            </button>
-            <button
-              type="button"
-              class="dog-carousel-button inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#eadac8] bg-white/85 text-forest-800 shadow-sm transition hover:bg-[#fffaf4] focus:outline-none focus:ring-2 focus:ring-terracotta-400 focus:ring-offset-2 focus:ring-offset-[#f5ebdc]"
-              data-dog-carousel-next
-              aria-label="Mostra le card successive"
-            >
-              <ChevronRight class="h-5 w-5" stroke-width={2.2} aria-hidden="true" />
-            </button>
-          </div>
-        )}
+        <aside class="gang-intro__note" aria-label="Come esplorare la Gea Gang">
+          <PawPrint size={30} strokeWidth={1.9} aria-hidden="true" />
+          <p>
+            <strong>Qui ogni muso ha una storia.</strong>
+            Ogni ritratto porta alla sua scheda completa.
+          </p>
+        </aside>
       </div>
+    </header>
 
-      <div class="-mx-4 mt-5 pb-10 sm:-mx-6 lg:-mx-8">
-      <ul class="dog-carousel flex list-none gap-4 overflow-x-auto pl-4 pr-4 pb-10 pt-1 sm:pl-6 sm:pr-6 lg:pl-8 lg:pr-8" role="list">
-        {dogs.map((dog, index) => (
-          <li class="dog-slide shrink-0">
-            <a
-              href={withBase(`/gea-gang/${dog.id}`)}
-              class="dog-card group flex h-full flex-col overflow-hidden rounded-[2rem] border border-[#eadac8] bg-[#fffaf4] p-3 text-left shadow-card focus:outline-none focus:ring-2 focus:ring-terracotta-400 focus:ring-offset-2 focus:ring-offset-[#f5ebdc]"
-            >
-              <div class="relative overflow-hidden rounded-[1.4rem] border border-white/80 bg-[#efe4d1]">
-                {dog.imageAsset ? (
-                  <img
-                    src={dog.imageAsset.src}
-                    alt={`${dog.name}, ${dog.breed}, ritratto per la scheda Gea Gang.`}
-                    width={dog.imageAsset.width}
-                    height={dog.imageAsset.height}
-                    loading="lazy"
-                    decoding="async"
-                    class="h-72 w-full object-cover transition duration-500 group-hover:scale-[1.03] group-focus-visible:scale-[1.03]"
-                  />
-                ) : (
-                  <div class="flex h-72 items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.58),_transparent_55%),linear-gradient(135deg,_#efe4d1,_#e1d0b3)] text-terracotta-700">
-                    <div class="flex flex-col items-center gap-3">
-                      <span class="rounded-full bg-white/70 p-4 shadow-sm">
-                        <PawPrint size={28} strokeWidth={2.2} aria-hidden="true" />
-                      </span>
-                      <p class="text-sm font-bold uppercase tracking-[0.16em]">Foto in arrivo</p>
+    {dogs.length > 0 ? (
+      <>
+        <svg
+          class="gang-route"
+          viewBox="0 0 1000 1240"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          <path
+            d="M620 5 C 930 150, 950 340, 730 470 S 195 650, 215 845 S 605 1045, 920 1235"
+            pathLength="1"
+          />
+        </svg>
+
+        <ul class="gang-grid" role="list">
+          {dogs.map((dog, index) => {
+            const facts = getDogFacts(dog);
+
+            return (
+              <li class:list={["gang-member", `gang-member--${(index % 4) + 1}`]}>
+                <a
+                  href={withBase(`/gea-gang/${dog.id}`)}
+                  class="gang-member__link"
+                  aria-label={`Apri il profilo di ${dog.name}`}
+                >
+                  <figure>
+                    <div class="gang-member__portrait">
+                      {dog.imageAsset ? (
+                        <img
+                          src={dog.imageSrc}
+                          srcset={dog.imageSrcSet}
+                          sizes="(max-width: 767px) calc(100vw - 40px), (max-width: 1023px) 46vw, 58vw"
+                          alt={`${dog.name}, ${dog.breed}, ritratto per la Gea Gang.`}
+                          width={dog.imageAsset.width}
+                          height={dog.imageAsset.height}
+                          loading={index === 0 ? "eager" : "lazy"}
+                          fetchpriority={index === 0 ? "high" : "auto"}
+                          decoding="async"
+                        />
+                      ) : (
+                        <div class="gang-member__placeholder">
+                          <PawPrint size={34} strokeWidth={1.9} aria-hidden="true" />
+                          <span>La foto di {dog.name} sta arrivando</span>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                )}
 
-                <div class="pointer-events-none absolute bottom-3 right-3 rounded-full bg-white/72 px-2.5 py-1 text-xs font-black text-terracotta-700 shadow-sm">
-                  {formatCardNumber(index)}
-                </div>
-              </div>
+                    <figcaption class="gang-member__body">
+                      <div class="gang-member__identity">
+                        <h2>{dog.name}</h2>
+                        <p>{dog.breed || "Razza in aggiornamento"}</p>
+                      </div>
 
-              <div class="mt-3 flex flex-1 flex-col rounded-[1.5rem] border border-[#f1e3d2] bg-white/72 p-4">
-                <div>
-                  <h3 class="text-3xl font-black text-forest-800">{dog.name}</h3>
-                  <p class="mt-1 text-sm font-bold text-forest-700">{dog.breed || "Razza in aggiornamento"}</p>
-                </div>
+                      {facts.length > 0 && (
+                        <p class="gang-member__facts" aria-label={`Informazioni su ${dog.name}: ${facts.join(", ")}`}>
+                          {facts.join(" · ")}
+                        </p>
+                      )}
 
-                {(getDogAgeLabel(dog.birthDate) || dog.weightKg) && (
-                  <div class="mt-4 flex flex-wrap gap-2">
-                    {getDogAgeLabel(dog.birthDate) && (
-                      <span class="rounded-full bg-[#eef4ea] px-3 py-1.5 text-xs font-bold text-forest-800">
-                        {getDogAgeLabel(dog.birthDate)}
+                      <p class="gang-member__description">{dog.description}</p>
+
+                      {dog.traits.length > 0 && (
+                        <p class="gang-member__traits">
+                          <span class="sr-only">Come descriviamo {dog.name}: </span>
+                          {dog.traits.slice(0, 3).join(" · ")}
+                        </p>
+                      )}
+
+                      <span class="gang-member__cta">
+                        Conosci {dog.name}
+                        <ArrowUpRight size={18} strokeWidth={2.2} aria-hidden="true" />
                       </span>
-                    )}
-                    {dog.weightKg && (
-                      <span class="rounded-full bg-[#f4eadb] px-3 py-1.5 text-xs font-bold text-terracotta-700">
-                        {dog.weightKg} kg
-                      </span>
-                    )}
-                  </div>
-                )}
+                    </figcaption>
+                  </figure>
+                </a>
+              </li>
+            );
+          })}
+        </ul>
 
-                <p class="mt-3 line-clamp-4 text-sm leading-6 text-forest-700">{dog.description}</p>
-
-                {dog.traits.length > 0 && (
-                  <div class="mt-4 flex flex-wrap gap-2">
-                    {dog.traits.slice(0, 3).map((trait) => (
-                      <span class="rounded-full bg-[#fff1e8] px-3 py-1.5 text-xs font-bold text-[#8a4d2d]">{trait}</span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </a>
-          </li>
-        ))}
-      </ul>
-      </div>
-    </section>
-  </section>
-
-  <script>
-    const carousel = document.querySelector(".dog-carousel");
-    const previousButton = document.querySelector("[data-dog-carousel-prev]");
-    const nextButton = document.querySelector("[data-dog-carousel-next]");
-
-    function scrollDogs(direction) {
-      if (!carousel) return;
-      const firstSlide = carousel.querySelector(".dog-slide");
-      const slideWidth = firstSlide instanceof HTMLElement ? firstSlide.offsetWidth : 360;
-      carousel.scrollBy({
-        left: direction * (slideWidth + 16),
-        behavior: "smooth"
-      });
-    }
-
-    previousButton?.addEventListener("click", () => scrollDogs(-1));
-    nextButton?.addEventListener("click", () => scrollDogs(1));
-  </script>
+        <footer class="gang-closing">
+          <PawPrint size={24} strokeWidth={1.9} aria-hidden="true" />
+          <p>Ogni profilo custodisce un carattere vero e un pezzo delle giornate vissute insieme.</p>
+        </footer>
+      </>
+    ) : (
+      <section class="gang-empty" aria-labelledby="gang-empty-title">
+        <PawPrint size={34} strokeWidth={1.9} aria-hidden="true" />
+        <h2 id="gang-empty-title">La gang è fuori sul sentiero</h2>
+        <p>Non riusciamo a mostrare i profili in questo momento. Puoi riprovare oppure tornare alla home.</p>
+        <div class="gang-empty__actions">
+          <a href={Astro.url.pathname}>Riprova</a>
+          <a href={homeHref}>Torna alla home</a>
+        </div>
+      </section>
+    )}
+  </article>
 </Layout>
 
 <style>
-  .dog-carousel {
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-color: rgba(138, 77, 45, 0.42) transparent;
-    scrollbar-width: thin;
+  .gang-page {
+    --gang-cream: #f7f1e3;
+    --gang-paper: #fffdf7;
+    --gang-ink: #25251f;
+    --gang-leaf: #3f6b4f;
+    --gang-sunshine: #f2c94c;
+    --gang-tomato: #e66a4e;
+    --gang-sky: #7eb6c2;
+    --gang-moss: #91a66d;
+    --gang-border: #ddd7c9;
+
+    position: relative;
+    isolation: isolate;
+    overflow: clip;
+    color: var(--gang-ink);
   }
 
-  .dog-carousel::-webkit-scrollbar {
-    height: 0.55rem;
+  .gang-page ::selection {
+    background: color-mix(in srgb, var(--gang-sunshine) 72%, transparent);
+    color: var(--gang-ink);
   }
 
-  .dog-carousel::-webkit-scrollbar-track {
-    background: transparent;
+  .gang-intro {
+    padding-top: 8px;
   }
 
-  .dog-carousel::-webkit-scrollbar-thumb {
-    background: rgba(138, 77, 45, 0.34);
-    border-radius: 999px;
+  .gang-breadcrumb {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    color: color-mix(in srgb, var(--gang-ink) 70%, transparent);
+    font-size: 0.875rem;
+    font-weight: 700;
   }
 
-  .dog-slide {
-    width: 82vw;
-    max-width: 26rem;
-    scroll-snap-align: start;
-    scroll-snap-stop: always;
+  .gang-breadcrumb a {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    color: var(--gang-leaf);
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, var(--gang-leaf) 40%, transparent);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
   }
 
-  .dog-card {
-    transform-origin: center;
+  .gang-breadcrumb a:hover {
+    color: var(--gang-ink);
+    text-decoration-color: currentColor;
+  }
+
+  .gang-breadcrumb a:focus-visible,
+  .gang-member__link:focus-visible,
+  .gang-empty a:focus-visible {
+    outline: 3px solid var(--gang-leaf);
+    outline-offset: 4px;
+  }
+
+  .gang-intro__scene {
+    display: grid;
+    gap: 24px;
+  }
+
+  .gang-intro__copy h1 {
+    max-width: 11ch;
+    margin: 0;
+    color: var(--gang-ink);
+    font-size: clamp(2.65rem, 12vw, 3.75rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.02;
+    text-wrap: balance;
+  }
+
+  .gang-intro__copy h1 span {
+    position: relative;
+    z-index: 0;
+    display: inline-block;
+    color: var(--gang-leaf);
+  }
+
+  .gang-intro__copy h1 span::after {
+    position: absolute;
+    right: -2px;
+    bottom: 2px;
+    left: -2px;
+    z-index: -1;
+    height: 9px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--gang-sunshine) 78%, transparent);
+    content: "";
+    transform: rotate(-1.2deg);
+  }
+
+  .gang-intro__copy > p {
+    max-width: 42rem;
+    margin: 20px 0 0;
+    color: color-mix(in srgb, var(--gang-ink) 82%, transparent);
+    font-size: 1.0625rem;
+    line-height: 1.7;
+  }
+
+  .gang-intro__note {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 12px;
+    align-items: start;
+    border-top: 1px solid var(--gang-border);
+    padding-top: 16px;
+    color: var(--gang-tomato);
+  }
+
+  .gang-intro__note p {
+    margin: 0;
+    color: color-mix(in srgb, var(--gang-ink) 78%, transparent);
+    font-size: 0.9375rem;
+    line-height: 1.6;
+  }
+
+  .gang-intro__note strong {
+    display: block;
+    margin-bottom: 2px;
+    color: var(--gang-ink);
+  }
+
+  .gang-route {
+    display: none;
+  }
+
+  .gang-grid {
+    display: grid;
+    gap: 64px;
+    margin: 48px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .gang-member {
+    min-width: 0;
+  }
+
+  .gang-member__link {
+    display: block;
+    border-radius: 14px;
+    color: inherit;
+    text-decoration: none;
+    scroll-margin-bottom: calc(7rem + env(safe-area-inset-bottom));
+  }
+
+  .gang-member figure {
+    margin: 0;
+  }
+
+  .gang-member__portrait {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 16 / 10;
+    border-radius: 14px;
+    background: var(--gang-paper);
+  }
+
+  .gang-member--2 .gang-member__portrait,
+  .gang-member--3 .gang-member__portrait {
+    aspect-ratio: 4 / 5;
+  }
+
+  .gang-member__portrait img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
     transition:
-      transform 220ms ease,
-      box-shadow 220ms ease;
-    box-shadow:
-      0 18px 38px rgba(95, 44, 29, 0.12),
-      inset 0 0 0 1px rgba(255, 255, 255, 0.45);
+      filter 220ms ease,
+      transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 
-  .dog-card:hover,
-  .dog-card:focus-visible {
-    transform: translateY(-4px) scale(1.015);
-    box-shadow:
-      0 24px 46px rgba(95, 44, 29, 0.18),
-      inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+  .gang-member--1 .gang-member__portrait img {
+    object-position: center 40%;
   }
 
-  .dog-card:active {
-    transform: scale(0.98);
+  .gang-member--2 .gang-member__portrait img {
+    object-position: 58% center;
+  }
+
+  .gang-member--3 .gang-member__portrait img {
+    object-position: center center;
+  }
+
+  .gang-member__placeholder {
+    display: flex;
+    min-height: 100%;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 32px;
+    background: var(--gang-paper);
+    color: var(--gang-tomato);
+    text-align: center;
+  }
+
+  .gang-member__placeholder span {
+    max-width: 15rem;
+    color: var(--gang-ink);
+    font-size: 0.9375rem;
+    font-weight: 800;
+    line-height: 1.4;
+  }
+
+  .gang-member__body {
+    max-width: 38rem;
+    padding-top: 20px;
+  }
+
+  .gang-member__identity {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+    align-items: baseline;
+  }
+
+  .gang-member__identity h2 {
+    position: relative;
+    z-index: 0;
+    margin: 0;
+    color: var(--gang-ink);
+    font-size: clamp(1.75rem, 7vw, 2.5rem);
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    line-height: 1.05;
+  }
+
+  .gang-member__identity h2::after {
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    z-index: -1;
+    width: 2.25rem;
+    height: 6px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--gang-sunshine) 78%, transparent);
+    content: "";
+    transform: rotate(-2deg);
+  }
+
+  .gang-member__identity p {
+    margin: 0;
+    color: var(--gang-leaf);
+    font-size: 0.875rem;
+    font-weight: 800;
+    line-height: 1.4;
+  }
+
+  .gang-member__facts {
+    margin: 12px 0 0;
+    color: color-mix(in srgb, var(--gang-ink) 68%, transparent);
+    font-size: 0.875rem;
+    font-weight: 700;
+    line-height: 1.4;
+  }
+
+  .gang-member__description {
+    display: -webkit-box;
+    max-width: 65ch;
+    margin: 14px 0 0;
+    overflow: hidden;
+    color: color-mix(in srgb, var(--gang-ink) 82%, transparent);
+    font-size: 0.9375rem;
+    line-height: 1.65;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+
+  .gang-member__traits {
+    display: none;
+    margin: 14px 0 0;
+    color: var(--gang-tomato);
+    font-size: 0.8125rem;
+    font-weight: 800;
+    letter-spacing: 0.01em;
+    line-height: 1.5;
+  }
+
+  .gang-member__cta {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    gap: 7px;
+    margin-top: 14px;
+    color: var(--gang-leaf);
+    font-size: 0.875rem;
+    font-weight: 800;
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, var(--gang-leaf) 35%, transparent);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 5px;
+  }
+
+  .gang-member__cta svg {
+    transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .gang-closing {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 12px;
+    align-items: center;
+    max-width: 42rem;
+    margin: 72px 0 0;
+    border-block: 1px solid var(--gang-border);
+    padding-block: 20px;
+    color: var(--gang-tomato);
+  }
+
+  .gang-closing p {
+    margin: 0;
+    color: var(--gang-ink);
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.6;
+  }
+
+  .gang-empty {
+    max-width: 42rem;
+    margin-top: 48px;
+    border-block: 1px solid var(--gang-border);
+    padding-block: 32px;
+    color: var(--gang-tomato);
+  }
+
+  .gang-empty h2 {
+    margin: 14px 0 0;
+    color: var(--gang-ink);
+    font-size: 1.75rem;
+    font-weight: 800;
+    line-height: 1.15;
+  }
+
+  .gang-empty p {
+    margin: 12px 0 0;
+    color: color-mix(in srgb, var(--gang-ink) 78%, transparent);
+    line-height: 1.7;
+  }
+
+  .gang-empty__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 20px;
+  }
+
+  .gang-empty a {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    border-radius: 10px;
+    background: var(--gang-leaf);
+    padding: 12px 18px;
+    color: var(--gang-paper);
+    font-size: 0.875rem;
+    font-weight: 800;
+  }
+
+  .gang-empty a + a {
+    border: 1px solid var(--gang-border);
+    background: var(--gang-paper);
+    color: var(--gang-leaf);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .gang-member__link:hover .gang-member__portrait img {
+      filter: saturate(1.05);
+      transform: scale(1.025);
+    }
+
+    .gang-member__link:hover .gang-member__cta {
+      color: var(--gang-ink);
+      text-decoration-color: currentColor;
+    }
+
+    .gang-member__link:hover .gang-member__cta svg {
+      transform: translate(2px, -2px);
+    }
   }
 
   @media (min-width: 768px) {
-    .dog-slide {
-      width: 24rem;
+    .gang-intro {
+      padding-top: 16px;
+    }
+
+    .gang-breadcrumb {
+      display: flex;
+      margin-bottom: 24px;
+    }
+
+    .gang-intro__scene {
+      grid-template-columns: minmax(0, 1.5fr) minmax(14rem, 0.65fr);
+      gap: 48px;
+      align-items: end;
+    }
+
+    .gang-intro__copy h1 {
+      font-size: clamp(3rem, 6vw, 3.75rem);
+    }
+
+    .gang-intro__note {
+      margin-bottom: 8px;
+    }
+
+    .gang-route {
+      position: absolute;
+      top: 290px;
+      left: 6%;
+      z-index: -1;
+      display: block;
+      width: 88%;
+      height: calc(100% - 430px);
+      min-height: 940px;
+      overflow: visible;
+      pointer-events: none;
+    }
+
+    .gang-route path {
+      fill: none;
+      stroke: color-mix(in srgb, var(--gang-tomato) 42%, transparent);
+      stroke-dasharray: 0.012 0.018;
+      stroke-linecap: round;
+      stroke-width: 3;
+      vector-effect: non-scaling-stroke;
+    }
+
+    .gang-grid {
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      column-gap: 32px;
+      row-gap: 80px;
+      margin-top: 64px;
+    }
+
+    .gang-member {
+      position: relative;
+      z-index: 1;
+    }
+
+    .gang-member--1 {
+      grid-column: 1 / span 7;
+    }
+
+    .gang-member--2 {
+      grid-column: 9 / span 4;
+      margin-top: 96px;
+    }
+
+    .gang-member--3 {
+      grid-column: 1 / span 4;
+    }
+
+    .gang-member--4 {
+      grid-column: 6 / span 7;
+      margin-top: 88px;
+    }
+
+    .gang-member__traits {
+      display: block;
+    }
+
+    .gang-member--1 .gang-member__body {
+      margin-left: clamp(16px, 5vw, 64px);
+    }
+
+    .gang-member--2 .gang-member__body {
+      padding-left: 16px;
+    }
+
+    .gang-member--4 .gang-member__body {
+      margin-right: clamp(16px, 4vw, 48px);
+      margin-left: auto;
+    }
+
+    .gang-closing {
+      margin-top: 96px;
+      margin-left: auto;
     }
   }
 
-  @media (max-width: 767px) {
-    .dog-carousel {
-      scrollbar-width: none;
+  @media (min-width: 768px) and (max-width: 1023px) {
+    .gang-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 72px 32px;
     }
 
-    .dog-carousel::-webkit-scrollbar {
-      display: none;
+    .gang-member--1,
+    .gang-member--2,
+    .gang-member--3,
+    .gang-member--4 {
+      grid-column: auto;
+      margin-top: 0;
+    }
+
+    .gang-member--2,
+    .gang-member--4 {
+      margin-top: 64px;
+    }
+
+    .gang-member--1 .gang-member__body,
+    .gang-member--2 .gang-member__body,
+    .gang-member--4 .gang-member__body {
+      margin-right: 0;
+      margin-left: 0;
+      padding-left: 0;
+    }
+
+    .gang-member__portrait,
+    .gang-member--1 .gang-member__portrait,
+    .gang-member--2 .gang-member__portrait,
+    .gang-member--3 .gang-member__portrait,
+    .gang-member--4 .gang-member__portrait {
+      aspect-ratio: 4 / 5;
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .dog-carousel {
-      scroll-behavior: auto;
+    .gang-member__portrait img,
+    .gang-member__cta svg {
+      transition: none;
     }
 
-    .dog-card,
-    .dog-card:hover,
-    .dog-card:focus-visible,
-    .dog-card:active {
+    .gang-member__link:hover .gang-member__portrait img,
+    .gang-member__link:hover .gang-member__cta svg {
       transform: none;
-      transition: none;
     }
   }
 </style>

@@ -1,0 +1,426 @@
+---
+import siteMark from "../assets/images/site/logo/gea-brand-master.png";
+---
+
+<script is:inline>
+  try {
+    if (window.sessionStorage.getItem("popi:splash-seen") === "1") {
+      document.documentElement.setAttribute("data-popi-splash-seen", "");
+    }
+  } catch {
+    // The splash still works when storage is unavailable.
+  }
+</script>
+
+<div
+  class="app-splash"
+  data-app-splash
+>
+  <div class="app-splash__content">
+    <div class="app-splash__scene" aria-hidden="true">
+      <span class="app-splash__sun"></span>
+
+      <svg class="app-splash__landscape" viewBox="0 0 420 210" fill="none">
+        <path
+          class="app-splash__mountain app-splash__mountain--back"
+          d="M16 155C57 139 79 91 116 95C146 98 156 127 181 127C215 127 232 56 275 63C311 69 320 119 352 124C375 128 391 109 406 100"
+        />
+        <path
+          class="app-splash__mountain"
+          d="M12 173C58 163 78 126 111 132C140 137 151 160 181 158C220 156 239 111 271 116C306 121 318 157 350 157C372 157 391 145 408 131"
+        />
+        <path
+          class="app-splash__route"
+          pathLength="1"
+          d="M17 188C77 193 104 168 151 176C192 183 205 197 252 187C294 178 333 174 401 184"
+        />
+      </svg>
+
+      <span class="app-splash__mark">
+        <img
+          src={siteMark.src}
+          alt=""
+          width={siteMark.width}
+          height={siteMark.height}
+          loading="eager"
+          decoding="sync"
+        />
+      </span>
+    </div>
+
+    <div
+      class="app-splash__copy"
+      data-splash-status
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+      aria-busy="true"
+    >
+      <p class="app-splash__title">Apriamo il diario…</p>
+      <p class="app-splash__message">Prepariamo foto, mappe e sentieri.</p>
+    </div>
+
+    <div class="app-splash__steps" aria-hidden="true">
+      {[0, 1, 2].map((step) => (
+        <svg class={`app-splash__paw app-splash__paw--${step + 1}`} viewBox="0 0 28 28" fill="currentColor">
+          <ellipse cx="14" cy="18" rx="6.5" ry="5.5" />
+          <ellipse cx="7" cy="11" rx="2.7" ry="3.5" transform="rotate(-24 7 11)" />
+          <ellipse cx="12" cy="7" rx="2.6" ry="3.5" transform="rotate(-7 12 7)" />
+          <ellipse cx="18" cy="7.5" rx="2.6" ry="3.5" transform="rotate(9 18 7.5)" />
+          <ellipse cx="22" cy="12" rx="2.7" ry="3.5" transform="rotate(27 22 12)" />
+        </svg>
+      ))}
+    </div>
+
+    <button class="app-splash__skip" type="button" data-splash-skip>
+      Entra subito
+    </button>
+  </div>
+</div>
+
+<script is:inline>
+  (() => {
+    const root = document.documentElement;
+    const splash = document.querySelector("[data-app-splash]");
+
+    if (!(splash instanceof HTMLElement)) return;
+
+    if (root.hasAttribute("data-popi-splash-seen")) {
+      splash.hidden = true;
+      return;
+    }
+
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const skipButton = splash.querySelector("[data-splash-skip]");
+    const status = splash.querySelector("[data-splash-status]");
+    let isDismissed = false;
+    let failsafeTimeoutId;
+
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") dismiss();
+    };
+
+    const onVisibilityChange = () => {
+      splash.classList.toggle("is-paused", document.hidden);
+    };
+
+    const dismiss = () => {
+      if (isDismissed) return;
+      isDismissed = true;
+
+      try {
+        window.sessionStorage.setItem("popi:splash-seen", "1");
+      } catch {
+        // Storage is an enhancement, not a requirement.
+      }
+
+      splash.classList.add("is-leaving");
+      status?.setAttribute("aria-busy", "false");
+      splash.setAttribute("aria-hidden", "true");
+      document.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      window.clearTimeout(failsafeTimeoutId);
+
+      if (document.activeElement instanceof HTMLElement && splash.contains(document.activeElement)) {
+        document.activeElement.blur();
+      }
+
+      window.setTimeout(
+        () => {
+          splash.hidden = true;
+        },
+        reduceMotion.matches ? 0 : 440
+      );
+    };
+
+    skipButton?.addEventListener("click", dismiss, { once: true });
+    document.addEventListener("keydown", onKeyDown);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
+    if (document.readyState === "complete") {
+      window.requestAnimationFrame(dismiss);
+    } else {
+      window.addEventListener("load", () => window.requestAnimationFrame(dismiss), { once: true });
+    }
+
+    failsafeTimeoutId = window.setTimeout(dismiss, 12000);
+  })();
+</script>
+
+<style>
+  .app-splash {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: grid;
+    min-height: 100dvh;
+    place-items: center;
+    overflow: hidden;
+    padding:
+      max(2rem, env(safe-area-inset-top))
+      max(1.25rem, env(safe-area-inset-right))
+      max(2rem, env(safe-area-inset-bottom))
+      max(1.25rem, env(safe-area-inset-left));
+    color: #25251f;
+    background: #f7f1e3;
+    isolation: isolate;
+    animation: splash-failsafe 10ms linear 12s forwards;
+  }
+
+  :global(html[data-popi-splash-seen]) .app-splash {
+    display: none;
+  }
+
+  .app-splash::before {
+    position: absolute;
+    inset: auto -12vw -26vh;
+    z-index: -1;
+    height: min(54vh, 34rem);
+    border-radius: 50% 50% 0 0;
+    background: #91a66d;
+    content: "";
+    transform: rotate(-2deg);
+  }
+
+  .app-splash__content {
+    display: flex;
+    width: min(100%, 32rem);
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .app-splash__scene {
+    position: relative;
+    width: min(100%, 27rem);
+    aspect-ratio: 2 / 1;
+  }
+
+  .app-splash__sun {
+    position: absolute;
+    top: 3%;
+    left: 50%;
+    width: clamp(7.5rem, 30vw, 10rem);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: #f2c94c;
+    transform: translateX(-50%);
+  }
+
+  .app-splash__landscape {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  .app-splash__mountain {
+    stroke: #3f6b4f;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 4;
+  }
+
+  .app-splash__mountain--back {
+    stroke: #7eb6c2;
+    stroke-width: 3;
+  }
+
+  .app-splash__route {
+    stroke: #e66a4e;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    stroke-linecap: round;
+    stroke-width: 6;
+    animation: splash-draw-route 900ms 260ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .app-splash__mark {
+    position: absolute;
+    top: 5%;
+    left: 50%;
+    display: grid;
+    width: clamp(9rem, 37vw, 12rem);
+    aspect-ratio: 1;
+    place-items: center;
+    opacity: 0;
+    transform: translate(-50%, 18px) scale(0.94);
+    animation: splash-mark-arrive 620ms 80ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .app-splash__mark img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 12px 14px rgb(37 37 31 / 12%));
+  }
+
+  .app-splash__copy {
+    margin-top: clamp(0.75rem, 2vh, 1.25rem);
+  }
+
+  .app-splash__title {
+    margin: 0;
+    font-size: clamp(1.8rem, 7vw, 2.75rem);
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    line-height: 1.05;
+    text-wrap: balance;
+  }
+
+  .app-splash__message {
+    max-width: 32ch;
+    margin: 0.75rem auto 0;
+    color: #3f493b;
+    font-size: clamp(0.95rem, 3.5vw, 1.05rem);
+    font-weight: 600;
+    line-height: 1.55;
+    text-wrap: balance;
+  }
+
+  .app-splash__steps {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    height: 2.25rem;
+    margin-top: 1rem;
+    color: #3f6b4f;
+  }
+
+  .app-splash__paw {
+    width: 1.25rem;
+    height: 1.25rem;
+    opacity: 0.35;
+    transform: translateY(3px) rotate(-12deg) scale(0.9);
+    animation: splash-paw-step 1.5s ease-in-out infinite;
+  }
+
+  .app-splash__paw--2 {
+    animation-delay: 180ms;
+    transform: translateY(-3px) rotate(10deg) scale(0.9);
+  }
+
+  .app-splash__paw--3 {
+    animation-delay: 360ms;
+  }
+
+  .app-splash__skip {
+    min-height: 2.75rem;
+    margin-top: 0.75rem;
+    border: 0;
+    border-radius: 10px;
+    padding: 0.7rem 1rem;
+    color: #3f6b4f;
+    background: transparent;
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 800;
+    text-decoration: underline;
+    text-decoration-color: rgb(63 107 79 / 42%);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 5px;
+    cursor: pointer;
+    transition: color 150ms ease, background-color 150ms ease;
+  }
+
+  .app-splash__skip:hover {
+    color: #25251f;
+    background: rgb(255 253 247 / 70%);
+  }
+
+  .app-splash__skip:focus-visible {
+    outline: 3px solid #3f6b4f;
+    outline-offset: 3px;
+  }
+
+  .app-splash.is-paused :is(.app-splash__route, .app-splash__mark, .app-splash__paw) {
+    animation-play-state: paused;
+  }
+
+  .app-splash.is-leaving {
+    pointer-events: none;
+    opacity: 0;
+    clip-path: inset(0 0 100% 0);
+    transition:
+      clip-path 420ms cubic-bezier(0.7, 0, 0.84, 0),
+      opacity 260ms 100ms ease;
+  }
+
+  @keyframes splash-mark-arrive {
+    to {
+      opacity: 1;
+      transform: translate(-50%, 0) scale(1);
+    }
+  }
+
+  @keyframes splash-draw-route {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  @keyframes splash-paw-step {
+    0%,
+    100% {
+      opacity: 0.28;
+    }
+    40% {
+      opacity: 1;
+      transform: translateY(-2px) rotate(-2deg) scale(1);
+    }
+  }
+
+  @keyframes splash-failsafe {
+    to {
+      visibility: hidden;
+      opacity: 0;
+      pointer-events: none;
+    }
+  }
+
+  @media (max-height: 600px) {
+    .app-splash__scene {
+      width: min(100%, 21rem);
+    }
+
+    .app-splash__copy {
+      margin-top: 0.25rem;
+    }
+
+    .app-splash__steps {
+      margin-top: 0.5rem;
+    }
+
+    .app-splash__skip {
+      margin-top: 0.25rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .app-splash__route {
+      stroke-dashoffset: 0;
+      animation: none;
+    }
+
+    .app-splash__mark {
+      opacity: 1;
+      transform: translate(-50%, 0);
+      animation: none;
+    }
+
+    .app-splash__paw {
+      opacity: 0.75;
+      animation: none;
+    }
+
+    .app-splash.is-leaving {
+      clip-path: none;
+      transition: none;
+    }
+
+    .app-splash__skip {
+      transition: none;
+    }
+  }
+</style>

@@ -180,7 +180,16 @@ function getFallbackDogFriends() {
 export async function getDogFriends() {
   if (!dogFriendsPromise) {
     dogFriendsPromise = fetchDogFriendsCsvRows()
-      .then((rows) => rows.map(normalizeDogFriend).filter(Boolean))
+      .then((rows) => {
+        const normalizedDogs = rows.map(normalizeDogFriend).filter(Boolean);
+
+        if (normalizedDogs.length > 0) {
+          return normalizedDogs;
+        }
+
+        console.warn("[dog-friends] Il CSV dei cani è vuoto, uso il fallback locale.");
+        return getFallbackDogFriends();
+      })
       .catch((error) => {
         console.warn(
           `[dog-friends] Impossibile caricare il CSV dei cani, uso il fallback locale: ${error instanceof Error ? error.message : error}`

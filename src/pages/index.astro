@@ -6,7 +6,8 @@ import AboutUs from "../components/AboutUs.astro";
 import HomeAdventureCard from "../components/HomeAdventureCard.astro";
 import { getEscursioni } from "../data/escursioni.js";
 import { siteImages } from "../data/imageRegistry.js";
-import heroHome from "../assets/images/site/home/popi-hero-group.jpg";
+import heroHome from "../assets/images/site/home/popi-hero-editorial.png";
+import heroHomeMobile from "../assets/images/site/home/popi-hero-editorial-mobile.png";
 import { withBase } from "../utils/base.js";
 import { formatKilometers, formatMeters } from "../utils/format.js";
 
@@ -15,7 +16,7 @@ const recenti = escursioni.slice(0, 3);
 const [ultimaAvventura, ...altreRecenti] = recenti;
 const hasEscursioni = escursioni.length > 0;
 const [heroPreloadMobile, heroPreloadDesktop] = await Promise.all([
-  getImage({ src: heroHome, width: 900, format: "webp", quality: 72 }),
+  getImage({ src: heroHomeMobile, width: 900, format: "webp", quality: 72 }),
   getImage({ src: heroHome, width: 1440, format: "webp", quality: 78 })
 ]);
 
@@ -46,8 +47,9 @@ const geaArchiveHref = `${withBase("/escursioni")}?soloGea=1`;
   </Fragment>
   <div class="home-journal">
     <Header
-      image={heroHome}
-      imageAlt="Tizi, Meg e Gea insieme su un promontorio affacciato sul mare durante un’escursione."
+      imageMobile={heroHomeMobile}
+      imageDesktop={heroHome}
+      imageAlt="Tizi, Meg e Gea insieme in un prato di montagna al tramonto."
     />
 
     <section id="ultima-avventura" class="home-recent" aria-labelledby="recenti-title">
