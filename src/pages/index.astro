@@ -1,13 +1,8 @@
 ---
-import { getImage } from "astro:assets";
 import Layout from "../layouts/Layout.astro";
-import Header from "../components/Header.astro";
 import AboutUs from "../components/AboutUs.astro";
 import HomeAdventureCard from "../components/HomeAdventureCard.astro";
 import { getEscursioni } from "../data/escursioni.js";
-import { siteImages } from "../data/imageRegistry.js";
-import heroHome from "../assets/images/site/home/popi-hero-editorial.png";
-import heroHomeMobile from "../assets/images/site/home/popi-hero-editorial-mobile.png";
 import { withBase } from "../utils/base.js";
 import { formatKilometers, formatMeters } from "../utils/format.js";
 
@@ -15,11 +10,6 @@ const escursioni = await getEscursioni();
 const recenti = escursioni.slice(0, 3);
 const [ultimaAvventura, ...altreRecenti] = recenti;
 const hasEscursioni = escursioni.length > 0;
-const [heroPreloadMobile, heroPreloadDesktop] = await Promise.all([
-  getImage({ src: heroHomeMobile, width: 900, format: "webp", quality: 72 }),
-  getImage({ src: heroHome, width: 1440, format: "webp", quality: 78 })
-]);
-
 
 const stats = {
   uscite: escursioni.length,
@@ -27,6 +17,7 @@ const stats = {
   dislivello: formatMeters(escursioni.reduce((total, item) => total + item.dislivello, 0)),
   conGea: escursioni.filter((item) => item.partecipanti.includes("gea")).length
 };
+const archiveHref = withBase("/escursioni");
 const geaArchiveHref = `${withBase("/escursioni")}?soloGea=1`;
 ---
 
@@ -35,36 +26,28 @@ const geaArchiveHref = `${withBase("/escursioni")}?soloGea=1`;
   description="Home del diario di escursioni con ultime uscite, statistiche e storie condivise."
   active="home"
 >
-  <Fragment slot="head">
-    <link
-      rel="preload"
-      as="image"
-      href={heroPreloadDesktop.src}
-      imagesrcset={`${heroPreloadMobile.src} ${heroPreloadMobile.width}w, ${heroPreloadDesktop.src} ${heroPreloadDesktop.width}w`}
-      imagesizes="100vw"
-      fetchpriority="high"
-    />
-  </Fragment>
   <div class="home-journal">
-    <Header
-      imageMobile={heroHomeMobile}
-      imageDesktop={heroHome}
-      imageAlt="Tizi, Meg e Gea insieme in un prato di montagna al tramonto."
-    />
-
     <section id="ultima-avventura" class="home-recent" aria-labelledby="recenti-title">
-      <h2 id="recenti-title" class="home-recent__title--sr">Le avventure più recenti</h2>
+      <header class="home-recent__header">
+        <h1 id="recenti-title">L'ultima avventura</h1>
+        {hasEscursioni && (
+          <a href={archiveHref}>Tutte le escursioni <span aria-hidden="true">→</span></a>
+        )}
+      </header>
 
       {hasEscursioni && ultimaAvventura ? (
         <div class="home-recent__stories">
           <HomeAdventureCard escursione={ultimaAvventura} variant="featured" />
 
           {altreRecenti.length > 0 && (
-            <div class="home-recent__secondary">
-              {altreRecenti.map((escursione) => (
-                <HomeAdventureCard escursione={escursione} />
-              ))}
-            </div>
+            <section class="home-recent__more" aria-labelledby="altri-ricordi-title">
+              <h2 id="altri-ricordi-title">Altri ricordi recenti</h2>
+              <div class="home-recent__secondary">
+                {altreRecenti.map((escursione) => (
+                  <HomeAdventureCard escursione={escursione} />
+                ))}
+              </div>
+            </section>
           )}
 
         </div>
@@ -131,10 +114,21 @@ const geaArchiveHref = `${withBase("/escursioni")}?soloGea=1`;
   }
 
   .home-recent {
-    margin-top: 48px;
+    margin-top: 28px;
     scroll-margin-top: 24px;
   }
 
+  .home-recent__header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px 24px;
+    margin-bottom: 24px;
+  }
+
+  .home-recent__header h1,
+  .home-recent__more h2,
   .journal-facts h2 {
     margin: 0;
     color: var(--journal-ink);
@@ -144,26 +138,56 @@ const geaArchiveHref = `${withBase("/escursioni")}?soloGea=1`;
     text-wrap: balance;
   }
 
-  .home-recent__title--sr {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    clip-path: inset(50%);
+  .home-recent__header h1 {
+    max-width: 12ch;
+    font-size: clamp(2.25rem, 9vw, 4rem);
+    line-height: 0.98;
+  }
+
+  .home-recent__header a {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    gap: 8px;
+    color: var(--journal-leaf);
+    font-size: 0.9375rem;
+    font-weight: 800;
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, var(--journal-sunshine) 85%, transparent);
+    text-decoration-thickness: 3px;
+    text-underline-offset: 5px;
+  }
+
+  .home-recent__header a:hover {
+    color: var(--journal-ink);
+  }
+
+  .home-recent__header a:focus-visible {
+    border-radius: 4px;
+    outline: 3px solid var(--journal-leaf);
+    outline-offset: 4px;
   }
 
   .home-recent__stories {
     display: grid;
-    gap: 32px;
+    gap: 48px;
     margin-top: 0;
+  }
+
+  .home-recent__more {
+    display: grid;
+    gap: 20px;
+    padding-top: 8px;
+  }
+
+  .home-recent__more h2 {
+    font-size: 1.5rem;
+    line-height: 1.2;
   }
 
   .home-recent__secondary {
     display: grid;
     gap: 32px;
-    margin-top: 8px;
   }
 
   .home-recent__empty a {
@@ -299,12 +323,15 @@ const geaArchiveHref = `${withBase("/escursioni")}?soloGea=1`;
     }
 
     .home-recent {
-      margin-top: 64px;
+      margin-top: 40px;
+    }
+
+    .home-recent__header {
+      margin-bottom: 32px;
     }
 
     .home-recent__secondary {
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      margin-top: 16px;
     }
 
     .journal-facts {

@@ -2,10 +2,14 @@
 import "../styles/global.css";
 import { withBase } from "../utils/base.js";
 import { siteImages } from "../data/imageRegistry.js";
-import { ArrowLeft, Backpack, Footprints, House, Map } from "@lucide/astro";
+import { ArrowLeft } from "@lucide/astro";
 import SpeedInsights from "@vercel/speed-insights/astro";
 import AppSplash from "../components/AppSplash.astro";
 import siteMark from "../assets/images/site/logo/gea-brand-master.png";
+import homeNavIcon from "../assets/icons/navigation/home.svg";
+import hikesNavIcon from "../assets/icons/navigation/escursioni.svg";
+import mapNavIcon from "../assets/icons/navigation/mappa.svg";
+import checklistNavIcon from "../assets/icons/navigation/zaino.svg";
 
 const {
   title = "Popi's Adventures",
@@ -18,10 +22,10 @@ const {
 } = Astro.props;
 
 const navItems = [
-  { id: "home", href: withBase("/"), label: "Home", Icon: House },
-  { id: "escursioni", href: withBase("/escursioni"), label: "Escursioni", Icon: Footprints },
-  { id: "mappa", href: withBase("/mappa"), label: "Mappa", Icon: Map },
-  { id: "zaino", href: withBase("/prepara-lo-zaino"), label: "Zaino", Icon: Backpack }
+  { id: "home", href: withBase("/"), label: "Home", icon: homeNavIcon, iconRotation: "-1deg" },
+  { id: "escursioni", href: withBase("/escursioni"), label: "Escursioni", icon: hikesNavIcon, iconRotation: "1deg" },
+  { id: "mappa", href: withBase("/mappa"), label: "Mappa", icon: mapNavIcon, iconRotation: "-1.5deg" },
+  { id: "zaino", href: withBase("/prepara-lo-zaino"), label: "Zaino", icon: checklistNavIcon, iconRotation: "1.5deg" }
 ];
 
 const activeNavItem = navItems.find((item) => item.id === active);
@@ -146,11 +150,19 @@ const serviceWorkerUrl = withBase("/sw.js");
                     href={item.href}
                     aria-current={active === item.id ? "page" : undefined}
                     class:list={[
-                      "inline-flex min-h-11 items-center gap-2 rounded-md px-3 py-2.5 text-sm font-bold tracking-[0.02em] transition-colors duration-150 hover:bg-[#FFFDF7] hover:text-[#3F6B4F] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none",
+                      "primary-nav-link inline-flex min-h-11 items-center gap-2 rounded-md px-3 py-2.5 text-sm font-bold tracking-[0.02em] transition-colors duration-150 hover:bg-[#FFFDF7] hover:text-[#3F6B4F] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none",
                       active === item.id ? "font-extrabold !text-[#3F6B4F]" : "text-[#25251F]"
                     ]}
                   >
-                    <item.Icon class="h-4 w-4 shrink-0" stroke-width={2} aria-hidden="true" />
+                    <img
+                      src={item.icon.src}
+                      alt=""
+                      width="24"
+                      height="24"
+                      aria-hidden="true"
+                      class="nav-icon h-5 w-5 shrink-0"
+                      style={`--nav-icon-rotation: ${item.iconRotation}`}
+                    />
                     <span
                       class:list={[
                         "relative isolate",
@@ -177,13 +189,21 @@ const serviceWorkerUrl = withBase("/sw.js");
                   href={item.href}
                   aria-current={active === item.id ? "page" : undefined}
                   class:list={[
-                    "relative isolate flex min-h-14 flex-col items-center gap-1 rounded-[10px] px-1 py-2 text-xs font-bold tracking-[0.02em] transition-colors duration-150 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none",
+                    "primary-nav-link relative isolate flex min-h-14 flex-col items-center gap-1 rounded-[10px] px-1 py-2 text-xs font-bold tracking-[0.02em] transition-colors duration-150 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none",
                     active === item.id
                       ? "font-extrabold text-[#3F6B4F] after:absolute after:bottom-1 after:left-1/2 after:-z-10 after:h-[5px] after:w-9 after:-translate-x-1/2 after:rotate-[-2deg] after:rounded-[50%] after:bg-[#F2C94C]/80 after:content-['']"
                       : "text-[#25251F]/75 hover:bg-[#F7F1E3] hover:text-[#3F6B4F]"
                   ]}
                 >
-                  <item.Icon class="h-5 w-5 shrink-0" stroke-width={active === item.id ? 2.4 : 2} aria-hidden="true" />
+                  <img
+                    src={item.icon.src}
+                    alt=""
+                    width="24"
+                    height="24"
+                    aria-hidden="true"
+                    class="nav-icon h-[22px] w-[22px] shrink-0"
+                    style={`--nav-icon-rotation: ${item.iconRotation}`}
+                  />
                   <span>{item.label}</span>
                 </a>
               </li>
@@ -309,4 +329,33 @@ const serviceWorkerUrl = withBase("/sw.js");
       </script>
     </div>
   </body>
+
+  <style>
+    .nav-icon {
+      transform: rotate(var(--nav-icon-rotation, 0deg));
+      transform-origin: center;
+      transition: transform 160ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .primary-nav-link:hover .nav-icon,
+    .primary-nav-link[aria-current="page"] .nav-icon {
+      transform: rotate(calc(var(--nav-icon-rotation, 0deg) - 2deg)) scale(1.08);
+    }
+
+    .primary-nav-link:active .nav-icon {
+      transform: rotate(var(--nav-icon-rotation, 0deg)) scale(0.94);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .nav-icon {
+        transition: none;
+      }
+
+      .primary-nav-link:hover .nav-icon,
+      .primary-nav-link:active .nav-icon,
+      .primary-nav-link[aria-current="page"] .nav-icon {
+        transform: rotate(var(--nav-icon-rotation, 0deg));
+      }
+    }
+  </style>
 </html>

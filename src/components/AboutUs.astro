@@ -1,5 +1,7 @@
 ---
-import { siteImages } from "../data/imageRegistry.js";
+import { getImage } from "astro:assets";
+import aboutImage from "../assets/images/site/home/popi-hero-editorial.png";
+import aboutImageMobile from "../assets/images/site/home/popi-hero-editorial-mobile.png";
 import { withBase } from "../utils/base.js";
 
 const title = "Tizi, Meg e Gea";
@@ -8,26 +10,41 @@ const description =
   "Ci piacciono le giornate all'aria aperta, un bel sentiero e le soste per mangiare qualcosa di buono lungo il percorso. La vera protagonista \u00E8 Gea, una border collie di due anni. \u00C8 un piccolo demonio pieno di energia e futura Fetch Queen: ogni prato \u00E8 il suo campo di allenamento.";
 
 const descriptionSecond =
-  "Questo spazio \u00E8 il diario delle nostre escursioni. Tiene traccia di tutte le giornate semplici che ci lasciano con un sorriso.";
+  "Un diario, tre popi e un sacco di avventure.";
 
 const descriptionThird = "";
 
-const imageSrc = siteImages.aboutUs.src;
-const imageAlt = siteImages.aboutUs.alt;
+const [imageMobile, imageDesktop] = await Promise.all([
+  getImage({ src: aboutImageMobile, width: 900, format: "webp", quality: 74 }),
+  getImage({ src: aboutImage, width: 1440, format: "webp", quality: 78 })
+]);
+
+const imageAlt = "Tizi, Meg e Gea in un prato di montagna, accompagnati da segni illustrati colorati.";
 ---
 
 <section class="about-us" aria-labelledby="about-us-title">
   <div class="about-us__shell">
     <div class="about-us__layout">
       <figure class="about-us__figure">
-        <img src={imageSrc} alt={imageAlt} class="about-us__image" loading="lazy" decoding="async" />
+        <picture>
+          <source media="(max-width: 767px)" srcset={imageMobile.src} />
+          <img
+            src={imageDesktop.src}
+            alt={imageAlt}
+            width={imageDesktop.attributes.width}
+            height={imageDesktop.attributes.height}
+            class="about-us__image"
+            loading="lazy"
+            decoding="async"
+          />
+        </picture>
       </figure>
 
       <div class="about-us__content">
         <h2 id="about-us-title" class="about-us__title">Chi sono i popi?</h2>
         <p class="about-us__names">{title}</p>
         <p class="about-us__text">{description}</p>
-        <p class="about-us__text">{descriptionSecond}</p>
+        <p class="about-us__payoff">{descriptionSecond}</p>
         {descriptionThird && <p class="about-us__text">{descriptionThird}</p>}
         <a class="about-us__link" href={withBase("/gea-gang")}>Scopri tutta la gang</a>
       </div>
@@ -56,10 +73,15 @@ const imageAlt = siteImages.aboutUs.alt;
     margin: 0;
   }
 
+  .about-us__figure picture {
+    display: block;
+  }
+
   .about-us__image {
     width: 100%;
     aspect-ratio: 4 / 3;
     object-fit: cover;
+    object-position: center;
     border-radius: 14px;
     background: var(--journal-moss, #91a66d);
   }
@@ -104,6 +126,16 @@ const imageAlt = siteImages.aboutUs.alt;
     text-wrap: pretty;
   }
 
+  .about-us__payoff {
+    margin: 2px 0 0;
+    max-width: 34ch;
+    color: var(--journal-leaf, #3f6b4f);
+    font-size: 1.125rem;
+    font-weight: 800;
+    line-height: 1.4;
+    text-wrap: balance;
+  }
+
   .about-us__link {
     display: inline-flex;
     width: fit-content;
@@ -144,6 +176,7 @@ const imageAlt = siteImages.aboutUs.alt;
 
     .about-us__image {
       aspect-ratio: 5 / 4;
+      object-position: 72% center;
     }
   }
 

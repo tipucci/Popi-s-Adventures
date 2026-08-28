@@ -10,8 +10,10 @@ const DOG_FRIENDS_FETCH_TIMEOUT_MS = 8000;
 let dogFriendsPromise;
 
 const FALLBACK_DOG_FRIENDS_CSV = `Nome,Razza,Peso,Descrizione,Tag,Data di nascita
-Gea,Border Collie,17kg,"La padrona di casa: energia, intelligenza e voglia di sentiero.","energia pura, curiosa, fedelissima",06/02/2024
-Luffy,Podenco,,"Agile, curioso e sempre pronto a partire in avanscoperta.","scattante, solare, esploratore",`;
+Gea,Border Collie,17kg,"Piccolo demonio pieno di energia. Futura campionessa nel retrieving: ogni prato è il suo campo di allenamento.","Evil Gea, Bilbo addicted, Fetch Queen",06/02/2024
+Luffy,Podenco,,"Un cane incredibilmente elegante e freddoloso. Ha una strana passione per il cerume. Ama scavare buche.","Elegante, Scavatore, Girovago",
+Zeus,Meticcio,24kg,"Da giovane rincorreva palline e conigli, oggi è un cane in pensione anticipata e preferisce il divano di casa.","Bimbo, Pigrone, Ululatore",01/05/2016
+Ariel,Pincher,,"Piccola e timorosa, quando vede un tappo di sughero si trasforma.",,`;
 
 function normalizeHeader(value = "") {
   return value

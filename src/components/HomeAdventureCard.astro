@@ -47,7 +47,8 @@ const isWithGea = (escursione.partecipanti || []).includes("gea");
         alt={escursione.coverAlt || escursione.titolo}
         width="720"
         height="540"
-        loading="lazy"
+        loading={isFeatured ? "eager" : "lazy"}
+        fetchpriority={isFeatured ? "high" : "auto"}
         decoding="async"
         class="home-adventure__image"
       />
