@@ -30,9 +30,6 @@ const geaArchiveHref = `${withBase("/escursioni")}?soloGea=1`;
     <section id="ultima-avventura" class="home-recent" aria-labelledby="recenti-title">
       <header class="home-recent__header">
         <h1 id="recenti-title">L'ultima avventura</h1>
-        {hasEscursioni && (
-          <a href={archiveHref}>Tutte le escursioni <span aria-hidden="true">→</span></a>
-        )}
       </header>
 
       {hasEscursioni && ultimaAvventura ? (
@@ -41,7 +38,7 @@ const geaArchiveHref = `${withBase("/escursioni")}?soloGea=1`;
 
           {altreRecenti.length > 0 && (
             <section class="home-recent__more" aria-labelledby="altri-ricordi-title">
-              <h2 id="altri-ricordi-title">Altri ricordi recenti</h2>
+              <h2 id="altri-ricordi-title">Escursioni recenti</h2>
               <div class="home-recent__secondary">
                 {altreRecenti.map((escursione) => (
                   <HomeAdventureCard escursione={escursione} />
@@ -61,7 +58,12 @@ const geaArchiveHref = `${withBase("/escursioni")}?soloGea=1`;
 
     {hasEscursioni && (
       <section class="journal-facts" aria-labelledby="journal-facts-title">
-        <h2 id="journal-facts-title">Le nostre tracce</h2>
+        <div class="journal-facts__intro">
+          <h2 id="journal-facts-title">Le nostre tracce</h2>
+          <a class="journal-facts__archive" href={archiveHref}>
+            Tutte le escursioni <span aria-hidden="true">→</span>
+          </a>
+        </div>
         <dl>
           <div>
             <dt>Uscite</dt>
@@ -119,11 +121,6 @@ const geaArchiveHref = `${withBase("/escursioni")}?soloGea=1`;
   }
 
   .home-recent__header {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 12px 24px;
     margin-bottom: 24px;
   }
 
@@ -144,7 +141,7 @@ const geaArchiveHref = `${withBase("/escursioni")}?soloGea=1`;
     line-height: 0.98;
   }
 
-  .home-recent__header a {
+  .journal-facts__archive {
     display: inline-flex;
     min-height: 44px;
     align-items: center;
@@ -158,11 +155,11 @@ const geaArchiveHref = `${withBase("/escursioni")}?soloGea=1`;
     text-underline-offset: 5px;
   }
 
-  .home-recent__header a:hover {
+  .journal-facts__archive:hover {
     color: var(--journal-ink);
   }
 
-  .home-recent__header a:focus-visible {
+  .journal-facts__archive:focus-visible {
     border-radius: 4px;
     outline: 3px solid var(--journal-leaf);
     outline-offset: 4px;
@@ -234,6 +231,14 @@ const geaArchiveHref = `${withBase("/escursioni")}?soloGea=1`;
     margin-top: 32px;
     border-block: 1px solid var(--journal-border);
     padding-block: 24px;
+  }
+
+  .journal-facts__intro {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 4px 20px;
   }
 
   .home-about {

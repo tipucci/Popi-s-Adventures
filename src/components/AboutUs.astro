@@ -9,9 +9,6 @@ const title = "Tizi, Meg e Gea";
 const description =
   "Ci piacciono le giornate all'aria aperta, un bel sentiero e le soste per mangiare qualcosa di buono lungo il percorso. La vera protagonista \u00E8 Gea, una border collie di due anni. \u00C8 un piccolo demonio pieno di energia e futura Fetch Queen: ogni prato \u00E8 il suo campo di allenamento.";
 
-const descriptionSecond =
-  "Un diario, tre popi e un sacco di avventure.";
-
 const descriptionThird = "";
 
 const [imageMobile, imageDesktop] = await Promise.all([
@@ -27,7 +24,12 @@ const imageAlt = "Tizi, Meg e Gea in un prato di montagna, accompagnati da segni
     <div class="about-us__layout">
       <figure class="about-us__figure">
         <picture>
-          <source media="(max-width: 767px)" srcset={imageMobile.src} />
+          <source
+            media="(max-width: 767px)"
+            srcset={imageMobile.src}
+            width={imageMobile.attributes.width}
+            height={imageMobile.attributes.height}
+          />
           <img
             src={imageDesktop.src}
             alt={imageAlt}
@@ -44,7 +46,6 @@ const imageAlt = "Tizi, Meg e Gea in un prato di montagna, accompagnati da segni
         <h2 id="about-us-title" class="about-us__title">Chi sono i popi?</h2>
         <p class="about-us__names">{title}</p>
         <p class="about-us__text">{description}</p>
-        <p class="about-us__payoff">{descriptionSecond}</p>
         {descriptionThird && <p class="about-us__text">{descriptionThird}</p>}
         <a class="about-us__link" href={withBase("/gea-gang")}>Scopri tutta la gang</a>
       </div>
@@ -78,10 +79,10 @@ const imageAlt = "Tizi, Meg e Gea in un prato di montagna, accompagnati da segni
   }
 
   .about-us__image {
+    display: block;
     width: 100%;
-    aspect-ratio: 4 / 3;
+    aspect-ratio: 1;
     object-fit: cover;
-    object-position: center;
     border-radius: 14px;
     background: var(--journal-moss, #91a66d);
   }
@@ -126,16 +127,6 @@ const imageAlt = "Tizi, Meg e Gea in un prato di montagna, accompagnati da segni
     text-wrap: pretty;
   }
 
-  .about-us__payoff {
-    margin: 2px 0 0;
-    max-width: 34ch;
-    color: var(--journal-leaf, #3f6b4f);
-    font-size: 1.125rem;
-    font-weight: 800;
-    line-height: 1.4;
-    text-wrap: balance;
-  }
-
   .about-us__link {
     display: inline-flex;
     width: fit-content;
@@ -164,19 +155,27 @@ const imageAlt = "Tizi, Meg e Gea in un prato di montagna, accompagnati da segni
   }
 
   @media (min-width: 768px) {
+    .about-us__image {
+      aspect-ratio: 1440 / 682;
+    }
+  }
+
+  @media (min-width: 960px) {
     .about-us__layout {
-      grid-template-columns: minmax(0, 1.05fr) minmax(20rem, 0.95fr);
-      align-items: start;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      align-items: end;
+    }
+
+    .about-us__figure {
+      grid-row: 1;
+      grid-column: 1 / -1;
     }
 
     .about-us__content {
-      margin: 48px 0 0 -48px;
+      grid-row: 1;
+      grid-column: 1 / span 6;
+      margin: 32px;
       padding: 32px;
-    }
-
-    .about-us__image {
-      aspect-ratio: 5 / 4;
-      object-position: 72% center;
     }
   }
 
