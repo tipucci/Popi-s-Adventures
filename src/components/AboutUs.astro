@@ -102,19 +102,21 @@ const imageAlt = "Tizi, Meg e Gea in un prato di montagna, accompagnati da segni
   .about-us__title {
     margin: 0;
     color: var(--journal-ink, #25251f);
-    font-family: "Nunito", ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-display);
     font-size: clamp(2rem, 7vw, 3rem);
-    font-weight: 800;
-    line-height: 1.1;
-    letter-spacing: -0.02em;
+    font-weight: 600;
+    line-height: 1.05;
+    letter-spacing: -0.015em;
     text-wrap: balance;
   }
 
   .about-us__names {
     margin: 0;
     color: var(--journal-leaf, #3f6b4f);
+    font-family: var(--font-annotation);
     font-size: 1.25rem;
-    font-weight: 800;
+    font-style: italic;
+    font-weight: 500;
     line-height: 1.2;
   }
 
@@ -123,7 +125,7 @@ const imageAlt = "Tizi, Meg e Gea in un prato di montagna, accompagnati da segni
     max-width: 68ch;
     color: var(--journal-ink, #25251f);
     font-size: 1rem;
-    line-height: 1.7;
+    line-height: 1.6;
     text-wrap: pretty;
   }
 
@@ -139,7 +141,7 @@ const imageAlt = "Tizi, Meg e Gea in un prato di montagna, accompagnati da segni
     padding: 12px 18px;
     color: var(--journal-paper, #fffdf7);
     font-size: 0.875rem;
-    font-weight: 800;
+    font-weight: 700;
     line-height: 1.3;
     transition: background 180ms ease;
   }

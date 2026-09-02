@@ -1,0 +1,8 @@
+{
+  "title": "Taccuino di campo",
+  "displayFont": "Besley Variable",
+  "bodyFont": "Atkinson Hyperlegible Next",
+  "viewport": "430x932",
+  "source": "index.html?theme=taccuino",
+  "approved": false
+}

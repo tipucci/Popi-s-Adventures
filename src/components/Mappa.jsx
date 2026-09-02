@@ -93,7 +93,7 @@ function createClusterIcon(L, count) {
   return L.divIcon({
     className: "escursioni-cluster-marker",
     html: `
-      <span style="display:flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:9999px;border:3px solid #FFFDF7;background:#3F6B4F;box-shadow:0 12px 24px color-mix(in srgb, #25251F 22%, transparent);color:#FFFDF7;font-weight:800;font-size:0.875rem;line-height:1;">
+      <span style="display:flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:9999px;border:3px solid #FFFDF7;background:#3F6B4F;box-shadow:0 12px 24px color-mix(in srgb, #25251F 22%, transparent);color:#FFFDF7;font-weight:700;font-size:0.875rem;line-height:1;font-variant-numeric:tabular-nums;">
         ${count}
       </span>
     `,
@@ -481,7 +481,7 @@ export default function Mappa({
                 <Expand size={18} strokeWidth={2.2} aria-hidden="true" />
               </button>
             </div>
-            <h1 class="mt-2 font-display text-4xl text-white sm:text-5xl">{title}</h1>
+            <h1 class="mt-2 font-sans text-4xl font-bold text-white sm:text-5xl">{title}</h1>
           </div>
         ) : (
           <button

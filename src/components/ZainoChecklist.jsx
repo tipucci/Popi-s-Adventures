@@ -471,7 +471,7 @@ export default function ZainoChecklist({ categories = [] }) {
           <div class="min-w-0">
             <h1
               id="zaino-checklist-title"
-              class="text-3xl font-black tracking-[-0.025em] text-forest-800 sm:text-4xl"
+              class="text-3xl font-bold tracking-[-0.025em] text-forest-800 sm:text-4xl"
             >
               Prepara lo zaino
             </h1>
@@ -514,7 +514,7 @@ export default function ZainoChecklist({ categories = [] }) {
         </div>
 
         {remainingCount === 0 && totalCount > 0 && (
-          <p class="mt-3 flex items-center gap-2 text-sm font-extrabold text-forest-800">
+          <p class="mt-3 flex items-center gap-2 text-sm font-bold text-forest-800">
             <CheckCircle2 size={18} strokeWidth={2.4} aria-hidden="true" />
             Zaino pronto. Si parte!
           </p>
@@ -536,7 +536,7 @@ export default function ZainoChecklist({ categories = [] }) {
               type="button"
               aria-pressed={viewMode === "remaining"}
               onClick={() => changeViewMode("remaining")}
-              class={`min-h-11 rounded-[8px] px-3 py-2 text-sm font-extrabold transition-colors focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-forest-700 motion-reduce:transition-none ${
+              class={`min-h-11 rounded-[8px] px-3 py-2 text-sm font-bold transition-colors focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-forest-700 motion-reduce:transition-none ${
                 viewMode === "remaining"
                   ? "bg-forest-700 text-[#FFFDF7]"
                   : "text-forest-800 hover:bg-cream"
@@ -548,7 +548,7 @@ export default function ZainoChecklist({ categories = [] }) {
               type="button"
               aria-pressed={viewMode === "all"}
               onClick={() => changeViewMode("all")}
-              class={`min-h-11 rounded-[8px] px-3 py-2 text-sm font-extrabold transition-colors focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-forest-700 motion-reduce:transition-none ${
+              class={`min-h-11 rounded-[8px] px-3 py-2 text-sm font-bold transition-colors focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-forest-700 motion-reduce:transition-none ${
                 viewMode === "all"
                   ? "bg-forest-700 text-[#FFFDF7]"
                   : "text-forest-800 hover:bg-cream"
@@ -562,7 +562,7 @@ export default function ZainoChecklist({ categories = [] }) {
             <button
               type="button"
               onClick={handleOpenAddForm}
-              class="inline-flex min-h-11 items-center justify-center gap-2 rounded-[10px] border border-[#DDD7C9] bg-[#FFFDF7] px-3 py-2 text-sm font-extrabold text-forest-800 transition-colors hover:border-forest-300 hover:bg-white focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-forest-700 motion-reduce:transition-none"
+              class="inline-flex min-h-11 items-center justify-center gap-2 rounded-[10px] border border-[#DDD7C9] bg-[#FFFDF7] px-3 py-2 text-sm font-bold text-forest-800 transition-colors hover:border-forest-300 hover:bg-white focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-forest-700 motion-reduce:transition-none"
             >
               <CirclePlus size={18} strokeWidth={2.2} aria-hidden="true" />
               Aggiungi
@@ -571,7 +571,7 @@ export default function ZainoChecklist({ categories = [] }) {
               type="button"
               aria-pressed={isOrganizeMode}
               onClick={toggleOrganizeMode}
-              class={`inline-flex min-h-11 items-center justify-center gap-2 rounded-[10px] border px-3 py-2 text-sm font-extrabold transition-colors focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-forest-700 motion-reduce:transition-none ${
+              class={`inline-flex min-h-11 items-center justify-center gap-2 rounded-[10px] border px-3 py-2 text-sm font-bold transition-colors focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-forest-700 motion-reduce:transition-none ${
                 isOrganizeMode
                   ? "border-forest-700 bg-forest-700 text-[#FFFDF7]"
                   : "border-[#DDD7C9] bg-[#FFFDF7] text-forest-800 hover:border-forest-300 hover:bg-white"
@@ -584,7 +584,7 @@ export default function ZainoChecklist({ categories = [] }) {
               <button
                 type="button"
                 onClick={handleResetChecked}
-                class="inline-flex min-h-11 items-center justify-center gap-2 rounded-[10px] px-3 py-2 text-sm font-extrabold text-terracotta-700 transition-colors hover:bg-terracotta-50 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-terracotta-600 motion-reduce:transition-none"
+                class="inline-flex min-h-11 items-center justify-center gap-2 rounded-[10px] px-3 py-2 text-sm font-bold text-terracotta-700 transition-colors hover:bg-terracotta-50 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-terracotta-600 motion-reduce:transition-none"
               >
                 <RotateCcw size={17} strokeWidth={2.2} aria-hidden="true" />
                 Azzera spunte
@@ -602,7 +602,7 @@ export default function ZainoChecklist({ categories = [] }) {
 
       {isAddFormOpen && (
         <section class="border-b border-[#DDD7C9] py-5" aria-labelledby="zaino-form-title">
-          <h2 id="zaino-form-title" class="text-xl font-black text-forest-800">
+          <h2 id="zaino-form-title" class="text-xl font-bold text-forest-800">
             {editingItemId ? "Modifica elemento" : "Aggiungi elemento"}
           </h2>
           <form class="mt-4 grid gap-4" noValidate onSubmit={handleAddItem}>
@@ -651,7 +651,7 @@ export default function ZainoChecklist({ categories = [] }) {
             <div class="flex flex-col gap-2 sm:flex-row">
               <button
                 type="submit"
-                class="inline-flex min-h-11 items-center justify-center rounded-[10px] bg-forest-700 px-4 py-2.5 text-sm font-extrabold text-[#FFFDF7] transition-colors hover:bg-forest-600 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-forest-700 motion-reduce:transition-none"
+                class="inline-flex min-h-11 items-center justify-center rounded-[10px] bg-forest-700 px-4 py-2.5 text-sm font-bold text-[#FFFDF7] transition-colors hover:bg-forest-600 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-forest-700 motion-reduce:transition-none"
               >
                 Salva elemento
               </button>
@@ -663,7 +663,7 @@ export default function ZainoChecklist({ categories = [] }) {
                   setNewItemLabel("");
                   setEditingItemId("");
                 }}
-                class="inline-flex min-h-11 items-center justify-center rounded-[10px] border border-[#DDD7C9] bg-[#FFFDF7] px-4 py-2.5 text-sm font-extrabold text-forest-800 transition-colors hover:bg-white focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-forest-700 motion-reduce:transition-none"
+                class="inline-flex min-h-11 items-center justify-center rounded-[10px] border border-[#DDD7C9] bg-[#FFFDF7] px-4 py-2.5 text-sm font-bold text-forest-800 transition-colors hover:bg-white focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-forest-700 motion-reduce:transition-none"
               >
                 Annulla
               </button>
@@ -696,11 +696,11 @@ export default function ZainoChecklist({ categories = [] }) {
                   class="shrink-0 text-terracotta-700"
                   aria-hidden="true"
                 />
-                <span id={`category-${category.id}`} class="min-w-0 flex-1 text-xl font-black text-forest-800">
+                <span id={`category-${category.id}`} class="min-w-0 flex-1 text-xl font-bold text-forest-800">
                   {category.label}
                 </span>
                 <span
-                  class={`shrink-0 rounded-full px-2.5 py-1 text-xs font-extrabold tabular-nums ${
+                  class={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold tabular-nums ${
                     missingCount === 0
                       ? "bg-emerald-100 text-emerald-800"
                       : "bg-[#FFFDF7] text-forest-700"
@@ -754,12 +754,12 @@ export default function ZainoChecklist({ categories = [] }) {
                                 {item.label}
                               </span>
                               {item.source === "custom" && (
-                                <span class="ml-2 inline-flex rounded-full bg-[#FFFDF7] px-2 py-0.5 text-xs font-extrabold uppercase tracking-[0.08em] text-terracotta-700">
+                                <span class="ml-2 inline-flex rounded-full bg-[#FFFDF7] px-2 py-0.5 text-xs font-bold uppercase tracking-[0.08em] text-terracotta-700">
                                   Extra
                                 </span>
                               )}
                               {isChecked && viewMode === "remaining" && (
-                                <span class="ml-2 inline-flex rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-extrabold text-emerald-800">
+                                <span class="ml-2 inline-flex rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-bold text-emerald-800">
                                   Pronto
                                 </span>
                               )}
@@ -824,7 +824,7 @@ export default function ZainoChecklist({ categories = [] }) {
           <button
             type="button"
             onClick={() => changeViewMode("all")}
-            class="inline-flex min-h-11 items-center justify-center rounded-[10px] border border-[#DDD7C9] bg-[#FFFDF7] px-4 py-2.5 text-sm font-extrabold text-forest-800 transition-colors hover:bg-white focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-forest-700 motion-reduce:transition-none"
+            class="inline-flex min-h-11 items-center justify-center rounded-[10px] border border-[#DDD7C9] bg-[#FFFDF7] px-4 py-2.5 text-sm font-bold text-forest-800 transition-colors hover:bg-white focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-forest-700 motion-reduce:transition-none"
           >
             Vedi checklist completa
           </button>
@@ -837,7 +837,7 @@ export default function ZainoChecklist({ categories = [] }) {
           <button
             type="button"
             onClick={handleOpenAddForm}
-            class="mt-3 inline-flex min-h-11 items-center justify-center rounded-[10px] bg-forest-700 px-4 py-2.5 text-sm font-extrabold text-[#FFFDF7] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-forest-700"
+            class="mt-3 inline-flex min-h-11 items-center justify-center rounded-[10px] bg-forest-700 px-4 py-2.5 text-sm font-bold text-[#FFFDF7] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-forest-700"
           >
             Aggiungi il primo elemento
           </button>
@@ -856,7 +856,7 @@ export default function ZainoChecklist({ categories = [] }) {
           <button
             type="button"
             onClick={handleUndo}
-            class="min-h-11 shrink-0 rounded-[10px] px-3 py-2 text-sm font-black text-[#FFFDF7] underline decoration-2 underline-offset-4 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[#FFFDF7]"
+            class="min-h-11 shrink-0 rounded-[10px] px-3 py-2 text-sm font-bold text-[#FFFDF7] underline decoration-2 underline-offset-4 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[#FFFDF7]"
           >
             Annulla
           </button>

@@ -275,20 +275,21 @@ const uploadSlug = escursione.imageSlug || escursione.slug;
   .hike-section-heading h2 {
     margin: 0;
     color: var(--journal-ink);
-    font-family: "Nunito", ui-sans-serif, system-ui, sans-serif;
-    font-weight: 800;
-    letter-spacing: -0.025em;
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.015em;
     text-wrap: balance;
   }
 
   .hike-hero h1 {
     position: relative;
     width: fit-content;
-    max-width: 100%;
+    max-width: min(100%, 12ch);
     padding-bottom: 14px;
     font-size: clamp(2.5rem, 10vw, 3.75rem);
     line-height: 1.04;
-    overflow-wrap: anywhere;
+    hyphens: auto;
+    overflow-wrap: break-word;
   }
 
   .hike-hero h1::after {
@@ -319,7 +320,7 @@ const uploadSlug = escursione.imageSlug || escursione.slug;
     margin: 20px 0 0;
     color: color-mix(in srgb, var(--journal-ink) 84%, transparent);
     font-size: 1rem;
-    line-height: 1.7;
+    line-height: 1.6;
     text-wrap: pretty;
   }
 
@@ -352,7 +353,7 @@ const uploadSlug = escursione.imageSlug || escursione.slug;
     padding: 6px 10px;
     color: var(--journal-ink);
     font-size: 0.875rem;
-    font-weight: 800;
+    font-weight: 700;
   }
 
   .hike-hero__figure--placeholder img {
@@ -393,7 +394,7 @@ const uploadSlug = escursione.imageSlug || escursione.slug;
     margin-top: 5px;
     color: var(--journal-leaf);
     font-size: clamp(1rem, 4.2vw, 1.25rem);
-    font-weight: 800;
+    font-weight: 700;
     font-variant-numeric: tabular-nums;
     line-height: 1.2;
     overflow-wrap: anywhere;
@@ -443,7 +444,7 @@ const uploadSlug = escursione.imageSlug || escursione.slug;
     padding: 10px 14px;
     color: var(--journal-leaf);
     font-size: 0.875rem;
-    font-weight: 800;
+    font-weight: 700;
     line-height: 1.3;
   }
 

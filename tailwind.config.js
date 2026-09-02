@@ -30,8 +30,8 @@ export default {
         }
       },
       fontFamily: {
-        sans: ["Nunito", "ui-sans-serif", "system-ui", "sans-serif"],
-        display: ["Fraunces", "Georgia", "serif"]
+        sans: ["Alegreya Sans", "ui-sans-serif", "system-ui", "sans-serif"],
+        display: ["Alegreya", "Georgia", "serif"]
       },
       boxShadow: {
         card: "0 18px 40px rgba(95, 44, 29, 0.12)"

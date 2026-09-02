@@ -137,27 +137,24 @@ const isWithGea = (escursione.partecipanti || []).includes("gea");
   .home-adventure__heading-row {
     display: flex;
     min-width: 0;
-    align-items: center;
+    align-items: flex-start;
     gap: 12px;
   }
 
   .home-adventure__heading-row--with-gea .home-adventure__title {
+    flex: 1;
     min-width: 0;
-    overflow: hidden;
-    overflow-wrap: normal;
-    text-overflow: ellipsis;
-    text-wrap: nowrap;
-    white-space: nowrap;
+    overflow-wrap: break-word;
   }
 
   .home-adventure__title {
     margin: 0;
     color: var(--journal-ink, #25251f);
-    font-family: "Nunito", ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-display);
     font-size: clamp(1.4rem, 4vw, 1.75rem);
-    font-weight: 800;
+    font-weight: 600;
     line-height: 1.15;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.015em;
     overflow-wrap: anywhere;
     text-wrap: balance;
     transition: color 180ms ease;
@@ -214,7 +211,7 @@ const isWithGea = (escursione.partecipanti || []).includes("gea");
     padding: 6px 10px;
     color: var(--journal-ink, #25251f);
     font-size: 0.875rem;
-    font-weight: 800;
+    font-weight: 700;
     line-height: 1.3;
   }
 
@@ -227,7 +224,7 @@ const isWithGea = (escursione.partecipanti || []).includes("gea");
     padding-bottom: 5px;
     color: var(--journal-leaf, #3f6b4f);
     font-size: 0.9375rem;
-    font-weight: 800;
+    font-weight: 700;
   }
 
   .home-adventure__entry::after {
@@ -249,7 +246,7 @@ const isWithGea = (escursione.partecipanti || []).includes("gea");
     padding: 6px 10px;
     color: var(--journal-ink, #25251f);
     font-size: 0.8125rem;
-    font-weight: 800;
+    font-weight: 700;
   }
 
   .home-adventure--placeholder .home-adventure__figure {

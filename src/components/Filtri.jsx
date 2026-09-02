@@ -732,7 +732,7 @@ export default function Filtri({ escursioni = [], initialFilters = defaultFilter
             tabindex="-1"
             aria-live="polite"
             aria-atomic="true"
-            class="min-w-0 whitespace-nowrap text-xl font-extrabold text-[#25251f] outline-none focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] sm:text-2xl"
+            class="min-w-0 whitespace-nowrap text-xl font-bold text-[#25251f] outline-none focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] sm:text-2xl"
           >
             {filtered.length} {filtered.length === 1 ? "Escursione" : "Escursioni"}
           </h2>
@@ -747,7 +747,7 @@ export default function Filtri({ escursioni = [], initialFilters = defaultFilter
               aria-label="Ordina risultati"
               value={filters.sort}
               onInput={(event) => updateField("sort", event.currentTarget.value)}
-              class="min-h-12 w-full appearance-none rounded-[10px] border border-[#DDD7C9] bg-[#FFFDF7] py-3 pl-11 pr-9 text-sm font-extrabold text-[#3F6B4F] outline-none transition-colors hover:border-[#91A66D] focus:border-[#3F6B4F] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none"
+              class="min-h-12 w-full appearance-none rounded-[10px] border border-[#DDD7C9] bg-[#FFFDF7] py-3 pl-11 pr-9 text-sm font-bold text-[#3F6B4F] outline-none transition-colors hover:border-[#91A66D] focus:border-[#3F6B4F] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none"
             >
               {sortOptions.map((item) => (
                 <option value={item.value}>{item.label}</option>
@@ -818,7 +818,7 @@ export default function Filtri({ escursioni = [], initialFilters = defaultFilter
                   goToPage(page);
                 }}
                 aria-current={page === currentPage ? "page" : undefined}
-                class={`flex h-11 min-w-11 items-center justify-center rounded-[10px] border px-2 text-sm font-extrabold tabular-nums transition-colors focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none ${
+                class={`flex h-11 min-w-11 items-center justify-center rounded-[10px] border px-2 text-sm font-bold tabular-nums transition-colors focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none ${
                   page === currentPage
                     ? "border-[#E0B733] bg-[#F2C94C] text-[#25251F]"
                     : "border-transparent text-[#3F6B4F] hover:bg-[#F7F1E3] hover:text-[#25251F]"

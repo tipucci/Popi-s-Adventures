@@ -20,6 +20,7 @@ if (!dog) {
 }
 
 const dogImage = getDogFriendImage(dog.image);
+const dogTraits = Array.isArray(dog.traits) ? dog.traits.filter(Boolean) : [];
 const escursioni = await getEscursioni();
 const recentHikes = escursioni
   .filter((item) =>
@@ -38,118 +39,536 @@ function formatDate(value) {
 
 <Layout
   title={`${dog.name} | Gea Gang`}
-  description={dog.description}
+  description={dog.description || `${dog.name}, Gea Gang.`}
   active="gea-gang"
   mobileBackHref={withBase("/gea-gang")}
   mobileBackLabel="Torna alla gang"
 >
-  <article class="space-y-6">
-    <section class="overflow-hidden rounded-[2rem] bg-white shadow-card">
-      <div class="grid gap-0 lg:grid-cols-[0.95fr_1.05fr]">
-        <div class="relative min-h-80 bg-[#efe4d1]">
+  <article class="dog-detail">
+    <svg class="dog-detail__trail" viewBox="0 0 1000 760" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M765 5 C 940 145, 850 285, 610 350 S 245 505, 315 755" pathLength="1" />
+    </svg>
+
+    <section class:list={["dog-profile", `dog-profile--${dog.id}`]}>
+      <div class="dog-profile__media">
           {dogImage ? (
             <img
               src={dogImage.src}
-              alt={`${dog.name}, ${dog.breed}, ritratto della scheda Gea Gang.`}
+              alt={dog.breed ? `${dog.name}, ${dog.breed}.` : dog.name}
               width={dogImage.width}
               height={dogImage.height}
               loading="eager"
               decoding="async"
-              class="h-full w-full object-cover"
+              class="dog-profile__portrait"
             />
           ) : (
-            <div class="flex h-full min-h-80 items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.6),_transparent_58%),linear-gradient(135deg,_#efe4d1,_#dfc8a2)] text-terracotta-700">
-              <div class="flex flex-col items-center gap-3">
-                <span class="rounded-full bg-white/70 p-5 shadow-sm">
+            <div class="dog-profile__placeholder">
+              <div>
+                <span>
                   <PawPrint size={34} strokeWidth={2.2} aria-hidden="true" />
                 </span>
-                <p class="text-sm font-bold uppercase tracking-[0.16em]">Foto in arrivo</p>
+                <p>Foto in arrivo</p>
               </div>
             </div>
           )}
-        </div>
+      </div>
 
-        <div class="space-y-6 p-6 sm:p-8">
-          <header>
-            <a
-              href={withBase("/gea-gang")}
-              class="mb-6 hidden w-fit items-center gap-2 rounded-full bg-forest-700 px-4 py-2 text-sm font-bold text-[#fffaf3] shadow-card transition hover:bg-forest-600 focus:outline-none focus:ring-2 focus:ring-terracotta-400 focus:ring-offset-2 focus:ring-offset-white md:inline-flex"
-            >
-              <ArrowLeft class="h-4 w-4 shrink-0 text-[#fffaf3]" stroke-width={2.2} aria-hidden="true" />
-              <span class="text-[#fffaf3]">Torna alla gang</span>
-            </a>
-            <h1 class="text-4xl font-black text-forest-800">{dog.name}</h1>
-            <p class="mt-2 text-lg font-bold text-forest-700">{dog.breed}</p>
-          </header>
+      <div class="dog-profile__content">
+        <header>
+          <a href={withBase("/gea-gang")} class="dog-profile__back">
+            <ArrowLeft size={18} stroke-width={2.2} aria-hidden="true" />
+            <span>Torna alla gang</span>
+          </a>
+          <h1>{dog.name}</h1>
+          {dog.breed && <p class="dog-profile__breed">{dog.breed}</p>}
+        </header>
 
-          <p class="text-base leading-7 text-forest-700">{dog.description}</p>
+        {dog.description && <p class="dog-profile__description">{dog.description}</p>}
 
-          <dl class="grid gap-4 sm:grid-cols-2">
-            <div class="rounded-[1.5rem] bg-forest-50 p-5">
-              <dt class="text-xs font-bold uppercase tracking-[0.16em] text-terracotta-600">Razza</dt>
-              <dd class="mt-2 text-2xl font-black text-forest-800">{dog.breed}</dd>
-            </div>
-
+        {(dog.weightKg || dog.birthDate) && (
+          <dl class="dog-profile__facts">
             {dog.weightKg && (
-              <div class="rounded-[1.5rem] bg-forest-50 p-5">
-                <dt class="text-xs font-bold uppercase tracking-[0.16em] text-terracotta-600">Peso</dt>
-                <dd class="mt-2 text-2xl font-black text-forest-800">{dog.weightKg} kg</dd>
+              <div>
+                <dt>Peso</dt>
+                <dd>{dog.weightKg} kg</dd>
               </div>
             )}
 
             {dog.birthDate && (
-              <div class="rounded-[1.5rem] bg-forest-50 p-5 sm:col-span-2">
-                <dt class="text-xs font-bold uppercase tracking-[0.16em] text-terracotta-600">Data di nascita</dt>
-                <dd class="mt-2 text-2xl font-black text-forest-800">{formatDate(dog.birthDate)}</dd>
+              <div>
+                <dt>Nascita</dt>
+                <dd>{formatDate(dog.birthDate)}</dd>
               </div>
             )}
           </dl>
+        )}
 
-          {dog.traits.length > 0 && (
-            <section aria-labelledby="dog-traits">
-              <h2 id="dog-traits" class="text-xs font-bold uppercase tracking-[0.16em] text-terracotta-600">Tratti distintivi</h2>
-              <div class="mt-3 flex flex-wrap gap-2">
-                {dog.traits.map((trait) => (
-                  <span class="rounded-full bg-[#fff1e8] px-3 py-1.5 text-sm font-bold text-[#8a4d2d]">{trait}</span>
-                ))}
-              </div>
-            </section>
-          )}
-        </div>
+        {dogTraits.length > 0 && (
+          <ul class="dog-profile__traits" aria-label={`Tratti di ${dog.name}`} role="list">
+            {dogTraits.map((trait) => (
+              <li>{trait}</li>
+            ))}
+          </ul>
+        )}
       </div>
     </section>
 
-    {recentHikes.length > 0 && (
-      <section class="rounded-[2rem] bg-white p-6 shadow-card sm:p-8">
-        <div class="flex items-end justify-between gap-4">
-          <div>
-            <p class="text-sm font-bold uppercase tracking-[0.16em] text-terracotta-600">Escursioni insieme</p>
-            <h2 class="mt-2 text-3xl font-black text-forest-800">Ultime avventure con {dog.name}</h2>
-          </div>
-        </div>
+    <section class="dog-adventures">
+      <h2>Ultime avventure con <span>{dog.name}</span></h2>
 
-        <div class="mt-5 grid gap-4 md:grid-cols-2">
+      {recentHikes.length > 0 ? (
+        <div class="dog-adventures__grid">
           {recentHikes.map((hike) => (
             <a
               href={withBase(`/escursioni/${hike.slug}`)}
-              class="grid grid-cols-[5.5rem_minmax(0,1fr)] gap-4 rounded-[1.5rem] border border-[#eadac8] bg-[#fffaf4] p-3 transition hover:-translate-y-0.5 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-terracotta-400 focus:ring-offset-2 focus:ring-offset-white sm:grid-cols-[6.5rem_minmax(0,1fr)]"
+              class="dog-adventure"
             >
               <img
                 src={hike.coverCard || hike.cover}
                 alt={hike.coverAlt}
                 loading="lazy"
                 decoding="async"
-                class="aspect-square w-full self-start rounded-[1rem] object-cover"
               />
-              <div class="min-w-0 py-1 pr-1">
-                <p class="text-xs font-bold uppercase tracking-[0.16em] text-terracotta-600">{formatDate(hike.data)}</p>
-                <h3 class="mt-2 text-xl font-black leading-tight text-forest-800 sm:text-2xl">{hike.titolo}</h3>
-                <p class="mt-1 text-sm text-forest-700">{hike.luogo}</p>
+              <div>
+                <p class="dog-adventure__date">{formatDate(hike.data)}</p>
+                <h3>{hike.titolo}</h3>
+                <p class="dog-adventure__place">{hike.luogo}</p>
               </div>
             </a>
           ))}
         </div>
-      </section>
-    )}
+      ) : (
+        <div class="dog-adventures__empty">
+          <p>Le avventure di {dog.name} devono ancora entrare nel diario.</p>
+          <a href={withBase("/escursioni")}>Esplora il diario</a>
+        </div>
+      )}
+    </section>
   </article>
 </Layout>
+
+<style>
+  .dog-detail {
+    --dog-cream: #f7f1e3;
+    --dog-paper: #fffdf7;
+    --dog-ink: #25251f;
+    --dog-leaf: #3f6b4f;
+    --dog-sunshine: #f2c94c;
+    --dog-tomato: #e66a4e;
+    --dog-border: #ddd7c9;
+
+    position: relative;
+    isolation: isolate;
+    color: var(--dog-ink);
+  }
+
+  .dog-detail ::selection {
+    background: color-mix(in srgb, var(--dog-sunshine) 72%, transparent);
+    color: var(--dog-ink);
+  }
+
+  .dog-detail__trail {
+    display: none;
+  }
+
+  .dog-profile {
+    display: grid;
+    gap: 32px;
+  }
+
+  .dog-profile__media {
+    position: relative;
+    overflow: hidden;
+    min-height: 0;
+    aspect-ratio: 4 / 3;
+    border-radius: 14px;
+    background: var(--dog-cream);
+  }
+
+  .dog-profile__portrait {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition:
+      filter 220ms ease,
+      transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .dog-profile--gea .dog-profile__portrait {
+    object-position: center 42%;
+  }
+
+  .dog-profile--luffy .dog-profile__portrait {
+    object-position: 58% center;
+  }
+
+  .dog-profile__placeholder {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background:
+      radial-gradient(circle at top, color-mix(in srgb, var(--dog-paper) 70%, transparent), transparent 58%),
+      linear-gradient(135deg, var(--dog-cream), var(--dog-border));
+    color: var(--dog-ink);
+    text-align: center;
+  }
+
+  .dog-profile__placeholder > div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .dog-profile__placeholder span {
+    display: grid;
+    width: 72px;
+    height: 72px;
+    place-items: center;
+    border-radius: 50%;
+    background: rgb(255 255 255 / 70%);
+  }
+
+  .dog-profile__placeholder p {
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .dog-profile__content {
+    align-self: center;
+    min-width: 0;
+  }
+
+  .dog-profile__back {
+    display: none;
+    min-height: 44px;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 32px;
+    color: var(--dog-leaf);
+    font-size: 0.875rem;
+    font-weight: 700;
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, var(--dog-leaf) 38%, transparent);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 5px;
+  }
+
+  .dog-profile h1 {
+    position: relative;
+    z-index: 0;
+    width: fit-content;
+    margin: 0;
+    color: var(--dog-ink);
+    font-family: var(--font-display);
+    font-size: clamp(3rem, 8vw, 3.75rem);
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    line-height: 1;
+    hyphens: auto;
+    overflow-wrap: break-word;
+  }
+
+  .dog-profile h1::after {
+    position: absolute;
+    right: -4px;
+    bottom: 1px;
+    left: -4px;
+    z-index: -1;
+    height: 9px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--dog-sunshine) 78%, transparent);
+    content: "";
+    transform: rotate(-1.5deg);
+  }
+
+  .dog-profile__breed {
+    margin: 10px 0 0;
+    color: var(--dog-leaf);
+    font-size: 1rem;
+    font-weight: 700;
+  }
+
+  .dog-profile__description {
+    max-width: 65ch;
+    margin: 28px 0 0;
+    color: color-mix(in srgb, var(--dog-ink) 84%, transparent);
+    font-size: 1rem;
+    line-height: 1.6;
+    overflow-wrap: break-word;
+  }
+
+  .dog-profile__facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 28px;
+    margin: 28px 0 0;
+    border-block: 1px solid var(--dog-border);
+    padding-block: 14px;
+  }
+
+  .dog-profile__facts > div {
+    display: flex;
+    align-items: baseline;
+    min-width: 0;
+    gap: 8px;
+  }
+
+  .dog-profile__facts dt,
+  .dog-adventure__date {
+    color: var(--dog-tomato);
+    font-size: 0.875rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    line-height: 1.4;
+    text-transform: uppercase;
+  }
+
+  .dog-profile__facts dd {
+    margin: 0;
+    color: var(--dog-ink);
+    font-size: 0.875rem;
+    font-weight: 700;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+  }
+
+  .dog-profile__traits {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 12px;
+    margin: 18px 0 0;
+    padding: 0;
+    color: var(--dog-leaf);
+    font-size: 0.875rem;
+    font-weight: 700;
+    list-style: none;
+  }
+
+  .dog-profile__traits li:not(:last-child)::after {
+    margin-left: 12px;
+    color: var(--dog-tomato);
+    content: "·";
+  }
+
+  .dog-adventures {
+    margin-top: 96px;
+  }
+
+  .dog-adventures > h2 {
+    max-width: 16ch;
+    margin: 0;
+    color: var(--dog-ink);
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    line-height: 1.05;
+    text-wrap: balance;
+  }
+
+  .dog-adventures > h2 span {
+    color: var(--dog-leaf);
+  }
+
+  .dog-adventures__grid {
+    display: grid;
+    gap: 56px;
+    margin-top: 40px;
+  }
+
+  .dog-adventures__empty {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px 32px;
+    margin-top: 40px;
+    border-block: 1px solid var(--dog-border);
+    padding-block: 24px;
+  }
+
+  .dog-adventures__empty p {
+    max-width: 44ch;
+    margin: 0;
+    color: color-mix(in srgb, var(--dog-ink) 78%, transparent);
+    line-height: 1.65;
+  }
+
+  .dog-adventures__empty a {
+    min-height: 44px;
+    color: var(--dog-leaf);
+    font-weight: 700;
+    line-height: 44px;
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, var(--dog-leaf) 38%, transparent);
+    text-underline-offset: 5px;
+  }
+
+  .dog-adventure {
+    display: block;
+    min-width: 0;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .dog-adventure > img {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    border-radius: 14px;
+    object-fit: cover;
+    transition:
+      filter 220ms ease,
+      transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .dog-adventure > div {
+    padding-top: 18px;
+  }
+
+  .dog-adventure__date,
+  .dog-adventure__place {
+    margin: 0;
+  }
+
+  .dog-adventure h3 {
+    margin: 8px 0 0;
+    color: var(--dog-ink);
+    font-family: var(--font-display);
+    font-size: clamp(1.25rem, 2vw, 1.5rem);
+    font-weight: 600;
+    line-height: 1.15;
+    hyphens: auto;
+    overflow-wrap: break-word;
+  }
+
+  .dog-adventure__place {
+    margin-top: 5px;
+    color: color-mix(in srgb, var(--dog-ink) 70%, transparent);
+    font-size: 0.875rem;
+  }
+
+  .dog-profile__back:focus-visible,
+  .dog-adventures__empty a:focus-visible,
+  .dog-adventure:focus-visible {
+    outline: 3px solid var(--dog-leaf);
+    outline-offset: 4px;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .dog-profile__back:hover {
+      color: var(--dog-ink);
+      text-decoration-color: currentColor;
+    }
+
+    .dog-adventures__empty a:hover {
+      color: var(--dog-ink);
+      text-decoration-color: currentColor;
+    }
+
+    .dog-adventure:hover > img {
+      filter: saturate(1.05);
+      transform: scale(1.018);
+    }
+  }
+
+  @media (min-width: 768px) {
+    .dog-profile__back {
+      display: inline-flex;
+    }
+
+    .dog-adventures__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 64px 32px;
+    }
+
+    .dog-adventure:nth-child(even) {
+      margin-top: 64px;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .dog-detail__trail {
+      position: absolute;
+      top: 360px;
+      right: 6%;
+      z-index: -1;
+      display: block;
+      width: 72%;
+      height: 760px;
+      overflow: visible;
+      pointer-events: none;
+    }
+
+    .dog-detail__trail path {
+      fill: none;
+      stroke: color-mix(in srgb, var(--dog-tomato) 42%, transparent);
+      stroke-dasharray: 0.012 0.018;
+      stroke-linecap: round;
+      stroke-width: 3;
+      vector-effect: non-scaling-stroke;
+    }
+
+    .dog-profile {
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: 48px 32px;
+      align-items: center;
+    }
+
+    .dog-profile__media {
+      grid-column: 1 / span 7;
+      min-height: 39rem;
+      aspect-ratio: auto;
+    }
+
+    .dog-profile__content {
+      grid-column: 8 / span 5;
+      margin-top: 72px;
+      padding-right: clamp(0px, 2vw, 24px);
+    }
+
+    .dog-adventures__grid {
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: 72px 32px;
+    }
+
+    .dog-adventure:nth-child(4n + 1) {
+      grid-column: 1 / span 7;
+    }
+
+    .dog-adventure:nth-child(4n + 2) {
+      grid-column: 9 / span 4;
+      margin-top: 96px;
+    }
+
+    .dog-adventure:nth-child(4n + 3) {
+      grid-column: 1 / span 4;
+      margin-top: 0;
+    }
+
+    .dog-adventure:nth-child(4n + 4) {
+      grid-column: 6 / span 7;
+      margin-top: 72px;
+    }
+
+    .dog-adventure:nth-child(4n + 2) > img,
+    .dog-adventure:nth-child(4n + 3) > img {
+      aspect-ratio: 4 / 5;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dog-profile__portrait,
+    .dog-adventure > img {
+      transition: none;
+    }
+
+    .dog-adventure:hover > img {
+      transform: none;
+    }
+  }
+</style>

@@ -133,11 +133,11 @@ const hasFooter = Astro.slots.has("footer");
   .hike-gallery__heading h2 {
     margin: 0;
     color: var(--journal-ink, #25251f);
-    font-family: "Nunito", ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-display);
     font-size: clamp(2rem, 7vw, 3rem);
-    font-weight: 800;
+    font-weight: 600;
     line-height: 1.08;
-    letter-spacing: -0.025em;
+    letter-spacing: -0.015em;
     text-wrap: balance;
   }
 
@@ -191,7 +191,10 @@ const hasFooter = Astro.slots.has("footer");
     max-width: 65ch;
     margin-top: 10px;
     color: color-mix(in srgb, var(--journal-ink, #25251f) 72%, transparent);
+    font-family: var(--font-annotation);
     font-size: 1rem;
+    font-style: italic;
+    font-weight: 500;
     line-height: 1.55;
   }
 
@@ -206,7 +209,7 @@ const hasFooter = Astro.slots.has("footer");
   .hike-gallery__empty p {
     max-width: 42rem;
     margin: 0;
-    line-height: 1.7;
+    line-height: 1.6;
   }
 
   .hike-gallery__footer {
@@ -240,7 +243,7 @@ const hasFooter = Astro.slots.has("footer");
     color: rgba(255, 255, 255, 0.9);
     font-size: 0.875rem;
     font-variant-numeric: tabular-nums;
-    font-weight: 800;
+    font-weight: 700;
     text-align: right;
   }
 

@@ -97,29 +97,6 @@ registerRoute(
   })
 );
 
-registerRoute(
-  ({ url }) => url.origin === "https://fonts.googleapis.com",
-  new StaleWhileRevalidate({
-    cacheName: `${CACHE_PREFIX}-google-fonts-styles-v1`
-  })
-);
-
-registerRoute(
-  ({ url }) => url.origin === "https://fonts.gstatic.com",
-  new CacheFirst({
-    cacheName: `${CACHE_PREFIX}-google-fonts-files-v1`,
-    plugins: [
-      new CacheableResponsePlugin({
-        statuses: [0, 200]
-      }),
-      new ExpirationPlugin({
-        maxEntries: 20,
-        maxAgeSeconds: 60 * 60 * 24 * 365
-      })
-    ]
-  })
-);
-
 setCatchHandler(async ({ request }) => {
   if (request.mode === "navigate" || request.destination === "document") {
     return getOfflineFallback();

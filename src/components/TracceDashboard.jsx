@@ -75,8 +75,8 @@ function RecordFeature({ hike, label, value, variant = "wide" }) {
         </figure>
         <div class="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4 pt-4">
           <div>
-            <p class="text-sm font-extrabold text-[#E66A4E]">{label}</p>
-            <h3 class="mt-1 text-xl font-extrabold leading-tight tracking-[-0.02em] text-[#25251F] group-hover:text-[#3F6B4F]">
+            <p class="text-sm font-bold text-[#E66A4E]">{label}</p>
+            <h3 class="mt-1 text-xl font-bold leading-tight tracking-[-0.02em] text-[#25251F] group-hover:text-[#3F6B4F]">
               {hike.titolo}
             </h3>
             <p class="mt-1 text-sm text-[#25251F]/70">
@@ -89,7 +89,7 @@ function RecordFeature({ hike, label, value, variant = "wide" }) {
               )}
             </p>
           </div>
-          <p class="whitespace-nowrap text-2xl font-black tabular-nums tracking-[-0.02em] text-[#25251F]">{value}</p>
+          <p class="whitespace-nowrap text-2xl font-bold tabular-nums tracking-[-0.02em] text-[#25251F]">{value}</p>
         </div>
       </a>
     </article>
@@ -190,7 +190,7 @@ export default function TracceDashboard({ escursioni = [], initialArea = "" }) {
   return (
     <div class="traces-dashboard text-[#25251F]">
       <header class="max-w-3xl pb-7 pt-2 sm:pb-9 sm:pt-5">
-        <h1 class="text-balance text-4xl font-black leading-[1.05] tracking-[-0.03em] sm:text-5xl lg:text-6xl">
+        <h1 class="text-balance text-4xl font-bold leading-[1.05] tracking-[-0.03em] sm:text-5xl lg:text-6xl">
           Le nostre{" "}
           <span class="relative inline-block">
             <span class="relative z-10">tracce</span>
@@ -226,7 +226,7 @@ export default function TracceDashboard({ escursioni = [], initialArea = "" }) {
 
         <aside class="mt-16 min-w-0 border-y border-[#DDD7C9] py-5 md:mt-0 lg:border-b-0 lg:border-t-0 lg:py-2" aria-labelledby="areas-title">
           <div class="flex items-center justify-between gap-3">
-            <h2 id="areas-title" class="text-2xl font-black tracking-[-0.02em]">Aree esplorate</h2>
+            <h2 id="areas-title" class="text-2xl font-bold tracking-[-0.02em]">Aree esplorate</h2>
             {selectedArea && (
               <button
                 type="button"
@@ -254,8 +254,8 @@ export default function TracceDashboard({ escursioni = [], initialArea = "" }) {
                       isActive ? "text-[#3F6B4F]" : "hover:text-[#3F6B4F]"
                     }`}
                   >
-                    <span class="font-extrabold">{area.name}</span>
-                    <span class="font-black tabular-nums">{area.count}</span>
+                    <span class="font-bold">{area.name}</span>
+                    <span class="font-bold tabular-nums">{area.count}</span>
                     <span
                       class={`absolute bottom-0 left-0 h-1 rounded-full ${isActive ? "bg-[#F2C94C]" : "bg-[#91A66D]/45"}`}
                       style={{ width: `${(area.count / maxAreaCount) * 100}%` }}
@@ -271,7 +271,7 @@ export default function TracceDashboard({ escursioni = [], initialArea = "" }) {
             <button
               type="button"
               onClick={() => setShowAllAreas((value) => !value)}
-              class="mt-3 min-h-11 text-sm font-extrabold text-[#3F6B4F] underline decoration-2 underline-offset-4 focus:outline-none focus:ring-2 focus:ring-[#3F6B4F] focus:ring-offset-2"
+              class="mt-3 min-h-11 text-sm font-bold text-[#3F6B4F] underline decoration-2 underline-offset-4 focus:outline-none focus:ring-2 focus:ring-[#3F6B4F] focus:ring-offset-2"
             >
               {showAllAreas ? "Mostra meno" : `Altre ${areas.length - AREA_PREVIEW_COUNT} aree`}
             </button>
@@ -281,7 +281,7 @@ export default function TracceDashboard({ escursioni = [], initialArea = "" }) {
             <div class="mt-6 bg-[#FFFDF7] p-4" aria-label={`Escursioni in ${selectedArea}`}>
               <div class="flex items-center gap-2 text-[#3F6B4F]">
                 <MapPin size={17} strokeWidth={2.2} aria-hidden="true" />
-                <h3 class="font-black">{selectedArea}</h3>
+                <h3 class="font-bold">{selectedArea}</h3>
               </div>
               <ul class="mt-3 divide-y divide-[#DDD7C9]">
                 {selectedHikes.slice(0, 6).map((hike) => (
@@ -298,7 +298,7 @@ export default function TracceDashboard({ escursioni = [], initialArea = "" }) {
                   </li>
                 ))}
               </ul>
-              <a href={archiveHref} class="mt-3 inline-flex min-h-11 items-center gap-2 text-sm font-extrabold text-[#3F6B4F] underline decoration-2 underline-offset-4">
+              <a href={archiveHref} class="mt-3 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-[#3F6B4F] underline decoration-2 underline-offset-4">
                 Vedi nell’archivio <ArrowRight size={16} aria-hidden="true" />
               </a>
             </div>
@@ -312,7 +312,7 @@ export default function TracceDashboard({ escursioni = [], initialArea = "" }) {
 
       {(longestHike || highestClimb) && (
         <section class="mt-20 sm:mt-24" aria-labelledby="records-title">
-          <h2 id="records-title" class="text-3xl font-black tracking-[-0.025em] sm:text-4xl">Giornate da ricordare</h2>
+          <h2 id="records-title" class="text-3xl font-bold tracking-[-0.025em] sm:text-4xl">Giornate da ricordare</h2>
           <div class="mt-7 grid gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:gap-10">
             <RecordFeature
               hike={longestHike}
@@ -333,7 +333,7 @@ export default function TracceDashboard({ escursioni = [], initialArea = "" }) {
         <section class="mt-20 border-t border-[#DDD7C9] pt-10 sm:mt-24 sm:pt-12" aria-labelledby="gea-top-title">
           <div class="flex items-center gap-3">
             <PawPrint size={24} strokeWidth={2.2} class="text-[#3F6B4F]" aria-hidden="true" />
-            <h2 id="gea-top-title" class="text-3xl font-black tracking-[-0.025em] sm:text-4xl">Le preferite di Gea</h2>
+            <h2 id="gea-top-title" class="text-3xl font-bold tracking-[-0.025em] sm:text-4xl">Le preferite di Gea</h2>
           </div>
 
           <ol class="mt-7 grid gap-7 sm:grid-cols-3">
@@ -349,16 +349,16 @@ export default function TracceDashboard({ escursioni = [], initialArea = "" }) {
                       sizes="(min-width: 640px) 31vw, 96vw"
                       className="transition-[filter] duration-200 group-hover:saturate-110 motion-reduce:transition-none"
                     />
-                    <span class="absolute left-3 top-3 inline-flex h-10 min-w-10 items-center justify-center rounded-full bg-[#F2C94C] px-3 text-lg font-black text-[#25251F]" aria-label={`${index + 1}ª posizione`}>
+                    <span class="absolute left-3 top-3 inline-flex h-10 min-w-10 items-center justify-center rounded-full bg-[#F2C94C] px-3 text-lg font-bold text-[#25251F]" aria-label={`${index + 1}ª posizione`}>
                       {index + 1}
                     </span>
                   </figure>
                   <div class="flex items-start justify-between gap-3 pt-4">
                     <div>
-                      <h3 class="text-lg font-extrabold leading-tight tracking-[-0.02em] group-hover:text-[#3F6B4F]">{hike.titolo}</h3>
+                      <h3 class="text-lg font-bold leading-tight tracking-[-0.02em] group-hover:text-[#3F6B4F]">{hike.titolo}</h3>
                       <p class="mt-1 text-sm text-[#25251F]/65">{formatDate(hike.data)}</p>
                     </div>
-                    <span class="inline-flex shrink-0 items-center gap-1 font-black tabular-nums text-[#E66A4E]" aria-label={`Voto di Gea: ${getGeaRating(hike)} su 5`}>
+                    <span class="inline-flex shrink-0 items-center gap-1 font-bold tabular-nums text-[#E66A4E]" aria-label={`Voto di Gea: ${getGeaRating(hike)} su 5`}>
                       <Star size={17} strokeWidth={2} fill="currentColor" aria-hidden="true" />
                       {new Intl.NumberFormat("it-IT", { maximumFractionDigits: 1 }).format(getGeaRating(hike))}
                     </span>
@@ -373,7 +373,7 @@ export default function TracceDashboard({ escursioni = [], initialArea = "" }) {
       <footer class="mt-20 border-t border-[#DDD7C9] py-10 sm:mt-24">
         <a
           href={withBase("/escursioni")}
-          class="inline-flex min-h-11 items-center gap-3 text-lg font-black text-[#3F6B4F] underline decoration-2 underline-offset-4 focus:outline-none focus:ring-2 focus:ring-[#3F6B4F] focus:ring-offset-4"
+          class="inline-flex min-h-11 items-center gap-3 text-lg font-bold text-[#3F6B4F] underline decoration-2 underline-offset-4 focus:outline-none focus:ring-2 focus:ring-[#3F6B4F] focus:ring-offset-4"
         >
           Tutte le escursioni <ArrowRight size={20} strokeWidth={2.2} aria-hidden="true" />
         </a>

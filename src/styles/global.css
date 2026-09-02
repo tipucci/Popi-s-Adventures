@@ -1,11 +1,56 @@
-@import url("https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Nunito:wght@400;600;700;800&display=swap");
 @import "leaflet/dist/leaflet.css";
 
 @import "tailwindcss";
 @config "../../tailwind.config.js";
 
+@font-face {
+  font-family: "Alegreya";
+  src: url("../assets/fonts/alegreya-variable.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Alegreya";
+  src: url("../assets/fonts/alegreya-italic-variable.woff2") format("woff2");
+  font-style: italic;
+  font-weight: 400 900;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Alegreya Sans";
+  src: url("../assets/fonts/alegreya-sans-regular.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Alegreya Sans";
+  src: url("../assets/fonts/alegreya-sans-medium.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Alegreya Sans";
+  src: url("../assets/fonts/alegreya-sans-bold.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
 :root {
   color-scheme: light;
+  --font-display: "Alegreya", Georgia, serif;
+  --font-body: "Alegreya Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-ui: var(--font-body);
+  --font-annotation: var(--font-display);
+  --font-weight-extrabold: 700;
+  --font-weight-black: 700;
 }
 
 html {
@@ -27,8 +72,16 @@ html {
 
 body {
   margin: 0;
-  font-family: "Nunito", ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-body);
+  line-height: 1.6;
   background: #f7f1e3;
+}
+
+.type-annotation {
+  font-family: var(--font-annotation);
+  font-style: italic;
+  font-weight: 500;
+  line-height: 1.45;
 }
 
 body.map-fullscreen header,
@@ -60,7 +113,7 @@ img {
 }
 
 .leaflet-container {
-  font-family: "Nunito", ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-ui);
 }
 
 .leaflet-popup-content-wrapper,

@@ -10,6 +10,8 @@ import homeNavIcon from "../assets/icons/navigation/home.svg";
 import hikesNavIcon from "../assets/icons/navigation/escursioni.svg";
 import mapNavIcon from "../assets/icons/navigation/mappa.svg";
 import checklistNavIcon from "../assets/icons/navigation/zaino.svg";
+import displayFontUrl from "../assets/fonts/alegreya-variable.woff2?url";
+import bodyFontUrl from "../assets/fonts/alegreya-sans-regular.woff2?url";
 
 const {
   title = "Popi's Adventures",
@@ -73,6 +75,8 @@ const serviceWorkerUrl = withBase("/sw.js");
     <link rel="apple-touch-icon" sizes="180x180" href={appleTouchIconHref} />
     <link rel="icon" type="image/png" sizes="32x32" href={faviconHref} />
     <link rel="icon" type="image/png" sizes="512x512" href={faviconLargeHref} />
+    <link rel="preload" href={displayFontUrl} as="font" type="font/woff2" crossorigin="anonymous" />
+    <link rel="preload" href={bodyFontUrl} as="font" type="font/woff2" crossorigin="anonymous" />
     <slot name="head" />
   </head>
 
@@ -84,7 +88,7 @@ const serviceWorkerUrl = withBase("/sw.js");
         {mobileBackHref && mobileBackLabel ? (
           <a
             href={mobileBackHref}
-            class="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-[10px] border border-[#DDD7C9] bg-[#FFFDF7] px-3.5 py-2 text-sm font-extrabold text-[#3F6B4F] transition-colors duration-150 hover:border-[#3F6B4F]/35 hover:bg-[#F2C94C]/20 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none"
+            class="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-[10px] border border-[#DDD7C9] bg-[#FFFDF7] px-3.5 py-2 text-sm font-bold text-[#3F6B4F] transition-colors duration-150 hover:border-[#3F6B4F]/35 hover:bg-[#F2C94C]/20 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none"
           >
             <ArrowLeft class="h-4 w-4 shrink-0" stroke-width={2.2} aria-hidden="true" />
             <span>{mobileBackLabel}</span>
@@ -104,7 +108,7 @@ const serviceWorkerUrl = withBase("/sw.js");
               decoding="async"
               class="h-12 w-12 object-contain"
             />
-            <span class="text-sm font-extrabold text-[#3F6B4F] sm:text-base">Popi's Adventures</span>
+            <span class="text-sm font-bold text-[#3F6B4F] sm:text-base">Popi's Adventures</span>
           </a>
         )}
 
@@ -112,7 +116,7 @@ const serviceWorkerUrl = withBase("/sw.js");
           {hasMobileHeaderEnd ? (
             <slot name="mobile-header-end" />
           ) : active !== "home" ? (
-            <p class="truncate text-right text-sm font-extrabold tracking-[0.02em] text-[#3F6B4F]">
+            <p class="truncate text-right text-sm font-bold tracking-[0.02em] text-[#3F6B4F]">
               <span class="relative isolate inline-block after:absolute after:-inset-x-0.5 after:-bottom-px after:-z-10 after:h-[5px] after:rotate-[-1deg] after:rounded-[50%] after:bg-[#F2C94C]/75 after:content-['']">
                 {resolvedMobileTitle}
               </span>
@@ -137,7 +141,7 @@ const serviceWorkerUrl = withBase("/sw.js");
                 class="h-12 w-12 object-contain"
               />
             </span>
-            <span class="relative isolate text-base font-extrabold text-[#3F6B4F] after:absolute after:-inset-x-0.5 after:-bottom-px after:-z-10 after:h-[5px] after:rotate-[-1deg] after:rounded-[50%] after:bg-[#F2C94C]/75 after:content-['']">
+            <span class="relative isolate text-base font-bold text-[#3F6B4F] after:absolute after:-inset-x-0.5 after:-bottom-px after:-z-10 after:h-[5px] after:rotate-[-1deg] after:rounded-[50%] after:bg-[#F2C94C]/75 after:content-['']">
               Popi's Adventures
             </span>
           </a>
@@ -155,7 +159,7 @@ const serviceWorkerUrl = withBase("/sw.js");
                     aria-current={active === item.id ? "page" : undefined}
                     class:list={[
                       "primary-nav-link inline-flex min-h-11 items-center gap-2 rounded-md px-3 py-2.5 text-sm font-bold tracking-[0.02em] transition-colors duration-150 hover:bg-[#FFFDF7] hover:text-[#3F6B4F] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none",
-                      active === item.id ? "font-extrabold !text-[#3F6B4F]" : "text-[#25251F]"
+                      active === item.id ? "font-bold !text-[#3F6B4F]" : "text-[#25251F]"
                     ]}
                   >
                     <img
@@ -195,7 +199,7 @@ const serviceWorkerUrl = withBase("/sw.js");
                   class:list={[
                     "primary-nav-link relative isolate flex min-h-14 flex-col items-center gap-1 rounded-[10px] px-1 py-2 text-xs font-bold tracking-[0.02em] transition-colors duration-150 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none",
                     active === item.id
-                      ? "font-extrabold text-[#3F6B4F] after:absolute after:bottom-1 after:left-1/2 after:-z-10 after:h-[5px] after:w-9 after:-translate-x-1/2 after:rotate-[-2deg] after:rounded-[50%] after:bg-[#F2C94C]/80 after:content-['']"
+                      ? "font-bold text-[#3F6B4F] after:absolute after:bottom-1 after:left-1/2 after:-z-10 after:h-[5px] after:w-9 after:-translate-x-1/2 after:rotate-[-2deg] after:rounded-[50%] after:bg-[#F2C94C]/80 after:content-['']"
                       : "text-[#25251F]/75 hover:bg-[#F7F1E3] hover:text-[#3F6B4F]"
                   ]}
                 >
@@ -256,7 +260,7 @@ const serviceWorkerUrl = withBase("/sw.js");
         <footer class="relative isolate -mx-4 mt-16 border-t border-[#DDD7C9] bg-transparent px-5 py-8 font-sans text-[#25251F] before:absolute before:inset-y-0 before:left-1/2 before:-z-10 before:w-screen before:-translate-x-1/2 before:bg-[#F7F1E3] before:content-[''] sm:-mx-6 sm:px-6 sm:py-10 lg:-mx-8 lg:px-8">
           <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between lg:gap-8">
             <div class="max-w-xl">
-              <p class="text-xl font-extrabold leading-tight sm:text-2xl">Popi's Adventures</p>
+              <p class="text-xl font-bold leading-tight sm:text-2xl">Popi's Adventures</p>
               <p class="mt-3 text-base leading-relaxed text-[#25251F]/80">
                 Un diario, tre popi e un sacco di avventure
               </p>

@@ -327,7 +327,7 @@ export default function PhotoUploadButton({
             class="max-h-[calc(100vh-1.5rem)] w-full max-w-md overflow-y-auto rounded-[14px] bg-[#FFFDF7] shadow-[0_8px_24px_rgba(37,37,31,0.16)]"
           >
             <div class="flex items-start justify-between gap-4 border-b border-[#DDD7C9] px-5 py-4">
-              <h2 id={dialogTitleId} class="m-0 text-2xl font-extrabold leading-tight text-[#25251F]">{title}</h2>
+              <h2 id={dialogTitleId} class="m-0 text-2xl font-bold leading-tight text-[#25251F]">{title}</h2>
               <button
                 type="button"
                 onClick={closePanel}

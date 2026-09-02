@@ -13,29 +13,29 @@ colors:
   border: "#DDD7C9"
 typography:
   display:
-    fontFamily: "Nunito, ui-sans-serif, system-ui, sans-serif"
+    fontFamily: "Alegreya, Georgia, serif"
     fontSize: "clamp(2.5rem, 6vw, 3.75rem)"
-    fontWeight: 800
-    lineHeight: 1.05
-    letterSpacing: "-0.025em"
+    fontWeight: 600
+    lineHeight: 1
+    letterSpacing: "-0.015em"
   headline:
-    fontFamily: "Nunito, ui-sans-serif, system-ui, sans-serif"
+    fontFamily: "Alegreya, Georgia, serif"
     fontSize: "clamp(2rem, 4vw, 3rem)"
-    fontWeight: 800
-    lineHeight: 1.1
-    letterSpacing: "-0.02em"
+    fontWeight: 600
+    lineHeight: 1.05
+    letterSpacing: "-0.015em"
   title:
-    fontFamily: "Nunito, ui-sans-serif, system-ui, sans-serif"
+    fontFamily: "Alegreya, Georgia, serif"
     fontSize: "clamp(1.25rem, 2vw, 1.5rem)"
-    fontWeight: 800
-    lineHeight: 1.2
+    fontWeight: 600
+    lineHeight: 1.12
   body:
-    fontFamily: "Nunito, ui-sans-serif, system-ui, sans-serif"
+    fontFamily: "Alegreya Sans, ui-sans-serif, system-ui, sans-serif"
     fontSize: "1rem"
     fontWeight: 400
-    lineHeight: 1.7
+    lineHeight: 1.6
   label:
-    fontFamily: "Nunito, ui-sans-serif, system-ui, sans-serif"
+    fontFamily: "Alegreya Sans, ui-sans-serif, system-ui, sans-serif"
     fontSize: "0.875rem"
     fontWeight: 700
     lineHeight: 1.3
@@ -146,25 +146,31 @@ The palette feels like warm notebook paper with a small set of colorful markers 
 
 ## Typography
 
-**Primary Font:** Nunito (with ui-sans-serif and system fallbacks)  
-**Handwritten Voice:** A dedicated local handwritten face is still to be selected; until then, do not substitute an arbitrary browser cursive font.
+**Narrative Display:** Alegreya (with Georgia and serif fallbacks)
 
-**Character:** Typography uses two clearly separated voices. Nunito carries navigation, headings, body copy, hiking information, filters, and controls. The handwritten voice appears only in short expressive moments, like a real note added in the margin of the diary.
+**Reading and Interface:** Alegreya Sans (with ui-sans-serif and system fallbacks)
+
+**Annotation Voice:** Alegreya Italic; no third decorative handwritten font.
+
+**Character:** Typography separates three jobs without fragmenting the identity. Alegreya gives short narrative openings and hike titles an editorial, human voice. Alegreya Sans carries paragraphs and compact interface elements. Alegreya Italic adds one restrained annotative voice for names and photo notes. Filters, maps, checklists, controls, and useful data always stay in Alegreya Sans.
 
 ### Hierarchy
 
-- **Display** (800, responsive display scale, 1.05): Reserved for a few memorable homepage moments without becoming a giant marketing headline.
-- **Headline** (800, responsive headline scale, 1.1): Page titles and major section headings.
-- **Title** (800, responsive title scale, 1.2): Hike names, cards, and subsection titles.
-- **Body** (400, 1rem, 1.7): Stories, descriptions, instructions, and general content. Keep long-form text around 65–72 characters per line.
+- **Display** (600, responsive display scale, 1): Reserved for short narrative openings. Compose important breaks intentionally and aim for roughly 8–13 characters per line.
+- **Headline** (600, responsive headline scale, 1.05): Page titles and major editorial section headings.
+- **Title** (600, responsive title scale, 1.12): Hike names, cards, and narrative subsection titles.
+- **Body** (400, 1rem, 1.6): Stories, descriptions, instructions, and general content. Keep long-form text around 60–68 characters per line.
 - **Label** (700, 0.875rem, 0.02em): Compact controls and metadata without decorative overuse.
-- **Handwritten Annotation:** Short photo notes, underlines, decorative captions, occasional section accents, and margin comments only. Never use it for paragraphs, essential metadata, or interface controls.
+- **Annotation** (Alegreya Italic, 500): Short photo notes, names, occasional section accents, and margin comments only. Never use it for paragraphs, essential metadata, or interface controls.
+- **Data** (Alegreya Sans, 650–700, tabular numerals): Distances, elevation, duration, and counts should read as useful notes rather than athletic statistics.
 
 ### Named Rules
 
-**The Two Voices, One Job Each Rule.** Nunito communicates; handwriting adds affection and emphasis. Never make the visitor decode a functional control through decorative lettering.
+**The Three Roles Rule.** Alegreya narrates, Alegreya Sans explains and operates, and Alegreya Italic annotates. Never make the visitor decode a functional control through expressive lettering.
 
-**The Margin Note Rule.** Handwritten copy should remain brief enough to feel like something added in the moment, not a second body-text system.
+**The Margin Note Rule.** Italic annotations remain brief enough to feel added in the moment, not like a second body-text system.
+
+**The Quiet Weight Rule.** Titles live between 600 and 700. Contrast comes from type shape, scale, spacing, and composition—not an 800 default.
 
 ## Layout
 

@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Popi's Adventures — confronto tipografico</title>
+    <link rel="stylesheet" href="./mockup.css" />
+  </head>
+  <body data-theme="taccuino">
+    <div class="site-shell">
+      <header class="topbar">
+        <img
+          class="brand"
+          src="../../../src/assets/images/site/logo/logo-horizontal.png"
+          alt="Popi's Adventures"
+        />
+        <span class="topbar-note">Diario di sentieri</span>
+      </header>
+
+      <main>
+        <section class="hero" aria-labelledby="hero-title">
+          <img
+            class="hero-photo"
+            src="../../../src/assets/images/site/home/popi-hero-desktop.webp"
+            alt="Tizi, Meg e Gea durante una giornata all'aperto"
+          />
+          <div class="hero-shade" aria-hidden="true"></div>
+          <div class="hero-content">
+            <h1 id="hero-title">Un diario,<br /><em>tre popi</em><br />e un sacco di avventure</h1>
+            <p>Sentieri, fotografie e giornate vissute insieme.</p>
+            <a href="#latest">Scopri l’ultima avventura</a>
+          </div>
+        </section>
+
+        <section class="latest" id="latest" aria-labelledby="latest-title">
+          <div class="section-heading">
+            <h2 id="latest-title">L’ultima avventura</h2>
+            <span aria-hidden="true">→</span>
+          </div>
+
+          <article class="hike-card">
+            <img
+              src="../../../src/assets/images/hikes/2026-07-19-monte-spedone/cover.jpg"
+              alt="Paesaggio del Monte Spedone"
+            />
+            <div class="hike-card-copy">
+              <p class="place-date">Appennino parmense · 19 luglio 2026</p>
+              <h3>Monte Spedone</h3>
+              <p class="stats">12,4 km <span>·</span> 620 m D+ <span>·</span> 4h 10m</p>
+              <p class="memory">Una giornata di vento, crinali e zampe felici.</p>
+            </div>
+          </article>
+        </section>
+      </main>
+
+      <nav class="bottom-nav" aria-label="Navigazione principale">
+        <a class="active" href="#">
+          <img src="../../../src/assets/icons/navigation/home.svg" alt="" />
+          <span>Home</span>
+        </a>
+        <a href="#">
+          <img src="../../../src/assets/icons/navigation/escursioni.svg" alt="" />
+          <span>Escursioni</span>
+        </a>
+        <a href="#">
+          <img src="../../../src/assets/icons/navigation/mappa.svg" alt="" />
+          <span>Mappa</span>
+        </a>
+        <a href="#">
+          <img src="../../../src/assets/icons/navigation/zaino.svg" alt="" />
+          <span>Zaino</span>
+        </a>
+      </nav>
+    </div>
+
+    <script>
+      const requestedTheme = new URLSearchParams(window.location.search).get("theme");
+      const themes = new Set(["taccuino", "sentiero", "narrativo"]);
+      document.body.dataset.theme = themes.has(requestedTheme) ? requestedTheme : "taccuino";
+      window.history.scrollRestoration = "manual";
+      window.scrollTo(0, 0);
+      document.fonts.ready.then(() => window.scrollTo(0, 0));
+    </script>
+  </body>
+</html>

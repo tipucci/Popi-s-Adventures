@@ -72,14 +72,14 @@ export default function CardEscursione({ escursione, hrefBase = "/escursioni" })
             class={`h-full w-full object-cover transition-[filter] duration-200 group-hover:saturate-105 motion-reduce:transition-none ${isPlaceholder ? "opacity-60" : ""}`}
           />
           {isPlaceholder && (
-            <span class="absolute bottom-3 right-3 rounded-md bg-[#FFFDF7] px-2.5 py-1.5 text-xs font-extrabold text-[#25251F]">
+            <span class="absolute bottom-3 right-3 rounded-md bg-[#FFFDF7] px-2.5 py-1.5 text-xs font-bold text-[#25251F]">
               Foto in arrivo
             </span>
           )}
         </figure>
 
         <div class="pt-4">
-          <h3 class="text-xl font-extrabold leading-tight tracking-[-0.02em] text-[#25251F] transition-colors duration-200 group-hover:text-[#3F6B4F] motion-reduce:transition-none">
+          <h3 class="font-display text-xl font-semibold leading-tight tracking-[-0.015em] text-[#25251F] transition-colors duration-200 group-hover:text-[#3F6B4F] motion-reduce:transition-none">
             {escursione.titolo}
           </h3>
           <p class="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm leading-relaxed text-[#25251F]/70">
@@ -105,7 +105,7 @@ export default function CardEscursione({ escursione, hrefBase = "/escursioni" })
                       </abbr>
                     ) : stat.label}
                   </dt>
-                  <dd class="mt-1 font-extrabold tabular-nums text-[#25251F]">{stat.value}</dd>
+                  <dd class="mt-1 font-bold tabular-nums text-[#25251F]">{stat.value}</dd>
                 </div>
               ))}
             </dl>
