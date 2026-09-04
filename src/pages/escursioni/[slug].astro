@@ -3,7 +3,7 @@ import Layout from "../../layouts/Layout.astro";
 import HikeGallery from "../../components/HikeGallery.astro";
 import Mappa from "../../components/Mappa.jsx";
 import PhotoUploadButton from "../../components/PhotoUploadButton.tsx";
-import { Mountain, PawPrint, Star, UserRound } from "@lucide/astro";
+import { ArrowUpRight, Mountain, PawPrint, Star, UserRound } from "@lucide/astro";
 import { getDogFriendByName, getDogFriends } from "../../data/dogFriends.js";
 import { getEscursioni } from "../../data/escursioni.js";
 import { withBase } from "../../utils/base.js";
@@ -162,73 +162,78 @@ const uploadSlug = escursione.imageSlug || escursione.slug;
 
         <div class="hike-company__content">
           {showCompagnia && (
-            <ul class="hike-company__people" aria-label="Compagnia dell’escursione">
-              {compagnia.map((item) => (
-                <li>
-                  {item.href ? (
-                    <a href={item.href}>
-                      {item.type === "dog" ? (
-                        <PawPrint size={18} strokeWidth={2.2} aria-hidden="true" />
-                      ) : (
-                        <UserRound size={18} strokeWidth={2.2} aria-hidden="true" />
-                      )}
-                      <span>{item.name}</span>
-                    </a>
-                  ) : (
-                    <span>
-                      {item.type === "dog" ? (
-                        <PawPrint size={18} strokeWidth={2.2} aria-hidden="true" />
-                      ) : (
-                        <UserRound size={18} strokeWidth={2.2} aria-hidden="true" />
-                      )}
-                      <span>{item.name}</span>
-                    </span>
-                  )}
-                </li>
-              ))}
-            </ul>
+            <div class="hike-company__cluster hike-company__cluster--people">
+              <p class="hike-company__label">Con noi</p>
+              <ul class="hike-company__people" aria-label="Compagnia dell’escursione">
+                {compagnia.map((item) => (
+                  <li>
+                    {item.href ? (
+                      <a href={item.href} aria-label={`Apri il profilo di ${item.name}`}>
+                        {item.type === "dog" ? (
+                          <PawPrint size={18} strokeWidth={2.2} aria-hidden="true" />
+                        ) : (
+                          <UserRound size={18} strokeWidth={2.2} aria-hidden="true" />
+                        )}
+                        <span>{item.name}</span>
+                        <ArrowUpRight class="hike-company__profile-cue" size={15} strokeWidth={2.2} aria-hidden="true" />
+                      </a>
+                    ) : (
+                      <span>
+                        {item.type === "dog" ? (
+                          <PawPrint size={18} strokeWidth={2.2} aria-hidden="true" />
+                        ) : (
+                          <UserRound size={18} strokeWidth={2.2} aria-hidden="true" />
+                        )}
+                        <span>{item.name}</span>
+                      </span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
 
-          <div class="hike-company__notes">
-            {escursione.nome_rifugio && (
+          {escursione.nome_rifugio && (
+            <div class="hike-company__cluster hike-company__cluster--refuge">
+              <p class="hike-company__label">Tappa</p>
               <div class="hike-refuge">
                 <span class="hike-refuge__marker" aria-hidden="true">
                   <Mountain size={22} strokeWidth={2.2} />
                 </span>
                 <strong>{escursione.nome_rifugio}</strong>
               </div>
-            )}
+            </div>
+          )}
 
-            {showGeaRating && (
-              <div class="hike-gea-rating">
-                <div class="hike-gea-rating__heading">
-                  <span class="hike-gea-rating__badge" aria-hidden="true">
-                    <PawPrint size={18} strokeWidth={2.2} />
-                  </span>
-                  <p>Il voto di Gea</p>
-                </div>
-                <div class="hike-gea-rating__row" aria-label={`Il voto di Gea: ${geaRating} su 5`}>
-                  <span class="hike-gea-rating__stars" aria-hidden="true">
-                    {geaStars.map((starType) => (
-                      starType === "full" ? (
-                        <Star size={28} strokeWidth={2} class="fill-current" />
-                      ) : starType === "half" ? (
-                        <span class="relative inline-flex h-7 w-7 shrink-0">
-                          <Star size={28} strokeWidth={2} class="absolute inset-0 hike-gea-rating__empty" />
-                          <span class="absolute inset-y-0 left-0 w-1/2 overflow-hidden">
-                            <Star size={28} strokeWidth={2} class="absolute inset-y-0 left-0 max-w-none fill-current" />
-                          </span>
-                        </span>
-                      ) : (
-                        <Star size={28} strokeWidth={2} class="hike-gea-rating__empty" />
-                      )
-                    ))}
-                  </span>
-                  <strong><span>{geaRating}</span><small>/5</small></strong>
-                </div>
+          {showGeaRating && (
+            <div class="hike-gea-rating">
+              <div class="hike-gea-rating__heading">
+                <span class="hike-gea-rating__badge" aria-hidden="true">
+                  <PawPrint size={18} strokeWidth={2.2} />
+                </span>
+                <p>Il voto di Gea</p>
               </div>
-            )}
-          </div>
+              <div class="hike-gea-rating__row" aria-label={`Il voto di Gea: ${geaRating} su 5`}>
+                <span class="hike-gea-rating__stars" aria-hidden="true">
+                  {geaStars.map((starType) => (
+                    starType === "full" ? (
+                      <Star size={28} strokeWidth={2} class="fill-current" />
+                    ) : starType === "half" ? (
+                      <span class="relative inline-flex h-7 w-7 shrink-0">
+                        <Star size={28} strokeWidth={2} class="absolute inset-0 hike-gea-rating__empty" />
+                        <span class="absolute inset-y-0 left-0 w-1/2 overflow-hidden">
+                          <Star size={28} strokeWidth={2} class="absolute inset-y-0 left-0 max-w-none fill-current" />
+                        </span>
+                      </span>
+                    ) : (
+                      <Star size={28} strokeWidth={2} class="hike-gea-rating__empty" />
+                    )
+                  ))}
+                </span>
+                <strong><span>{geaRating}</span><small>/5</small></strong>
+              </div>
+            </div>
+          )}
         </div>
       </section>
     )}
@@ -237,14 +242,16 @@ const uploadSlug = escursione.imageSlug || escursione.slug;
       <div class="hike-section-heading">
         <h2 id="hike-route-title">Dove siamo stati</h2>
       </div>
-      <Mappa
-        client:load
-        escursioni={[escursione]}
-        height="clamp(260px, 52vw, 320px)"
-        title={`Posizione di ${escursione.titolo}`}
-        showHeader={false}
-        variant="journal"
-      />
+      <div class="hike-route__map">
+        <Mappa
+          client:load
+          escursioni={[escursione]}
+          height="clamp(260px, 42vw, 280px)"
+          title={`Posizione di ${escursione.titolo}`}
+          showHeader={false}
+          variant="journal"
+        />
+      </div>
     </section>
 
     <HikeGallery images={galleryImages}>
@@ -381,7 +388,7 @@ const uploadSlug = escursione.imageSlug || escursione.slug;
   }
 
   .hike-facts dt,
-  .hike-company__notes p {
+  .hike-company__label {
     color: color-mix(in srgb, var(--journal-ink) 70%, transparent);
     font-size: 0.875rem;
     font-weight: 700;
@@ -418,8 +425,18 @@ const uploadSlug = escursione.imageSlug || escursione.slug;
 
   .hike-company__content {
     display: grid;
-    gap: 32px;
+    gap: 24px;
     margin-top: 28px;
+    border-block: 1px solid var(--journal-border);
+    padding-block: 24px;
+  }
+
+  .hike-company__cluster {
+    min-width: 0;
+  }
+
+  .hike-company__label {
+    margin: 0 0 10px;
   }
 
   .hike-company__people {
@@ -447,6 +464,7 @@ const uploadSlug = escursione.imageSlug || escursione.slug;
   }
 
   .hike-company__people a {
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--journal-leaf) 26%, transparent);
     outline: none;
     transition: color 160ms ease, background 160ms ease;
   }
@@ -461,13 +479,9 @@ const uploadSlug = escursione.imageSlug || escursione.slug;
     outline-offset: 3px;
   }
 
-  .hike-company__notes {
-    display: grid;
-    gap: 24px;
-  }
-
-  .hike-company__notes > div {
-    min-width: 0;
+  .hike-company__profile-cue {
+    flex: 0 0 auto;
+    color: color-mix(in srgb, var(--journal-leaf) 72%, transparent);
   }
 
   .hike-refuge {
@@ -499,14 +513,9 @@ const uploadSlug = escursione.imageSlug || escursione.slug;
     content: "";
   }
 
-  .hike-company__notes p,
-  .hike-company__notes strong {
-    margin: 0;
-  }
-
-  .hike-company__notes strong {
+  .hike-refuge strong {
     display: block;
-    margin-top: 6px;
+    margin: 0;
     color: var(--journal-ink);
     font-size: 1.25rem;
     line-height: 1.35;
@@ -546,7 +555,8 @@ const uploadSlug = escursione.imageSlug || escursione.slug;
     transform: rotate(-3deg);
   }
 
-  .hike-company__notes .hike-gea-rating__heading p {
+  .hike-gea-rating__heading p {
+    margin: 0;
     color: var(--journal-ink);
     font-size: 1rem;
     line-height: 1.25;
@@ -587,7 +597,8 @@ const uploadSlug = escursione.imageSlug || escursione.slug;
     font-weight: 700;
   }
 
-  .hike-route :global(.leaflet-host) {
+  .hike-route__map {
+    max-width: 52rem;
     margin-top: 24px;
   }
 
@@ -620,12 +631,12 @@ const uploadSlug = escursione.imageSlug || escursione.slug;
     }
 
     .hike-company__content {
-      grid-template-columns: minmax(0, 1.15fr) minmax(16rem, 0.85fr);
+      grid-template-columns: minmax(0, 0.85fr) minmax(17rem, 1.15fr);
       align-items: start;
     }
 
-    .hike-company__notes {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+    .hike-company__cluster--people {
+      grid-column: 1 / -1;
     }
   }
 
@@ -641,6 +652,16 @@ const uploadSlug = escursione.imageSlug || escursione.slug;
     .hike-route,
     :global(.hike-gallery) {
       margin-top: 96px;
+    }
+
+    .hike-company__content {
+      grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+      align-items: end;
+      gap: 32px;
+    }
+
+    .hike-company__cluster--people {
+      grid-column: auto;
     }
   }
 
