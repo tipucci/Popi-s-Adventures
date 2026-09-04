@@ -131,14 +131,14 @@ const geaArchiveHref = `${withBase("/escursioni")}?soloGea=1`;
     color: var(--journal-ink);
     font-family: var(--font-display);
     font-weight: 600;
-    letter-spacing: -0.015em;
+    letter-spacing: var(--type-tracking-display);
     text-wrap: balance;
   }
 
   .home-recent__header h1 {
     max-width: 12ch;
-    font-size: clamp(2.25rem, 9vw, 4rem);
-    line-height: 0.98;
+    font-size: var(--type-page-title);
+    line-height: var(--type-leading-page-title);
   }
 
   .journal-facts__archive {
@@ -149,13 +149,11 @@ const geaArchiveHref = `${withBase("/escursioni")}?soloGea=1`;
     color: var(--journal-leaf);
     font-size: 0.9375rem;
     font-weight: 700;
-    text-decoration: underline;
-    text-decoration-color: color-mix(in srgb, var(--journal-sunshine) 85%, transparent);
-    text-decoration-thickness: 3px;
-    text-underline-offset: 5px;
+    transition: color 180ms ease, gap 180ms ease;
   }
 
   .journal-facts__archive:hover {
+    gap: 12px;
     color: var(--journal-ink);
   }
 
@@ -178,8 +176,8 @@ const geaArchiveHref = `${withBase("/escursioni")}?soloGea=1`;
   }
 
   .home-recent__more h2 {
-    font-size: 1.5rem;
-    line-height: 1.08;
+    font-size: var(--type-subsection-title);
+    line-height: var(--type-leading-subsection-title);
   }
 
   .home-recent__secondary {
@@ -246,8 +244,8 @@ const geaArchiveHref = `${withBase("/escursioni")}?soloGea=1`;
   }
 
   .journal-facts h2 {
-    font-size: 1.5rem;
-    line-height: 1.08;
+    font-size: var(--type-section-title);
+    line-height: var(--type-leading-section-title);
   }
 
   .journal-facts dl {
@@ -282,14 +280,6 @@ const geaArchiveHref = `${withBase("/escursioni")}?soloGea=1`;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
     line-height: 1.2;
-  }
-
-  .journal-facts__gea dd {
-    width: fit-content;
-    background: linear-gradient(
-      transparent 56%,
-      color-mix(in srgb, var(--journal-sunshine) 70%, transparent) 56%
-    );
   }
 
   .journal-facts__gea {

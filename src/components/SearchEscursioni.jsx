@@ -42,7 +42,7 @@ export default function SearchEscursioni({ placeholder = "Cerca tra le escursion
         type="search"
         onInput={(event) => updateSearch(event.currentTarget.value)}
         placeholder={placeholder}
-        class="w-full rounded-full border border-[#DDD7C9] bg-[#FFFDF7] px-5 py-3 pr-12 font-semibold text-[#25251F] outline-none transition-colors placeholder:text-[#25251F]/70 focus:border-[#3F6B4F] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none"
+        class="w-full rounded-full border border-[#DDD7C9] bg-[#FFFDF7] px-5 py-3 pr-12 font-medium text-[#25251F] outline-none transition-colors placeholder:text-[#25251F]/70 focus:border-[#3F6B4F] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none"
         aria-label="Cerca tra le escursioni"
       />
       <span class="pointer-events-none absolute inset-y-0 right-4 flex items-center text-forest-800">

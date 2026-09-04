@@ -48,6 +48,10 @@ const appleTouchIconHref = withBase("/icons/apple-touch-icon.png");
 const faviconHref = withBase("/favicon-32.png");
 const faviconLargeHref = withBase("/favicon.png");
 const serviceWorkerUrl = withBase("/sw.js");
+const homePath = withBase("/").replace(/\/+$/, "");
+const currentPath = Astro.url.pathname.replace(/\/+$/, "");
+const isHome = currentPath === homePath;
+const usesNarrativeDisplay = active !== "mappa";
 ---
 
 <!doctype html>
@@ -75,51 +79,58 @@ const serviceWorkerUrl = withBase("/sw.js");
     <link rel="apple-touch-icon" sizes="180x180" href={appleTouchIconHref} />
     <link rel="icon" type="image/png" sizes="32x32" href={faviconHref} />
     <link rel="icon" type="image/png" sizes="512x512" href={faviconLargeHref} />
-    <link rel="preload" href={displayFontUrl} as="font" type="font/woff2" crossorigin="anonymous" />
+    {usesNarrativeDisplay && <link rel="preload" href={displayFontUrl} as="font" type="font/woff2" crossorigin="anonymous" />}
     <link rel="preload" href={bodyFontUrl} as="font" type="font/woff2" crossorigin="anonymous" />
     <slot name="head" />
   </head>
 
   <body class="min-h-screen bg-cream text-forest-800 antialiased">
-    <AppSplash />
+    {isHome && <AppSplash />}
     <div class="min-h-screen bg-[#F7F1E3]">
       <div class="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 pb-[calc(8rem+env(safe-area-inset-bottom))] pt-4 sm:px-6 md:pb-12 lg:px-8">
       <div class="mobile-topbar -mx-4 -mt-4 flex items-center justify-between gap-4 bg-[#F7F1E3] px-4 pb-4 pt-[calc(1rem+env(safe-area-inset-top))] sm:-mx-6 sm:px-6 md:hidden">
-        {mobileBackHref && mobileBackLabel ? (
-          <a
-            href={mobileBackHref}
-            class="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-[10px] border border-[#DDD7C9] bg-[#FFFDF7] px-3.5 py-2 text-sm font-bold text-[#3F6B4F] transition-colors duration-150 hover:border-[#3F6B4F]/35 hover:bg-[#F2C94C]/20 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none"
-          >
-            <ArrowLeft class="h-4 w-4 shrink-0" stroke-width={2.2} aria-hidden="true" />
-            <span>{mobileBackLabel}</span>
-          </a>
-        ) : (
-          <a
-            href={withBase("/")}
-            aria-label="Torna alla home"
-            class="inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-[10px] pr-2 transition-colors duration-150 hover:bg-[#FFFDF7] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none"
-          >
-            <img
-              src={siteMark.src}
-              alt=""
-              width={siteMark.width}
-              height={siteMark.height}
-              loading="eager"
-              decoding="async"
-              class="h-12 w-12 object-contain"
-            />
-            <span class="text-sm font-bold text-[#3F6B4F] sm:text-base">Popi's Adventures</span>
-          </a>
-        )}
+        <a
+          href={withBase("/")}
+          aria-label="Torna alla home"
+          class:list={[
+            "inline-flex min-w-0 shrink-0 items-center gap-2 rounded-[10px] transition-colors duration-150 hover:bg-[#FFFDF7] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none",
+            isHome ? "pr-2" : "px-0"
+          ]}
+        >
+          <img
+            src={siteMark.src}
+            alt=""
+            width={siteMark.width}
+            height={siteMark.height}
+            loading="eager"
+            decoding="async"
+            class="h-12 w-12 shrink-0 object-contain"
+          />
+          {isHome && (
+            <span class="flex min-w-0 flex-col">
+              <span class="whitespace-nowrap text-sm font-bold leading-tight text-[#25251F] sm:text-base">Popi's Adventures</span>
+              <span class="whitespace-nowrap text-xs font-medium leading-tight text-[#25251F]/65">
+                Un diario, tre popi e un sacco di avventure
+              </span>
+            </span>
+          )}
+        </a>
 
         <div class="min-w-0 flex-1">
           {hasMobileHeaderEnd ? (
             <slot name="mobile-header-end" />
-          ) : active !== "home" ? (
+          ) : mobileBackHref && mobileBackLabel ? (
+            <a
+              href={mobileBackHref}
+              aria-label={mobileBackLabel}
+              class="ml-auto flex min-h-11 w-fit shrink-0 items-center justify-center gap-2 rounded-[10px] border border-[#DDD7C9] bg-[#FFFDF7] px-3 py-2 text-sm font-bold text-[#3F6B4F] transition-colors duration-150 hover:border-[#3F6B4F]/35 hover:bg-[#F2C94C]/20 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none"
+            >
+              <ArrowLeft class="h-4 w-4 shrink-0" stroke-width={2.2} aria-hidden="true" />
+              <span class="hidden min-[360px]:inline">{mobileBackLabel}</span>
+            </a>
+          ) : !isHome ? (
             <p class="truncate text-right text-sm font-bold tracking-[0.02em] text-[#3F6B4F]">
-              <span class="relative isolate inline-block after:absolute after:-inset-x-0.5 after:-bottom-px after:-z-10 after:h-[5px] after:rotate-[-1deg] after:rounded-[50%] after:bg-[#F2C94C]/75 after:content-['']">
-                {resolvedMobileTitle}
-              </span>
+              <span>{resolvedMobileTitle}</span>
             </p>
           ) : null}
         </div>
@@ -128,9 +139,12 @@ const serviceWorkerUrl = withBase("/sw.js");
           <a
             href={withBase("/")}
             aria-label="Torna alla home"
-            class="inline-flex h-[52px] items-center justify-center gap-2 rounded-[10px] pr-3 transition-colors duration-150 hover:bg-[#FFFDF7] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none"
+            class:list={[
+              "inline-flex min-h-[52px] shrink-0 items-center justify-center gap-2 rounded-[10px] transition-colors duration-150 hover:bg-[#FFFDF7] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none",
+              isHome ? "pr-3" : "px-0"
+            ]}
           >
-            <span class="flex h-12 w-12 items-center justify-center">
+            <span class="flex h-12 w-12 shrink-0 items-center justify-center">
               <img
                 src={siteMark.src}
                 alt=""
@@ -138,12 +152,17 @@ const serviceWorkerUrl = withBase("/sw.js");
                 height={siteMark.height}
                 loading="eager"
                 decoding="async"
-                class="h-12 w-12 object-contain"
+                class="h-12 w-12 shrink-0 object-contain"
               />
             </span>
-            <span class="relative isolate text-base font-bold text-[#3F6B4F] after:absolute after:-inset-x-0.5 after:-bottom-px after:-z-10 after:h-[5px] after:rotate-[-1deg] after:rounded-[50%] after:bg-[#F2C94C]/75 after:content-['']">
-              Popi's Adventures
-            </span>
+            {isHome && (
+              <span class="flex flex-col">
+                <span class="whitespace-nowrap text-base font-bold leading-tight text-[#25251F]">Popi's Adventures</span>
+                <span class="max-w-56 text-xs font-medium leading-tight text-[#25251F]/65">
+                  Un diario, tre popi e un sacco di avventure
+                </span>
+              </span>
+            )}
           </a>
 
           <div class="min-w-0 px-2">
@@ -159,7 +178,7 @@ const serviceWorkerUrl = withBase("/sw.js");
                     aria-current={active === item.id ? "page" : undefined}
                     class:list={[
                       "primary-nav-link inline-flex min-h-11 items-center gap-2 rounded-md px-3 py-2.5 text-sm font-bold tracking-[0.02em] transition-colors duration-150 hover:bg-[#FFFDF7] hover:text-[#3F6B4F] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none",
-                      active === item.id ? "font-bold !text-[#3F6B4F]" : "text-[#25251F]"
+                      active === item.id ? "bg-[#FFFDF7] font-bold !text-[#3F6B4F]" : "text-[#25251F]"
                     ]}
                   >
                     <img
@@ -171,14 +190,7 @@ const serviceWorkerUrl = withBase("/sw.js");
                       class="nav-icon h-5 w-5 shrink-0"
                       style={`--nav-icon-rotation: ${item.iconRotation}`}
                     />
-                    <span
-                      class:list={[
-                        "relative isolate",
-                        active === item.id && "after:absolute after:-inset-x-0.5 after:-bottom-px after:-z-10 after:h-[5px] after:rounded-[50%] after:bg-[#F2C94C]/75 after:content-['']"
-                      ]}
-                    >
-                      {item.label}
-                    </span>
+                    <span>{item.label}</span>
                   </a>
                 </li>
               ))}
@@ -199,7 +211,7 @@ const serviceWorkerUrl = withBase("/sw.js");
                   class:list={[
                     "primary-nav-link relative isolate flex min-h-14 flex-col items-center gap-1 rounded-[10px] px-1 py-2 text-xs font-bold tracking-[0.02em] transition-colors duration-150 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none",
                     active === item.id
-                      ? "font-bold text-[#3F6B4F] after:absolute after:bottom-1 after:left-1/2 after:-z-10 after:h-[5px] after:w-9 after:-translate-x-1/2 after:rotate-[-2deg] after:rounded-[50%] after:bg-[#F2C94C]/80 after:content-['']"
+                      ? "bg-[#F2C94C]/20 font-bold text-[#3F6B4F]"
                       : "text-[#25251F]/75 hover:bg-[#F7F1E3] hover:text-[#3F6B4F]"
                   ]}
                 >
@@ -272,7 +284,7 @@ const serviceWorkerUrl = withBase("/sw.js");
                   <li>
                     <a
                       href={item.href}
-                      class="inline-flex min-h-11 items-center text-sm font-bold !text-[#3F6B4F] underline-offset-4 transition-colors hover:!text-[#25251F] hover:underline focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none"
+                      class="inline-flex min-h-11 items-center text-sm font-bold !text-[#3F6B4F] transition-colors hover:!text-[#25251F] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none"
                     >
                       {item.label}
                     </a>
@@ -289,7 +301,7 @@ const serviceWorkerUrl = withBase("/sw.js");
                 href="https://tipucci.it"
                 target="_blank"
                 rel="noreferrer"
-                class="font-bold !text-[#3F6B4F] underline-offset-4 transition-colors hover:!text-[#25251F] hover:underline focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none"
+                class="font-bold !text-[#3F6B4F] transition-colors hover:!text-[#25251F] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none"
               >
                 Tiziano Pucci
               </a>

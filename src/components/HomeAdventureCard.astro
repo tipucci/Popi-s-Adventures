@@ -151,18 +151,19 @@ const isWithGea = (escursione.partecipanti || []).includes("gea");
     margin: 0;
     color: var(--journal-ink, #25251f);
     font-family: var(--font-display);
-    font-size: clamp(1.4rem, 4vw, 1.75rem);
+    font-size: var(--type-card-title);
     font-weight: 600;
-    line-height: 1.15;
-    letter-spacing: -0.015em;
-    overflow-wrap: anywhere;
+    line-height: var(--type-leading-card-title);
+    letter-spacing: var(--type-tracking-display);
+    hyphens: auto;
+    overflow-wrap: break-word;
     text-wrap: balance;
     transition: color 180ms ease;
   }
 
   .home-adventure--featured .home-adventure__title {
-    font-size: clamp(2rem, 5vw, 3rem);
-    line-height: 1.08;
+    font-size: var(--type-section-title);
+    line-height: var(--type-leading-section-title);
   }
 
   .home-adventure__link:hover .home-adventure__title {
@@ -216,26 +217,13 @@ const isWithGea = (escursione.partecipanti || []).includes("gea");
   }
 
   .home-adventure__entry {
-    position: relative;
     display: inline-flex;
     align-items: center;
     gap: 8px;
     margin-top: 16px;
-    padding-bottom: 5px;
     color: var(--journal-leaf, #3f6b4f);
     font-size: 0.9375rem;
     font-weight: 700;
-  }
-
-  .home-adventure__entry::after {
-    position: absolute;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    height: 3px;
-    border-radius: 50%;
-    background: var(--journal-sunshine, #f2c94c);
-    content: "";
   }
 
   .home-adventure__placeholder-label {

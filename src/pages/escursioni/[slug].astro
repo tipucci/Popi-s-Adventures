@@ -3,7 +3,7 @@ import Layout from "../../layouts/Layout.astro";
 import HikeGallery from "../../components/HikeGallery.astro";
 import Mappa from "../../components/Mappa.jsx";
 import PhotoUploadButton from "../../components/PhotoUploadButton.tsx";
-import { Mountain, PawPrint, Star, StarHalf, UserRound } from "@lucide/astro";
+import { Mountain, PawPrint, Star, UserRound } from "@lucide/astro";
 import { getDogFriendByName, getDogFriends } from "../../data/dogFriends.js";
 import { getEscursioni } from "../../data/escursioni.js";
 import { withBase } from "../../utils/base.js";
@@ -114,6 +114,7 @@ const uploadSlug = escursione.imageSlug || escursione.slug;
           <PhotoUploadButton
             client:load
             slug={uploadSlug}
+            hikeTitle={escursione.titolo}
             target="cover"
             apiUrl={withBase("/api/admin/upload-hike-photos")}
           />
@@ -200,20 +201,30 @@ const uploadSlug = escursione.imageSlug || escursione.slug;
 
             {showGeaRating && (
               <div class="hike-gea-rating">
-                <p>Il voto di Gea</p>
+                <div class="hike-gea-rating__heading">
+                  <span class="hike-gea-rating__badge" aria-hidden="true">
+                    <PawPrint size={18} strokeWidth={2.2} />
+                  </span>
+                  <p>Il voto di Gea</p>
+                </div>
                 <div class="hike-gea-rating__row" aria-label={`Il voto di Gea: ${geaRating} su 5`}>
                   <span class="hike-gea-rating__stars" aria-hidden="true">
                     {geaStars.map((starType) => (
                       starType === "full" ? (
-                        <Star size={25} strokeWidth={2} class="fill-current" />
+                        <Star size={28} strokeWidth={2} class="fill-current" />
                       ) : starType === "half" ? (
-                        <StarHalf size={25} strokeWidth={2} class="fill-current" />
+                        <span class="relative inline-flex h-7 w-7 shrink-0">
+                          <Star size={28} strokeWidth={2} class="absolute inset-0 hike-gea-rating__empty" />
+                          <span class="absolute inset-y-0 left-0 w-1/2 overflow-hidden">
+                            <Star size={28} strokeWidth={2} class="absolute inset-y-0 left-0 max-w-none fill-current" />
+                          </span>
+                        </span>
                       ) : (
-                        <Star size={25} strokeWidth={2} class="hike-gea-rating__empty" />
+                        <Star size={28} strokeWidth={2} class="hike-gea-rating__empty" />
                       )
                     ))}
                   </span>
-                  <strong>{geaRating}/5</strong>
+                  <strong><span>{geaRating}</span><small>/5</small></strong>
                 </div>
               </div>
             )}
@@ -241,6 +252,7 @@ const uploadSlug = escursione.imageSlug || escursione.slug;
         slot="footer"
         client:load
         slug={uploadSlug}
+        hikeTitle={escursione.titolo}
         target="gallery"
         apiUrl={withBase("/api/admin/upload-hike-photos")}
       />
@@ -277,31 +289,17 @@ const uploadSlug = escursione.imageSlug || escursione.slug;
     color: var(--journal-ink);
     font-family: var(--font-display);
     font-weight: 600;
-    letter-spacing: -0.015em;
+    letter-spacing: var(--type-tracking-display);
     text-wrap: balance;
   }
 
   .hike-hero h1 {
-    position: relative;
     width: fit-content;
     max-width: min(100%, 12ch);
-    padding-bottom: 14px;
-    font-size: clamp(2.5rem, 10vw, 3.75rem);
-    line-height: 1.04;
+    font-size: var(--type-page-title);
+    line-height: var(--type-leading-page-title);
     hyphens: auto;
     overflow-wrap: break-word;
-  }
-
-  .hike-hero h1::after {
-    position: absolute;
-    bottom: 2px;
-    left: 0;
-    width: min(34%, 128px);
-    height: 6px;
-    border-radius: 50%;
-    background: color-mix(in srgb, var(--journal-sunshine) 82%, transparent);
-    transform: rotate(-1.5deg);
-    content: "";
   }
 
   .hike-hero__meta {
@@ -325,7 +323,7 @@ const uploadSlug = escursione.imageSlug || escursione.slug;
   }
 
   .hike-hero__edit {
-    margin-top: 20px;
+    margin-top: 12px;
   }
 
   .hike-hero__figure {
@@ -407,8 +405,8 @@ const uploadSlug = escursione.imageSlug || escursione.slug;
   }
 
   .hike-section-heading h2 {
-    font-size: clamp(2rem, 7vw, 3rem);
-    line-height: 1.08;
+    font-size: var(--type-section-title);
+    line-height: var(--type-leading-section-title);
   }
 
   .hike-section-heading > p {
@@ -512,59 +510,59 @@ const uploadSlug = escursione.imageSlug || escursione.slug;
     color: var(--journal-ink);
     font-size: 1.25rem;
     line-height: 1.35;
-    overflow-wrap: anywhere;
+    hyphens: auto;
+    overflow-wrap: break-word;
   }
 
   .hike-refuge > strong {
-    position: relative;
-    isolation: isolate;
     width: fit-content;
     max-width: 100%;
     margin-top: 0;
-    padding-bottom: 3px;
-  }
-
-  .hike-refuge > strong::after {
-    position: absolute;
-    right: -4px;
-    bottom: -2px;
-    left: -2px;
-    z-index: -1;
-    height: 6px;
-    border-radius: 50%;
-    background: color-mix(in srgb, var(--journal-sunshine) 68%, transparent);
-    transform: rotate(-1deg);
-    content: "";
   }
 
   .hike-gea-rating {
-    width: fit-content;
+    width: min(100%, 22rem);
+    border: 1px solid color-mix(in srgb, var(--journal-leaf) 18%, var(--journal-border));
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--journal-sunshine) 13%, var(--journal-paper));
+    padding: 14px 16px 16px;
+  }
+
+  .hike-gea-rating__heading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .hike-gea-rating__badge {
+    display: grid;
+    width: 34px;
+    height: 34px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 10px;
+    background: var(--journal-sunshine);
+    color: var(--journal-leaf);
+    transform: rotate(-3deg);
+  }
+
+  .hike-company__notes .hike-gea-rating__heading p {
+    color: var(--journal-ink);
+    font-size: 1rem;
+    line-height: 1.25;
   }
 
   .hike-gea-rating__row {
-    position: relative;
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-top: 7px;
-  }
-
-  .hike-gea-rating__row::after {
-    position: absolute;
-    right: -4px;
-    bottom: -3px;
-    left: -4px;
-    z-index: -1;
-    height: 8px;
-    border-radius: 50%;
-    background: color-mix(in srgb, var(--journal-sunshine) 64%, transparent);
-    transform: rotate(-1deg);
-    content: "";
+    justify-content: space-between;
+    gap: 14px;
+    margin-top: 12px;
   }
 
   .hike-gea-rating__stars {
     display: inline-flex;
-    gap: 3px;
+    gap: 4px;
     color: var(--journal-tomato);
   }
 
@@ -574,8 +572,19 @@ const uploadSlug = escursione.imageSlug || escursione.slug;
 
   .hike-gea-rating__row strong {
     margin: 0;
-    font-size: 0.875rem;
+    color: var(--journal-ink);
+    font-size: 1.25rem;
+    font-weight: 700;
     font-variant-numeric: tabular-nums;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .hike-gea-rating__row small {
+    margin-left: 2px;
+    color: color-mix(in srgb, var(--journal-ink) 62%, transparent);
+    font-size: 0.8125rem;
+    font-weight: 700;
   }
 
   .hike-route :global(.leaflet-host) {

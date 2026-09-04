@@ -31,11 +31,11 @@
       "headers": [
         {
           "key": "Cache-Control",
-          "value": "public, max-age=0, must-revalidate"
+          "value": "private, no-store"
         },
         {
           "key": "CDN-Cache-Control",
-          "value": "max-age=60"
+          "value": "no-store"
         }
       ]
     },

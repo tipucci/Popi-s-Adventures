@@ -14,21 +14,38 @@ colors:
 typography:
   display:
     fontFamily: "Alegreya, Georgia, serif"
-    fontSize: "clamp(2.5rem, 6vw, 3.75rem)"
+    fontSize: "clamp(2.5rem, 7vw, 3.75rem)"
     fontWeight: 600
     lineHeight: 1
     letterSpacing: "-0.015em"
+  toolDisplay:
+    fontFamily: "Alegreya Sans, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "clamp(2.25rem, 5vw, 3rem)"
+    fontWeight: 700
+    lineHeight: 1.05
+    letterSpacing: "-0.01em"
   headline:
     fontFamily: "Alegreya, Georgia, serif"
     fontSize: "clamp(2rem, 4vw, 3rem)"
     fontWeight: 600
     lineHeight: 1.05
     letterSpacing: "-0.015em"
+  subheadline:
+    fontFamily: "Alegreya, Georgia, serif"
+    fontSize: "clamp(1.5rem, 3vw, 2rem)"
+    fontWeight: 600
+    lineHeight: 1.1
+    letterSpacing: "-0.015em"
   title:
     fontFamily: "Alegreya, Georgia, serif"
     fontSize: "clamp(1.25rem, 2vw, 1.5rem)"
     fontWeight: 600
     lineHeight: 1.12
+  uiTitle:
+    fontFamily: "Alegreya Sans, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "clamp(1.25rem, 2vw, 1.5rem)"
+    fontWeight: 700
+    lineHeight: 1.15
   body:
     fontFamily: "Alegreya Sans, ui-sans-serif, system-ui, sans-serif"
     fontSize: "1rem"
@@ -40,6 +57,21 @@ typography:
     fontWeight: 700
     lineHeight: 1.3
     letterSpacing: "0.02em"
+  support:
+    fontFamily: "Alegreya Sans, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "0.9375rem"
+    fontWeight: 500
+    lineHeight: 1.55
+  caption:
+    fontFamily: "Alegreya Sans, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "0.8125rem"
+    fontWeight: 700
+    lineHeight: 1.3
+  data:
+    fontFamily: "Alegreya Sans, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "1.125rem"
+    fontWeight: 700
+    lineHeight: 1.2
 rounded:
   small: "6px"
   medium: "10px"
@@ -99,7 +131,7 @@ components:
 
 Popi's Adventures is a joyful, hand-crafted outdoor diary: a travel journal drawn by hand, with the usability of a modern outdoor product. It should feel made by real people to remember real adventures shared by Tizi, Meg, Gea, and their friends—not like an activity tracker, fitness product, or generic hiking platform.
 
-The underlying interface stays clean, structured, and highly usable. Personality is layered on top through real photography, hand-drawn lines, arrows, circles, underlines, stars, suns, mountains, footprints, paw prints, paths, short annotations, and controlled irregularity. The content grid can be precise; the decorative marks should not be.
+The underlying interface stays clean, structured, and highly usable. Personality is layered on top through real photography, hand-drawn lines, arrows, circles, stars, suns, mountains, footprints, paw prints, paths, short annotations, and controlled irregularity. The content grid can be precise; the decorative marks should not be.
 
 Memories come before performance. Distance, elevation, duration, maps, filters, and checklists remain immediately understandable, but they support the adventure rather than becoming its identity. This direction replaces the previous restrained-minimal world: sunny color, imperfect marks, and affectionate visual details are now intentional parts of the brand.
 
@@ -113,7 +145,7 @@ Memories come before performance. Distance, elevation, duration, maps, filters, 
 
 ## Colors
 
-The palette feels like warm notebook paper with a small set of colorful markers used to circle, underline, and annotate what matters.
+The palette feels like warm notebook paper with a small set of colorful markers used to circle, connect, and annotate what matters.
 
 ### Primary
 
@@ -140,6 +172,8 @@ The palette feels like warm notebook paper with a small set of colorful markers 
 
 **The Marker-on-Paper Rule.** Cream, Paper, and Ink create a calm field; brand colors behave like markers that highlight, circle, or connect something meaningful.
 
+**The One Mark Rule.** Marker-like highlighting is exceptional, never a default treatment for links, navigation, logos, or every heading. Reserve it for one meaningful editorial detail within a view.
+
 **The Simple Component Rule.** A page may use several brand colors, but an individual component should stay visually simple and avoid a rainbow of competing accents.
 
 **The Meaning Beyond Color Rule.** Never use color alone to communicate state, difficulty, completion, or selection; pair it with copy, icons, shape, or position.
@@ -152,13 +186,16 @@ The palette feels like warm notebook paper with a small set of colorful markers 
 
 **Annotation Voice:** Alegreya Italic; no third decorative handwritten font.
 
-**Character:** Typography separates three jobs without fragmenting the identity. Alegreya gives short narrative openings and hike titles an editorial, human voice. Alegreya Sans carries paragraphs and compact interface elements. Alegreya Italic adds one restrained annotative voice for names and photo notes. Filters, maps, checklists, controls, and useful data always stay in Alegreya Sans.
+**Character:** Typography separates three jobs without fragmenting the identity. Alegreya gives short narrative openings and hike titles an editorial, human voice. Alegreya Sans carries paragraphs and compact interface elements. Alegreya Italic adds one restrained annotative voice for names and photo notes. Filters, map content, checklist content, controls, and useful data stay in Alegreya Sans; a page opening may use Alegreya before the interface begins.
 
 ### Hierarchy
 
 - **Display** (600, responsive display scale, 1): Reserved for short narrative openings. Compose important breaks intentionally and aim for roughly 8–13 characters per line.
-- **Headline** (600, responsive headline scale, 1.05): Page titles and major editorial section headings.
+- **Tool Display** (700, responsive tool scale, 1.05): Page titles for map and data-dense dashboard surfaces. It uses Alegreya Sans with restrained tracking and never borrows the narrative display face.
+- **Headline** (600, responsive headline scale, 1.05): Major editorial section headings.
+- **Subheadline** (600, responsive intermediate scale, 1.1): Nested editorial headings that need more presence than a card title without competing with a full section.
 - **Title** (600, responsive title scale, 1.12): Hike names, cards, and narrative subsection titles.
+- **UI Title** (700, responsive compact scale, 1.15): Filters, checklist groups, dialogs, and compact dashboard sections.
 - **Body** (400, 1rem, 1.6): Stories, descriptions, instructions, and general content. Keep long-form text around 60–68 characters per line.
 - **Label** (700, 0.875rem, 0.02em): Compact controls and metadata without decorative overuse.
 - **Annotation** (Alegreya Italic, 500): Short photo notes, names, occasional section accents, and margin comments only. Never use it for paragraphs, essential metadata, or interface controls.
@@ -171,6 +208,8 @@ The palette feels like warm notebook paper with a small set of colorful markers 
 **The Margin Note Rule.** Italic annotations remain brief enough to feel added in the moment, not like a second body-text system.
 
 **The Quiet Weight Rule.** Titles live between 600 and 700. Contrast comes from type shape, scale, spacing, and composition—not an 800 default.
+
+**The Fixed Title Roles Rule.** Narrative page titles, operational page titles, editorial sections, nested editorial headings, narrative cards, and compact UI headings each use one shared scale and line-height across the site. Local pages may change color and measure, but not invent a new size, weight, tracking, or line-height for the same role.
 
 ## Layout
 
@@ -204,7 +243,7 @@ Small UI uses a modest radius, buttons stay gently curved, and photographs use s
 
 Pills are functional symbols, not the default silhouette. Reserve the pill radius for filters, tags, status chips, and compact selectable states. Standard buttons, metadata, navigation, cards, and content sections use the regular radius scale.
 
-Hand-drawn circles, underlines, paths, and irregular outlines are a separate decorative layer. They may overlap or rotate slightly, but they must not change hit targets, reading order, or layout stability.
+Hand-drawn circles, paths, and irregular outlines are a separate decorative layer. They may overlap or rotate slightly, but they must not change hit targets, reading order, or layout stability.
 
 **The Geometry Has a Job Rule.** Containers communicate grouping or interaction; doodles communicate emphasis or personality. Do not confuse their roles.
 
@@ -212,7 +251,7 @@ Hand-drawn circles, underlines, paths, and irregular outlines are a separate dec
 
 ### Doodle Library
 
-Doodles are a recognizable part of the identity. Build a small reusable library of lightweight local SVG illustrations—curved arrow, rough circle, underline, trail, sun, mountain, tree, tent, backpack, boot, paw, heart, star, and location marker—without an external runtime dependency.
+Doodles are a recognizable part of the identity. Build a small reusable library of lightweight local SVG illustrations—curved arrow, rough circle, trail, sun, mountain, tree, tent, backpack, boot, paw, heart, star, and location marker—without an external runtime dependency.
 
 Prefer simple single-stroke drawings with imperfect paths. Use brand colors and vary position, scale, or small rotation deliberately. Decorative doodles are hidden from assistive technology; any mark that communicates information needs an accessible text equivalent.
 
@@ -238,6 +277,7 @@ Hike cards should feel like memories waiting to be reopened. Their hierarchy is 
 - **Primary:** Leaf with light Paper text and compact, confident padding.
 - **Hover / Focus:** Ink on hover; a clearly visible focus outline that does not rely on color alone.
 - **Secondary:** Paper with Leaf text and a quiet Border outline.
+- **Editorial utility:** Photo edit and upload actions stay tertiary: transparent at rest, compact medium-weight labels, lightweight icons, and no persistent border. Preserve a 44px touch target and a clear focus ring.
 
 ### Inputs and Filters
 
@@ -248,7 +288,7 @@ Hike cards should feel like memories waiting to be reopened. Their hierarchy is 
 
 ### Navigation
 
-Navigation is simple and predictable. Main destinations have clear hierarchy, the active location is always visible, and mobile navigation is composed intentionally rather than compressed from desktop. Personality may appear in a restrained underline, circle, or nearby mark, but standard navigation labels and icons remain familiar.
+Navigation is simple and predictable. Main destinations have clear hierarchy, the active location is always visible through a quiet Paper or Sunshine-tinted surface, and mobile navigation is composed intentionally rather than compressed from desktop. Mobile back actions align to the right, opposite the dog mark. The dog mark appears on every page. The full lockup—dark Ink lettering plus payoff—appears only on the home page and never uses a decorative underline.
 
 ### Map
 
@@ -260,7 +300,7 @@ The checklist can be one of the most playful areas. Completed items may receive 
 
 ### Motion
 
-Use short, optional motion that reinforces the handmade personality: a doodle being drawn, an underline appearing, a small arrow shift, gentle image movement, or a tiny checkbox celebration. Avoid parallax everywhere, large bouncing effects, animated gradients, excessive scroll animation, and constant decorative movement. Respect `prefers-reduced-motion`.
+Use short, optional motion that reinforces the handmade personality: a doodle being drawn, a small arrow shift, gentle image movement, or a tiny checkbox celebration. Avoid parallax everywhere, large bouncing effects, animated gradients, excessive scroll animation, and constant decorative movement. Respect `prefers-reduced-motion`.
 
 ### Interface Voice
 

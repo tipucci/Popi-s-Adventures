@@ -49,6 +49,20 @@
   --font-body: "Alegreya Sans", ui-sans-serif, system-ui, sans-serif;
   --font-ui: var(--font-body);
   --font-annotation: var(--font-display);
+  --type-page-title: clamp(2.5rem, 7vw, 3.75rem);
+  --type-tool-page-title: clamp(2.25rem, 5vw, 3rem);
+  --type-section-title: clamp(2rem, 4vw, 3rem);
+  --type-subsection-title: clamp(1.5rem, 3vw, 2rem);
+  --type-card-title: clamp(1.25rem, 2vw, 1.5rem);
+  --type-ui-title: clamp(1.25rem, 2vw, 1.5rem);
+  --type-leading-page-title: 1;
+  --type-leading-tool-page-title: 1.05;
+  --type-leading-section-title: 1.05;
+  --type-leading-subsection-title: 1.1;
+  --type-leading-card-title: 1.15;
+  --type-leading-ui-title: 1.15;
+  --type-tracking-display: -0.015em;
+  --type-tracking-ui-title: -0.01em;
   --font-weight-extrabold: 700;
   --font-weight-black: 700;
 }

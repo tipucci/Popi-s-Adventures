@@ -79,7 +79,7 @@ export default function CardEscursione({ escursione, hrefBase = "/escursioni" })
         </figure>
 
         <div class="pt-4">
-          <h3 class="font-display text-xl font-semibold leading-tight tracking-[-0.015em] text-[#25251F] transition-colors duration-200 group-hover:text-[#3F6B4F] motion-reduce:transition-none">
+          <h3 class="font-display text-[length:var(--type-card-title)] font-semibold leading-[var(--type-leading-card-title)] tracking-[var(--type-tracking-display)] text-[#25251F] transition-colors duration-200 group-hover:text-[#3F6B4F] motion-reduce:transition-none">
             {escursione.titolo}
           </h3>
           <p class="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm leading-relaxed text-[#25251F]/70">

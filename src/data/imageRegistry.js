@@ -1,5 +1,6 @@
 import { getImage } from "astro:assets";
 import { hikeImageMeta } from "./hikeImageMeta.js";
+import uploadedHikeImageMeta from "./uploadedHikeImageMeta.json";
 
 const siteImageModules = import.meta.glob("../assets/images/site/**/*.{jpg,jpeg,png,webp,avif,svg}", {
   eager: true,
@@ -127,7 +128,13 @@ export const siteImages = {
 
 export async function getHikeImages(slug, title) {
   const folderPrefix = `../assets/images/hikes/${slug}/`;
-  const meta = hikeImageMeta[slug] || {};
+  const manualMeta = hikeImageMeta[slug] || {};
+  const uploadedMeta = uploadedHikeImageMeta[slug] || {};
+  const meta = {
+    ...manualMeta,
+    ...uploadedMeta,
+    gallery: [...(uploadedMeta.gallery || []), ...(manualMeta.gallery || [])]
+  };
   const cover = getPreferredImage(hikeImageModules, folderPrefix, "cover", coverExtensionPriority);
 
   const galleryBaseNames = [...new Set(

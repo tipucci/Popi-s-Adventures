@@ -1,7 +1,6 @@
 ---
 import { getImage } from "astro:assets";
 import aboutImage from "../assets/images/site/home/popi-hero-editorial.png";
-import aboutImageMobile from "../assets/images/site/home/popi-hero-editorial-mobile.png";
 import { withBase } from "../utils/base.js";
 
 const title = "Tizi, Meg e Gea";
@@ -11,10 +10,7 @@ const description =
 
 const descriptionThird = "";
 
-const [imageMobile, imageDesktop] = await Promise.all([
-  getImage({ src: aboutImageMobile, width: 900, format: "webp", quality: 74 }),
-  getImage({ src: aboutImage, width: 1440, format: "webp", quality: 78 })
-]);
+const imageDesktop = await getImage({ src: aboutImage, width: 1440, format: "webp", quality: 78 });
 
 const imageAlt = "Tizi, Meg e Gea in un prato di montagna, accompagnati da segni illustrati colorati.";
 ---
@@ -24,12 +20,6 @@ const imageAlt = "Tizi, Meg e Gea in un prato di montagna, accompagnati da segni
     <div class="about-us__layout">
       <figure class="about-us__figure">
         <picture>
-          <source
-            media="(max-width: 767px)"
-            srcset={imageMobile.src}
-            width={imageMobile.attributes.width}
-            height={imageMobile.attributes.height}
-          />
           <img
             src={imageDesktop.src}
             alt={imageAlt}
@@ -81,8 +71,9 @@ const imageAlt = "Tizi, Meg e Gea in un prato di montagna, accompagnati da segni
   .about-us__image {
     display: block;
     width: 100%;
-    aspect-ratio: 1;
+    aspect-ratio: 7 / 5;
     object-fit: cover;
+    object-position: right center;
     border-radius: 14px;
     background: var(--journal-moss, #91a66d);
   }
@@ -103,10 +94,10 @@ const imageAlt = "Tizi, Meg e Gea in un prato di montagna, accompagnati da segni
     margin: 0;
     color: var(--journal-ink, #25251f);
     font-family: var(--font-display);
-    font-size: clamp(2rem, 7vw, 3rem);
+    font-size: var(--type-section-title);
     font-weight: 600;
-    line-height: 1.05;
-    letter-spacing: -0.015em;
+    line-height: var(--type-leading-section-title);
+    letter-spacing: var(--type-tracking-display);
     text-wrap: balance;
   }
 
@@ -159,6 +150,7 @@ const imageAlt = "Tizi, Meg e Gea in un prato di montagna, accompagnati da segni
   @media (min-width: 768px) {
     .about-us__image {
       aspect-ratio: 1440 / 682;
+      object-position: center;
     }
   }
 

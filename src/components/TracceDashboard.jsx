@@ -73,23 +73,25 @@ function RecordFeature({ hike, label, value, variant = "wide" }) {
             className="transition-[filter] duration-200 group-hover:saturate-110 motion-reduce:transition-none"
           />
         </figure>
-        <div class="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4 pt-4">
-          <div>
-            <p class="text-sm font-bold text-[#E66A4E]">{label}</p>
-            <h3 class="mt-1 text-xl font-bold leading-tight tracking-[-0.02em] text-[#25251F] group-hover:text-[#3F6B4F]">
-              {hike.titolo}
-            </h3>
-            <p class="mt-1 text-sm text-[#25251F]/70">
-              {hike.luogo}
-              {hike.data && (
-                <>
-                  <span aria-hidden="true"> · </span>
-                  <time dateTime={hike.data}>{formatDate(hike.data)}</time>
-                </>
-              )}
+        <div class="pt-4">
+          <div class="flex flex-wrap items-baseline justify-between gap-x-5 gap-y-1 border-b border-[#DDD7C9] pb-3">
+            <p class="text-base font-bold text-[#E66A4E]">{label}</p>
+            <p class="whitespace-nowrap text-4xl font-bold leading-none tabular-nums tracking-[-0.035em] text-[#25251F] sm:text-5xl lg:text-6xl">
+              {value}
             </p>
           </div>
-          <p class="whitespace-nowrap text-2xl font-bold tabular-nums tracking-[-0.02em] text-[#25251F]">{value}</p>
+          <h3 class="mt-4 text-xl font-bold leading-tight tracking-normal text-[#25251F] group-hover:text-[#3F6B4F] sm:text-2xl">
+            {hike.titolo}
+          </h3>
+          <p class="mt-1 text-sm text-[#25251F]/70">
+            {hike.luogo}
+            {hike.data && (
+              <>
+                <span aria-hidden="true"> · </span>
+                <time dateTime={hike.data}>{formatDate(hike.data)}</time>
+              </>
+            )}
+          </p>
         </div>
       </a>
     </article>
@@ -190,12 +192,8 @@ export default function TracceDashboard({ escursioni = [], initialArea = "" }) {
   return (
     <div class="traces-dashboard text-[#25251F]">
       <header class="max-w-3xl pb-7 pt-2 sm:pb-9 sm:pt-5">
-        <h1 class="text-balance text-4xl font-bold leading-[1.05] tracking-[-0.03em] sm:text-5xl lg:text-6xl">
-          Le nostre{" "}
-          <span class="relative inline-block">
-            <span class="relative z-10">tracce</span>
-            <span class="absolute -inset-x-1 bottom-[0.04em] z-0 h-[0.24em] rounded-[50%] bg-[#F2C94C]/80" aria-hidden="true"></span>
-          </span>
+        <h1 class="max-w-[12ch] text-balance text-[length:var(--type-tool-page-title)] font-bold leading-[var(--type-leading-tool-page-title)] tracking-[var(--type-tracking-ui-title)]">
+          Dove siamo stati
         </h1>
       </header>
 
@@ -226,7 +224,7 @@ export default function TracceDashboard({ escursioni = [], initialArea = "" }) {
 
         <aside class="mt-16 min-w-0 border-y border-[#DDD7C9] py-5 md:mt-0 lg:border-b-0 lg:border-t-0 lg:py-2" aria-labelledby="areas-title">
           <div class="flex items-center justify-between gap-3">
-            <h2 id="areas-title" class="text-2xl font-bold tracking-[-0.02em]">Aree esplorate</h2>
+            <h2 id="areas-title" class="text-[length:var(--type-ui-title)] font-bold leading-[var(--type-leading-ui-title)] tracking-normal">Aree esplorate</h2>
             {selectedArea && (
               <button
                 type="button"
@@ -271,7 +269,7 @@ export default function TracceDashboard({ escursioni = [], initialArea = "" }) {
             <button
               type="button"
               onClick={() => setShowAllAreas((value) => !value)}
-              class="mt-3 min-h-11 text-sm font-bold text-[#3F6B4F] underline decoration-2 underline-offset-4 focus:outline-none focus:ring-2 focus:ring-[#3F6B4F] focus:ring-offset-2"
+              class="mt-3 min-h-11 rounded-[10px] px-3 text-sm font-bold text-[#3F6B4F] transition-colors hover:bg-[#FFFDF7] focus:outline-none focus:ring-2 focus:ring-[#3F6B4F] focus:ring-offset-2"
             >
               {showAllAreas ? "Mostra meno" : `Altre ${areas.length - AREA_PREVIEW_COUNT} aree`}
             </button>
@@ -291,14 +289,14 @@ export default function TracceDashboard({ escursioni = [], initialArea = "" }) {
                       class="flex min-h-11 items-center justify-between gap-3 py-2 text-sm font-bold hover:text-[#3F6B4F] focus:outline-none focus:ring-2 focus:ring-[#3F6B4F]"
                     >
                       <span>{hike.titolo}</span>
-                      <time dateTime={hike.data} class="shrink-0 text-xs font-semibold text-[#25251F]/75">
+                      <time dateTime={hike.data} class="shrink-0 text-xs font-medium text-[#25251F]/75">
                         {formatDate(hike.data)}
                       </time>
                     </a>
                   </li>
                 ))}
               </ul>
-              <a href={archiveHref} class="mt-3 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-[#3F6B4F] underline decoration-2 underline-offset-4">
+              <a href={archiveHref} class="mt-3 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-[#3F6B4F] transition-[color,gap] hover:gap-3 hover:text-[#25251F]">
                 Vedi nell’archivio <ArrowRight size={16} aria-hidden="true" />
               </a>
             </div>
@@ -312,7 +310,7 @@ export default function TracceDashboard({ escursioni = [], initialArea = "" }) {
 
       {(longestHike || highestClimb) && (
         <section class="mt-20 sm:mt-24" aria-labelledby="records-title">
-          <h2 id="records-title" class="text-3xl font-bold tracking-[-0.025em] sm:text-4xl">Giornate da ricordare</h2>
+          <h2 id="records-title" class="text-[length:var(--type-ui-title)] font-bold leading-[var(--type-leading-ui-title)] tracking-normal">Giornate da ricordare</h2>
           <div class="mt-7 grid gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:gap-10">
             <RecordFeature
               hike={longestHike}
@@ -333,33 +331,50 @@ export default function TracceDashboard({ escursioni = [], initialArea = "" }) {
         <section class="mt-20 border-t border-[#DDD7C9] pt-10 sm:mt-24 sm:pt-12" aria-labelledby="gea-top-title">
           <div class="flex items-center gap-3">
             <PawPrint size={24} strokeWidth={2.2} class="text-[#3F6B4F]" aria-hidden="true" />
-            <h2 id="gea-top-title" class="text-3xl font-bold tracking-[-0.025em] sm:text-4xl">Le preferite di Gea</h2>
+            <h2 id="gea-top-title" class="text-[length:var(--type-ui-title)] font-bold leading-[var(--type-leading-ui-title)] tracking-normal">Le preferite di Gea</h2>
           </div>
 
-          <ol class="mt-7 grid gap-7 sm:grid-cols-3">
+          <ol class="mt-7 grid gap-8 sm:grid-cols-2 lg:grid-cols-[1.3fr_0.7fr] lg:grid-rows-2 lg:gap-7">
             {geaTopThree.map((hike, index) => (
-              <li key={hike.slug}>
+              <li
+                key={hike.slug}
+                class={index === 0 ? "sm:col-span-2 lg:col-span-1 lg:row-span-2" : ""}
+              >
                 <a
                   href={withBase(`/escursioni/${hike.slug}`)}
-                  class="group block rounded-[14px] outline-none focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[5px] focus-visible:outline-[#3F6B4F]"
+                  class={`group block rounded-[14px] outline-none focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[5px] focus-visible:outline-[#3F6B4F] ${index === 0 ? "lg:grid lg:h-full lg:grid-rows-[minmax(0,1fr)_auto]" : ""}`}
                 >
-                  <figure class="relative m-0 aspect-[4/3] overflow-hidden rounded-[14px] bg-[#FFFDF7]">
+                  <figure
+                    class={`relative m-0 overflow-hidden rounded-[14px] bg-[#FFFDF7] ${
+                      index === 0 ? "aspect-[16/10] lg:h-full lg:min-h-0 lg:aspect-auto" : "aspect-[16/10]"
+                    }`}
+                  >
                     <CoverImage
                       hike={hike}
-                      sizes="(min-width: 640px) 31vw, 96vw"
+                      sizes={index === 0 ? "(min-width: 1024px) 56vw, 96vw" : "(min-width: 1024px) 29vw, (min-width: 640px) 46vw, 96vw"}
                       className="transition-[filter] duration-200 group-hover:saturate-110 motion-reduce:transition-none"
                     />
-                    <span class="absolute left-3 top-3 inline-flex h-10 min-w-10 items-center justify-center rounded-full bg-[#F2C94C] px-3 text-lg font-bold text-[#25251F]" aria-label={`${index + 1}ª posizione`}>
+                    <span
+                      class={`absolute left-3 top-3 inline-flex items-center justify-center rounded-full bg-[#F2C94C] font-bold text-[#25251F] ${
+                        index === 0 ? "h-14 min-w-14 px-4 text-2xl sm:left-4 sm:top-4" : "h-10 min-w-10 px-3 text-lg"
+                      }`}
+                      aria-label={`${index + 1}ª posizione`}
+                    >
                       {index + 1}
                     </span>
                   </figure>
-                  <div class="flex items-start justify-between gap-3 pt-4">
-                    <div>
-                      <h3 class="text-lg font-bold leading-tight tracking-[-0.02em] group-hover:text-[#3F6B4F]">{hike.titolo}</h3>
+                  <div class={`flex items-start justify-between gap-4 pt-4 ${index === 0 ? "sm:pt-5" : ""}`}>
+                    <div class="min-w-0">
+                      <h3 class={`font-bold leading-tight tracking-normal group-hover:text-[#3F6B4F] ${index === 0 ? "text-2xl sm:text-3xl" : "text-lg sm:text-xl"}`}>
+                        {hike.titolo}
+                      </h3>
                       <p class="mt-1 text-sm text-[#25251F]/65">{formatDate(hike.data)}</p>
                     </div>
-                    <span class="inline-flex shrink-0 items-center gap-1 font-bold tabular-nums text-[#E66A4E]" aria-label={`Voto di Gea: ${getGeaRating(hike)} su 5`}>
-                      <Star size={17} strokeWidth={2} fill="currentColor" aria-hidden="true" />
+                    <span
+                      class={`inline-flex shrink-0 items-center gap-1 font-bold tabular-nums text-[#E66A4E] ${index === 0 ? "text-2xl sm:text-3xl" : "text-lg sm:text-xl"}`}
+                      aria-label={`Voto di Gea: ${getGeaRating(hike)} su 5`}
+                    >
+                      <Star size={index === 0 ? 24 : 18} strokeWidth={2} fill="currentColor" aria-hidden="true" />
                       {new Intl.NumberFormat("it-IT", { maximumFractionDigits: 1 }).format(getGeaRating(hike))}
                     </span>
                   </div>
@@ -367,17 +382,17 @@ export default function TracceDashboard({ escursioni = [], initialArea = "" }) {
               </li>
             ))}
           </ol>
+
+          <div class="mt-8 flex justify-end border-t border-[#DDD7C9] pt-6">
+            <a
+              href={withBase("/escursioni")}
+              class="inline-flex min-h-11 items-center gap-2 rounded-[10px] border border-[#3F6B4F]/30 bg-[#FFFDF7] px-4 py-2.5 text-sm font-bold text-[#3F6B4F] transition-colors hover:border-[#3F6B4F]/50 hover:bg-[#F2C94C]/20 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none"
+            >
+              Tutte le escursioni <ArrowRight size={18} strokeWidth={2.2} aria-hidden="true" />
+            </a>
+          </div>
         </section>
       )}
-
-      <footer class="mt-20 border-t border-[#DDD7C9] py-10 sm:mt-24">
-        <a
-          href={withBase("/escursioni")}
-          class="inline-flex min-h-11 items-center gap-3 text-lg font-bold text-[#3F6B4F] underline decoration-2 underline-offset-4 focus:outline-none focus:ring-2 focus:ring-[#3F6B4F] focus:ring-offset-4"
-        >
-          Tutte le escursioni <ArrowRight size={20} strokeWidth={2.2} aria-hidden="true" />
-        </a>
-      </footer>
     </div>
   );
 }

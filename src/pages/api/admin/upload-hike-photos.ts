@@ -3,21 +3,41 @@ import type { APIContext } from "astro";
 export const prerender = false;
 
 const MAX_FILES = 12;
+const MAX_UPLOAD_BYTES = 3_800_000;
 const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-const IMAGE_DATA_URL_PATTERN = /^data:image\/jpeg;base64,[a-z0-9+/=]+$/i;
 const HIKES_ROOT = "src/assets/images/hikes";
+const UPLOADED_METADATA_PATH = "src/data/uploadedHikeImageMeta.json";
+const DEFAULT_VISION_MODEL = "gpt-4o-mini";
 
 type UploadPayload = {
-  password?: string;
-  slug?: string;
-  target?: "gallery" | "cover";
-  images?: string[];
+  slug: string;
+  hikeTitle: string;
+  target: "gallery" | "cover";
+  images: Array<{
+    dataUrl: string;
+    base64Content: string;
+  }>;
 };
 
 type GitHubTreeItem = {
   path: string;
   type: string;
 };
+
+type PhotoDescription = {
+  index: number;
+  alt: string;
+  caption: string;
+};
+
+type UploadedHikeImageMeta = Record<string, {
+  coverAlt?: string;
+  gallery?: Array<{
+    file: string;
+    alt: string;
+    caption: string;
+  }>;
+}>;
 
 function json(body: Record<string, unknown>, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -46,17 +66,206 @@ function getDirectoryPath(slug: string) {
   return `${HIKES_ROOT}/${slug}`;
 }
 
-function extractBase64Content(dataUrl: string) {
-  if (!IMAGE_DATA_URL_PATTERN.test(dataUrl)) {
-    throw new Error("Ogni immagine deve essere un data URL JPEG valido.");
+async function passwordsMatch(received: string, expected: string) {
+  const encoder = new TextEncoder();
+  const [receivedHash, expectedHash] = await Promise.all([
+    crypto.subtle.digest("SHA-256", encoder.encode(received)),
+    crypto.subtle.digest("SHA-256", encoder.encode(expected))
+  ]);
+  const receivedBytes = new Uint8Array(receivedHash);
+  const expectedBytes = new Uint8Array(expectedHash);
+  let difference = 0;
+
+  for (let index = 0; index < expectedBytes.length; index += 1) {
+    difference |= receivedBytes[index] ^ expectedBytes[index];
   }
 
-  const [, base64Content = ""] = dataUrl.split(",", 2);
-  if (!base64Content) {
-    throw new Error("Immagine JPEG non valida.");
+  return difference === 0;
+}
+
+function bytesToBase64(bytes: Uint8Array) {
+  let binary = "";
+  const chunkSize = 0x8000;
+
+  for (let offset = 0; offset < bytes.length; offset += chunkSize) {
+    const chunk = bytes.subarray(offset, offset + chunkSize);
+    binary += String.fromCharCode(...chunk);
   }
 
-  return base64Content;
+  return btoa(binary);
+}
+
+async function parseUploadRequest(request: Request): Promise<UploadPayload> {
+  const contentType = request.headers.get("content-type") || "";
+  if (!contentType.toLowerCase().startsWith("multipart/form-data")) {
+    throw new UploadRequestError("Formato richiesta non supportato.", 415);
+  }
+
+  const formData = await request.formData();
+  const slug = String(formData.get("slug") || "");
+  const hikeTitle = String(formData.get("hikeTitle") || slug).trim().slice(0, 160);
+  const target = formData.get("target") === "cover" ? "cover" : "gallery";
+  const files = formData.getAll("images").filter((entry): entry is File => typeof entry !== "string");
+  const totalBytes = files.reduce((total, file) => total + file.size, 0);
+
+  if (totalBytes > MAX_UPLOAD_BYTES) {
+    throw new UploadRequestError("Le foto superano il limite del singolo invio. Selezionale di nuovo per ottimizzarle.", 413);
+  }
+
+  if (files.some((file) => file.type !== "image/jpeg" || file.size === 0)) {
+    throw new UploadRequestError("Ogni file deve essere una foto JPEG valida.", 400);
+  }
+
+  const images = await Promise.all(files.map(async (file) => {
+    const base64Content = bytesToBase64(new Uint8Array(await file.arrayBuffer()));
+    return {
+      base64Content,
+      dataUrl: `data:image/jpeg;base64,${base64Content}`
+    };
+  }));
+
+  return { slug, hikeTitle, target, images };
+}
+
+class UploadRequestError extends Error {
+  status: number;
+
+  constructor(message: string, status: number) {
+    super(message);
+    this.status = status;
+  }
+}
+
+function encodeTextAsBase64(value: string) {
+  const bytes = new TextEncoder().encode(value);
+  let binary = "";
+
+  for (const byte of bytes) {
+    binary += String.fromCharCode(byte);
+  }
+
+  return btoa(binary);
+}
+
+function decodeBase64Text(value: string) {
+  const binary = atob(value.replace(/\s/g, ""));
+  const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
+}
+
+function getResponseOutputText(data: any) {
+  for (const item of Array.isArray(data?.output) ? data.output : []) {
+    for (const content of Array.isArray(item?.content) ? item.content : []) {
+      if (content?.type === "output_text" && typeof content.text === "string") {
+        return content.text;
+      }
+    }
+  }
+
+  return "";
+}
+
+async function describePhotos(
+  images: string[],
+  hikeTitle: string,
+  target: "gallery" | "cover",
+  apiKey: string,
+  model: string
+) {
+  const imageContent = images.flatMap((image, index) => [
+    { type: "input_text", text: `Foto ${index + 1}` },
+    { type: "input_image", image_url: image, detail: "low" }
+  ]);
+  const response = await fetch("https://api.openai.com/v1/responses", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      model,
+      store: false,
+      instructions: [
+        "Analizza fotografie reali di un diario escursionistico.",
+        "Scrivi in italiano naturale e concreto, descrivendo soltanto elementi chiaramente visibili.",
+        "Non identificare persone, non attribuire nomi e non dedurre caratteristiche sensibili.",
+        "L'alt text deve essere una frase accessibile e specifica, senza iniziare con 'foto di' o 'immagine di'.",
+        "La caption deve essere una breve nota editoriale di 3-10 parole, nello stile caldo di un diario personale.",
+        "Non inventare luoghi, eventi, relazioni o dettagli non visibili."
+      ].join(" "),
+      input: [{
+        role: "user",
+        content: [
+          {
+            type: "input_text",
+            text: `Escursione: ${hikeTitle}. Tipo: ${target === "cover" ? "copertina" : "galleria"}. Restituisci una descrizione per ogni foto, mantenendo lo stesso indice.`
+          },
+          ...imageContent
+        ]
+      }],
+      max_output_tokens: Math.max(300, images.length * 120),
+      text: {
+        format: {
+          type: "json_schema",
+          name: "hike_photo_descriptions",
+          strict: true,
+          schema: {
+            type: "object",
+            properties: {
+              photos: {
+                type: "array",
+                minItems: images.length,
+                maxItems: images.length,
+                items: {
+                  type: "object",
+                  properties: {
+                    index: { type: "integer", minimum: 0, maximum: images.length - 1 },
+                    alt: { type: "string", minLength: 12, maxLength: 220 },
+                    caption: { type: "string", minLength: 3, maxLength: 100 }
+                  },
+                  required: ["index", "alt", "caption"],
+                  additionalProperties: false
+                }
+              }
+            },
+            required: ["photos"],
+            additionalProperties: false
+          }
+        }
+      }
+    })
+  });
+
+  if (!response.ok) {
+    const detail = await response.text().catch(() => "");
+    throw new Error(`Analisi automatica non riuscita (${response.status}): ${detail || "riprova più tardi."}`);
+  }
+
+  const data = await response.json();
+  const outputText = getResponseOutputText(data);
+  if (!outputText) {
+    throw new Error("L'analisi automatica non ha restituito descrizioni.");
+  }
+
+  const parsed = JSON.parse(outputText) as { photos?: PhotoDescription[] };
+  const photos = Array.isArray(parsed.photos) ? parsed.photos : [];
+  const byIndex = new Map(photos.map((photo) => [photo.index, photo]));
+
+  if (photos.length !== images.length || byIndex.size !== images.length) {
+    throw new Error("L'analisi automatica non ha descritto tutte le foto.");
+  }
+
+  return images.map((_, index) => {
+    const photo = byIndex.get(index);
+    const alt = String(photo?.alt || "").trim();
+    const caption = String(photo?.caption || "").trim();
+
+    if (!alt || !caption) {
+      throw new Error(`Descrizione incompleta per la foto ${index + 1}.`);
+    }
+
+    return { index, alt, caption };
+  });
 }
 
 async function githubRequest(
@@ -81,6 +290,30 @@ async function githubRequest(
   }
 
   return response;
+}
+
+async function getUploadedImageMetadata(
+  owner: string,
+  repo: string,
+  commitSha: string,
+  token: string
+) {
+  const response = await githubRequest(
+    `/repos/${owner}/${repo}/contents/${UPLOADED_METADATA_PATH}?ref=${encodeURIComponent(commitSha)}`,
+    token
+  );
+  const data = await response.json();
+
+  if (data.encoding !== "base64" || typeof data.content !== "string") {
+    throw new Error("Il file dei metadati automatici non può essere letto.");
+  }
+
+  const parsed = JSON.parse(decodeBase64Text(data.content));
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+    throw new Error("Il file dei metadati automatici non è valido.");
+  }
+
+  return parsed as UploadedHikeImageMeta;
 }
 
 async function getBranchHeadSha(owner: string, repo: string, branch: string, token: string) {
@@ -190,26 +423,21 @@ async function triggerDeployHook(url: string) {
 
 export async function POST({ request }: APIContext) {
   try {
+    const adminPassword = getEnv("ADMIN_UPLOAD_PASSWORD");
+    const password = request.headers.get("x-popi-upload-password") || "";
+    if (!await passwordsMatch(password, adminPassword)) {
+      return json({ success: false, createdFiles: [], message: "Password non valida." }, 401);
+    }
+
     const githubToken = getEnv("GITHUB_TOKEN");
     const githubOwner = getEnv("GITHUB_OWNER");
     const githubRepo = getEnv("GITHUB_REPO");
     const githubBranch = getEnv("GITHUB_BRANCH");
-    const adminPassword = getEnv("ADMIN_UPLOAD_PASSWORD");
     const deployHookUrl = getEnv("VERCEL_DEPLOY_HOOK_URL", false);
+    const openaiApiKey = getEnv("OPENAI_API_KEY");
+    const visionModel = getEnv("OPENAI_IMAGE_DESCRIPTION_MODEL", false) || DEFAULT_VISION_MODEL;
 
-    const payload = (await request.json().catch(() => null)) as UploadPayload | null;
-    if (!payload) {
-      return json({ success: false, createdFiles: [], message: "Body JSON non valido." }, 400);
-    }
-
-    const password = String(payload.password || "");
-    const slug = String(payload.slug || "");
-    const target = payload.target === "cover" ? "cover" : "gallery";
-    const images = Array.isArray(payload.images) ? payload.images : [];
-
-    if (password !== adminPassword) {
-      return json({ success: false, createdFiles: [], message: "Password non valida." }, 401);
-    }
+    const { slug, hikeTitle, target, images } = await parseUploadRequest(request);
 
     if (!isValidSlug(slug)) {
       return json({ success: false, createdFiles: [], message: "Slug non valido." }, 400);
@@ -234,35 +462,97 @@ export async function POST({ request }: APIContext) {
     const existingPaths = await getExistingPaths(githubOwner, githubRepo, baseTreeSha, slug, githubToken);
     const directoryPath = getDirectoryPath(slug);
 
-    const createdFiles: string[] = [];
-    const blobEntries = [];
+    const preparedImages: Array<{
+      dataUrl: string;
+      base64Content: string;
+      fileName: string;
+      filePath: string;
+    }> = [];
+
     if (target === "cover") {
+      const fileName = "cover.jpg";
       const filePath = `${directoryPath}/cover.jpg`;
-      const blobSha = await createBlob(githubOwner, githubRepo, githubToken, extractBase64Content(images[0]));
-      blobEntries.push({ path: filePath, sha: blobSha });
-      createdFiles.push(filePath);
+      preparedImages.push({
+        dataUrl: images[0].dataUrl,
+        base64Content: images[0].base64Content,
+        fileName,
+        filePath
+      });
     } else {
       let nextIndex = getNextGalleryIndex(existingPaths);
       for (const image of images) {
-        const base64Content = extractBase64Content(image);
         const fileName = `gallery-${String(nextIndex).padStart(2, "0")}.jpg`;
         const filePath = `${directoryPath}/${fileName}`;
 
-        if (existingPaths.includes(filePath) || createdFiles.includes(filePath)) {
+        if (existingPaths.includes(filePath) || preparedImages.some((item) => item.filePath === filePath)) {
           nextIndex += 1;
           continue;
         }
 
-        const blobSha = await createBlob(githubOwner, githubRepo, githubToken, base64Content);
-        blobEntries.push({ path: filePath, sha: blobSha });
-        createdFiles.push(filePath);
+        preparedImages.push({
+          dataUrl: image.dataUrl,
+          base64Content: image.base64Content,
+          fileName,
+          filePath
+        });
         nextIndex += 1;
       }
     }
 
-    if (blobEntries.length === 0) {
+    if (preparedImages.length === 0) {
       return json({ success: false, createdFiles: [], message: "Nessun nuovo file da creare." }, 409);
     }
+
+    const descriptions = await describePhotos(
+      preparedImages.map((image) => image.dataUrl),
+      hikeTitle,
+      target,
+      openaiApiKey,
+      visionModel
+    );
+    const uploadedMetadata = await getUploadedImageMetadata(
+      githubOwner,
+      githubRepo,
+      headCommitSha,
+      githubToken
+    );
+    const currentMetadata = uploadedMetadata[slug] || {};
+
+    if (target === "cover") {
+      uploadedMetadata[slug] = {
+        ...currentMetadata,
+        coverAlt: descriptions[0].alt
+      };
+    } else {
+      const newFileNames = new Set(preparedImages.map((image) => image.fileName));
+      uploadedMetadata[slug] = {
+        ...currentMetadata,
+        gallery: [
+          ...(currentMetadata.gallery || []).filter((item) => !newFileNames.has(item.file)),
+          ...preparedImages.map((image, index) => ({
+            file: image.fileName,
+            alt: descriptions[index].alt,
+            caption: descriptions[index].caption
+          }))
+        ]
+      };
+    }
+
+    const metadataContent = encodeTextAsBase64(`${JSON.stringify(uploadedMetadata, null, 2)}\n`);
+    const [metadataBlobSha, ...imageBlobShas] = await Promise.all([
+      createBlob(githubOwner, githubRepo, githubToken, metadataContent),
+      ...preparedImages.map((image) =>
+        createBlob(githubOwner, githubRepo, githubToken, image.base64Content)
+      )
+    ]);
+    const blobEntries = [
+      { path: UPLOADED_METADATA_PATH, sha: metadataBlobSha },
+      ...preparedImages.map((image, index) => ({
+        path: image.filePath,
+        sha: imageBlobShas[index]
+      }))
+    ];
+    const createdFiles = preparedImages.map((image) => image.filePath);
 
     const newTreeSha = await createTree(githubOwner, githubRepo, githubToken, baseTreeSha, blobEntries);
     const commitMessage = target === "cover" ? `Update hike cover for ${slug}` : `Add hike photos for ${slug}`;
@@ -270,8 +560,8 @@ export async function POST({ request }: APIContext) {
     await updateBranchRef(githubOwner, githubRepo, githubToken, githubBranch, commitSha);
 
     let message = target === "cover"
-      ? "Cover aggiornata con successo."
-      : `${createdFiles.length} ${createdFiles.length === 1 ? "foto aggiunta" : "foto aggiunte"} con successo.`;
+      ? "Cover e descrizione aggiornate con successo."
+      : `${createdFiles.length} ${createdFiles.length === 1 ? "foto aggiunta" : "foto aggiunte"} con descrizione automatica.`;
     if (deployHookUrl) {
       try {
         await triggerDeployHook(deployHookUrl);
@@ -287,13 +577,14 @@ export async function POST({ request }: APIContext) {
       message
     });
   } catch (error) {
+    const status = error instanceof UploadRequestError ? error.status : 500;
     return json(
       {
         success: false,
         createdFiles: [],
         message: error instanceof Error ? error.message : "Errore interno durante l'upload."
       },
-      500
+      status
     );
   }
 }

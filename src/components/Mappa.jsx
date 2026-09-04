@@ -481,7 +481,7 @@ export default function Mappa({
                 <Expand size={18} strokeWidth={2.2} aria-hidden="true" />
               </button>
             </div>
-            <h1 class="mt-2 font-sans text-4xl font-bold text-white sm:text-5xl">{title}</h1>
+            <h1 class="mt-2 max-w-[12ch] text-balance font-sans text-[length:var(--type-tool-page-title)] font-bold leading-[var(--type-leading-tool-page-title)] tracking-[var(--type-tracking-ui-title)] text-white">{title}</h1>
           </div>
         ) : (
           <button

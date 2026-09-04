@@ -134,10 +134,10 @@ const hasFooter = Astro.slots.has("footer");
     margin: 0;
     color: var(--journal-ink, #25251f);
     font-family: var(--font-display);
-    font-size: clamp(2rem, 7vw, 3rem);
+    font-size: var(--type-section-title);
     font-weight: 600;
-    line-height: 1.08;
-    letter-spacing: -0.015em;
+    line-height: var(--type-leading-section-title);
+    letter-spacing: var(--type-tracking-display);
     text-wrap: balance;
   }
 
@@ -215,7 +215,7 @@ const hasFooter = Astro.slots.has("footer");
   .hike-gallery__footer {
     display: flex;
     justify-content: flex-end;
-    margin-top: 20px;
+    margin-top: 12px;
   }
 
   .gallery-lightbox::backdrop {

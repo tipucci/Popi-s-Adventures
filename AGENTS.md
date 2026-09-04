@@ -58,6 +58,10 @@ Rules:
   - gallery-01.jpg, gallery-02.jpg, etc.
 - Lowercase filenames only
 - No spaces in filenames
+- Every new or replaced cover MUST include an accurate, image-specific `coverAlt`
+- Every new or replaced gallery image MUST include an accurate, image-specific `alt` and a short, non-empty `caption`
+- Administrative uploads MUST generate these descriptions by analyzing the image and save metadata atomically with the image; if description generation fails, the image upload must fail too
+- Before finalizing any future image addition, verify that no new image relies on generic fallback text or an empty caption
 
 Do NOT:
 - introduce external image URLs

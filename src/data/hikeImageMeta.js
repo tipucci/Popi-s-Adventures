@@ -52,6 +52,11 @@ export const hikeImageMeta = {
         file: "gallery-03.jpg",
         alt: "Pareti rocciose e bosco sotto il cielo azzurro nei dintorni del Monte Spedone.",
         caption: "Le pareti sopra Rossino."
+      },
+      {
+        file: "gallery-04.jpg",
+        alt: "Gea, un border collie bianco e nero, siede all’ombra accanto a una panca nel bosco.",
+        caption: "Gea si gode l’ombra del bosco."
       }
     ]
   }

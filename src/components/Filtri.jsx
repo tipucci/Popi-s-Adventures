@@ -75,16 +75,6 @@ function normalizeInitialFilters(input = {}) {
   };
 }
 
-function hasAdvancedFilters(filters) {
-  return Boolean(
-    filters.provincia ||
-    filters.stagione ||
-    filters.kmMin ||
-    filters.kmMax ||
-    filters.soloRifugio
-  );
-}
-
 function parseFiltersFromSearch(search) {
   const params = new URLSearchParams(search);
   return normalizeInitialFilters({
@@ -258,9 +248,6 @@ function sortItems(items, sort) {
 }
 export default function Filtri({ escursioni = [], initialFilters = defaultFilters }) {
   const [filters, setFilters] = useState(() => normalizeInitialFilters(initialFilters));
-  const [advancedOpen, setAdvancedOpen] = useState(() =>
-    hasAdvancedFilters(normalizeInitialFilters(initialFilters))
-  );
   const resultsHeadingRef = useRef(null);
   const shouldFocusResultsRef = useRef(false);
   const hasMountedUrlSyncRef = useRef(false);
@@ -268,7 +255,6 @@ export default function Filtri({ escursioni = [], initialFilters = defaultFilter
   useEffect(() => {
     const syncFilters = () => {
       const nextFilters = parseFiltersFromSearch(window.location.search);
-      if (hasAdvancedFilters(nextFilters)) setAdvancedOpen(true);
       setFilters((current) => (areFiltersEqual(current, nextFilters) ? current : nextFilters));
     };
 
@@ -313,30 +299,24 @@ export default function Filtri({ escursioni = [], initialFilters = defaultFilter
   const activeFilters = [
     filters.period && {
       key: "period",
-      group: "primary",
       label: `Periodo: ${periodOptions.find((item) => item.value === filters.period)?.label || filters.period}`
     },
     filters.difficolta && {
       key: "difficolta",
-      group: "primary",
       label: `Difficoltà: ${difficultyOptions.find((item) => item.value === filters.difficolta)?.label || filters.difficolta}`
     },
-    filters.soloGea && { key: "soloGea", group: "primary", label: "Con Gea" },
-    filters.provincia && { key: "provincia", group: "advanced", label: `Provincia: ${filters.provincia}` },
+    filters.soloGea && { key: "soloGea", label: "Con Gea" },
+    filters.provincia && { key: "provincia", label: `Provincia: ${filters.provincia}` },
     filters.stagione && {
       key: "stagione",
-      group: "advanced",
       label: `Stagione: ${seasonOptions.find((item) => item.value === filters.stagione)?.label || filters.stagione}`
     },
     (filters.kmMin || filters.kmMax) && {
       key: "km",
-      group: "advanced",
       label: `Km: ${formatKilometerLabel(rangeKmMin)}–${formatKilometerLabel(rangeKmMax)}`
     },
-    filters.soloRifugio && { key: "soloRifugio", group: "advanced", label: "Con rifugio" }
+    filters.soloRifugio && { key: "soloRifugio", label: "Con rifugio" }
   ].filter(Boolean);
-
-  const advancedFilterCount = activeFilters.filter((item) => item.group === "advanced").length;
 
   const filtered = useMemo(() => {
     return sortItems(
@@ -478,7 +458,7 @@ export default function Filtri({ escursioni = [], initialFilters = defaultFilter
           pointer-events: auto;
           width: 1.35rem;
           height: 1.35rem;
-          margin-top: 0.7rem;
+          margin-top: 0.45rem;
           border-radius: 9999px;
           border: 2px solid #3f6b4f;
           background: #fffdf7;
@@ -502,13 +482,13 @@ export default function Filtri({ escursioni = [], initialFilters = defaultFilter
           cursor: pointer;
         }
       `}</style>
-      <div class="space-y-3">
-        <details class="group border-y border-[#DDD7C9]">
-          <summary class="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 px-1 py-2 text-left marker:hidden focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] sm:min-h-16 sm:py-3">
+      <div>
+        <details class="group border-y border-[#DDD7C9] bg-[#FFFDF7]/35">
+          <summary class="flex min-h-[52px] cursor-pointer list-none items-center justify-between gap-4 px-1 py-2 text-left marker:hidden focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] sm:px-2">
             <span class="flex flex-wrap items-baseline gap-x-1 text-base font-bold text-[#3F6B4F]">
-              <span>Filtri</span>
+              <span>Filtra escursioni</span>
               {activeFilters.length ? (
-                <span class="text-sm font-semibold text-[#25251F]/70">
+                <span class="text-sm font-medium text-[#25251F]/70">
                   · {activeFilters.length} {activeFilters.length === 1 ? "attivo" : "attivi"}
                 </span>
               ) : null}
@@ -518,20 +498,14 @@ export default function Filtri({ escursioni = [], initialFilters = defaultFilter
             </span>
           </summary>
 
-          <div
-            class={`px-1 pt-3 sm:px-2 sm:pt-4 ${
-              advancedOpen
-                ? "pb-[calc(6.5rem+env(safe-area-inset-bottom))] md:pb-6"
-                : "pb-5 sm:pb-6"
-            }`}
-          >
-            <div class="grid gap-3 md:grid-cols-3 md:gap-4">
-              <label class="space-y-2 text-sm font-bold text-[#25251F]">
+          <div class="grid grid-cols-2 gap-3 border-t border-[#DDD7C9] px-1 pb-4 pt-3 sm:px-2 sm:pb-5 md:grid-cols-4 md:pt-4">
+            <div class="contents">
+              <label class="min-w-0 space-y-2 text-sm font-bold text-[#25251F]">
                 <span>Periodo</span>
                 <select
                   value={filters.period}
                   onInput={(event) => updateField("period", event.currentTarget.value)}
-                  class="w-full rounded-2xl border border-[#DDD7C9] bg-[#FFFDF7] px-4 py-3 font-semibold text-[#25251F] outline-none transition-colors focus:border-[#3F6B4F] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none"
+                  class="min-h-12 w-full rounded-[6px] border border-[#DDD7C9] bg-[#FFFDF7] px-3 py-2.5 font-medium text-[#25251F] outline-none transition-colors focus:border-[#3F6B4F] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none"
                 >
                   {periodOptions.map((item) => (
                     <option value={item.value}>{item.label}</option>
@@ -539,12 +513,12 @@ export default function Filtri({ escursioni = [], initialFilters = defaultFilter
                 </select>
               </label>
 
-              <label class="space-y-2 text-sm font-bold text-[#25251F]">
+              <label class="min-w-0 space-y-2 text-sm font-bold text-[#25251F]">
                 <span>Difficolt&agrave;</span>
                 <select
                   value={filters.difficolta}
                   onInput={(event) => updateField("difficolta", event.currentTarget.value)}
-                  class="w-full rounded-2xl border border-[#DDD7C9] bg-[#FFFDF7] px-4 py-3 font-semibold text-[#25251F] outline-none transition-colors focus:border-[#3F6B4F] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none"
+                  class="min-h-12 w-full rounded-[6px] border border-[#DDD7C9] bg-[#FFFDF7] px-3 py-2.5 font-medium text-[#25251F] outline-none transition-colors focus:border-[#3F6B4F] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none"
                 >
                   {difficultyOptions.map((item) => (
                     <option value={item.value}>{item.label}</option>
@@ -552,65 +526,16 @@ export default function Filtri({ escursioni = [], initialFilters = defaultFilter
                 </select>
               </label>
 
-              <div class="space-y-2 text-sm font-bold text-[#25251F]">
-                <span>Con Gea</span>
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={filters.soloGea}
-                  onClick={() => updateField("soloGea", !filters.soloGea)}
-                  class={`flex min-h-[54px] w-full items-center justify-between rounded-2xl border px-4 py-3 text-sm font-semibold transition focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none ${
-                    filters.soloGea
-                      ? "border-[#3F6B4F] bg-[#3F6B4F] text-[#FFFDF7]"
-                      : "border-[#DDD7C9] bg-[#FFFDF7] text-[#25251F]"
-                  }`}
-                >
-                  <span>Con Gea</span>
-                  <span
-                    class={`relative h-7 w-12 rounded-full transition motion-reduce:transition-none ${
-                      filters.soloGea ? "bg-white/30" : "bg-[#91A66D]/50"
-                    }`}
-                  >
-                    <span
-                      class={`absolute top-1 h-5 w-5 rounded-full bg-[#FFFDF7] shadow-sm transition motion-reduce:transition-none ${
-                        filters.soloGea ? "left-6" : "left-1"
-                      }`}
-                    ></span>
-                  </span>
-                </button>
-              </div>
             </div>
 
-            <div class="mt-3 border-t border-[#DDD7C9] pt-2 md:mt-4 md:border-0 md:pt-0">
-              <button
-                type="button"
-                aria-expanded={advancedOpen}
-                aria-controls="advanced-filters"
-                onClick={() => setAdvancedOpen((current) => !current)}
-                class="flex min-h-11 w-full items-center justify-between gap-3 text-left text-sm font-bold text-[#3F6B4F] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] md:hidden"
-              >
-                <span>
-                  Altri criteri
-                  {advancedFilterCount ? ` · ${advancedFilterCount}` : ""}
-                </span>
-                <ChevronDown
-                  size={18}
-                  strokeWidth={2}
-                  aria-hidden="true"
-                  class={`transition-transform duration-200 motion-reduce:transition-none ${advancedOpen ? "rotate-180" : ""}`}
-                />
-              </button>
-
-              <div
-                id="advanced-filters"
-                class={`${advancedOpen ? "grid" : "hidden"} mt-4 gap-4 md:grid md:grid-cols-2 xl:grid-cols-4`}
-              >
-                <label class="space-y-2 text-sm font-bold text-[#25251F]">
+            <div class="contents">
+              <div class="contents">
+                <label class="min-w-0 space-y-2 text-sm font-bold text-[#25251F]">
                   <span>Provincia</span>
                   <select
                     value={filters.provincia}
                     onInput={(event) => updateField("provincia", event.currentTarget.value)}
-                    class="w-full rounded-2xl border border-[#DDD7C9] bg-[#FFFDF7] px-4 py-3 font-semibold text-[#25251F] outline-none transition-colors focus:border-[#3F6B4F] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none"
+                    class="min-h-12 w-full rounded-[6px] border border-[#DDD7C9] bg-[#FFFDF7] px-3 py-2.5 font-medium text-[#25251F] outline-none transition-colors focus:border-[#3F6B4F] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none"
                   >
                     <option value="">Tutte</option>
                     {provinceOptions.map((item) => (
@@ -619,12 +544,12 @@ export default function Filtri({ escursioni = [], initialFilters = defaultFilter
                   </select>
                 </label>
 
-                <label class="space-y-2 text-sm font-bold text-[#25251F]">
+                <label class="min-w-0 space-y-2 text-sm font-bold text-[#25251F]">
                   <span>Stagione</span>
                   <select
                     value={filters.stagione}
                     onInput={(event) => updateField("stagione", event.currentTarget.value)}
-                    class="w-full rounded-2xl border border-[#DDD7C9] bg-[#FFFDF7] px-4 py-3 font-semibold text-[#25251F] outline-none transition-colors focus:border-[#3F6B4F] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none"
+                    class="min-h-12 w-full rounded-[6px] border border-[#DDD7C9] bg-[#FFFDF7] px-3 py-2.5 font-medium text-[#25251F] outline-none transition-colors focus:border-[#3F6B4F] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none"
                   >
                     {seasonOptions.map((item) => (
                       <option value={item.value}>{item.label}</option>
@@ -632,14 +557,14 @@ export default function Filtri({ escursioni = [], initialFilters = defaultFilter
                   </select>
                 </label>
 
-                <div class="space-y-2 text-sm font-bold text-[#25251F] xl:col-span-1">
-                  <span>Km</span>
-                  <div class="rounded-2xl border border-[#DDD7C9] bg-[#FFFDF7] px-4 py-4">
+                <div class="col-span-2 min-w-0 space-y-2 text-sm font-bold text-[#25251F] md:col-span-2">
+                  <span>Chilometri</span>
+                  <div class="rounded-[6px] border border-[#DDD7C9] bg-[#FFFDF7] px-3 py-2">
                     <div class="flex items-center justify-between gap-4 text-sm font-bold text-forest-700">
                       <span>{formatKilometerLabel(rangeKmMin)} km</span>
                       <span>{formatKilometerLabel(rangeKmMax)} km</span>
                     </div>
-                    <div class="relative mt-3 h-11">
+                    <div class="relative mt-1 h-9">
                       <div
                         class="absolute left-0 right-0 top-1/2 h-2 -translate-y-1/2 rounded-full bg-forest-100"
                         style={`background: linear-gradient(to right, #d7e4d2 0%, #d7e4d2 ${rangeStartPercent}%, #3f6b4f ${rangeStartPercent}%, #3f6b4f ${rangeEndPercent}%, #d7e4d2 ${rangeEndPercent}%, #d7e4d2 100%)`}
@@ -668,14 +593,40 @@ export default function Filtri({ escursioni = [], initialFilters = defaultFilter
                   </div>
                 </div>
 
-                <div class="space-y-2 text-sm font-bold text-[#25251F]">
-                  <span>Con rifugio</span>
+                <div class="min-w-0 self-end text-sm font-bold text-[#25251F]">
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={filters.soloGea}
+                    onClick={() => updateField("soloGea", !filters.soloGea)}
+                    class={`flex min-h-12 w-full items-center justify-between rounded-[10px] border px-3 py-2.5 text-sm font-medium transition focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none ${
+                      filters.soloGea
+                        ? "border-[#3F6B4F] bg-[#3F6B4F] text-[#FFFDF7]"
+                        : "border-[#DDD7C9] bg-[#FFFDF7] text-[#25251F]"
+                    }`}
+                  >
+                    <span>Con Gea</span>
+                    <span
+                      class={`relative h-6 w-11 rounded-full transition motion-reduce:transition-none ${
+                        filters.soloGea ? "bg-white/30" : "bg-[#91A66D]/50"
+                      }`}
+                    >
+                      <span
+                        class={`absolute top-1 h-4 w-4 rounded-full bg-[#FFFDF7] shadow-sm transition motion-reduce:transition-none ${
+                          filters.soloGea ? "left-6" : "left-1"
+                        }`}
+                      ></span>
+                    </span>
+                  </button>
+                </div>
+
+                <div class="min-w-0 self-end text-sm font-bold text-[#25251F]">
                   <button
                     type="button"
                     role="switch"
                     aria-checked={filters.soloRifugio}
                     onClick={() => updateField("soloRifugio", !filters.soloRifugio)}
-                    class={`flex min-h-[54px] w-full items-center justify-between rounded-2xl border px-4 py-3 text-sm font-semibold transition focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none ${
+                    class={`flex min-h-12 w-full items-center justify-between rounded-[10px] border px-3 py-2.5 text-sm font-medium transition focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] motion-reduce:transition-none ${
                       filters.soloRifugio
                         ? "border-[#3F6B4F] bg-[#3F6B4F] text-[#FFFDF7]"
                         : "border-[#DDD7C9] bg-[#FFFDF7] text-[#25251F]"
@@ -683,12 +634,12 @@ export default function Filtri({ escursioni = [], initialFilters = defaultFilter
                   >
                     <span>Con rifugio</span>
                     <span
-                      class={`relative h-7 w-12 rounded-full transition motion-reduce:transition-none ${
+                      class={`relative h-6 w-11 rounded-full transition motion-reduce:transition-none ${
                         filters.soloRifugio ? "bg-white/30" : "bg-[#91A66D]/50"
                       }`}
                     >
                       <span
-                        class={`absolute top-1 h-5 w-5 rounded-full bg-[#FFFDF7] shadow-sm transition motion-reduce:transition-none ${
+                        class={`absolute top-1 h-4 w-4 rounded-full bg-[#FFFDF7] shadow-sm transition motion-reduce:transition-none ${
                           filters.soloRifugio ? "left-6" : "left-1"
                         }`}
                       ></span>
@@ -698,16 +649,14 @@ export default function Filtri({ escursioni = [], initialFilters = defaultFilter
               </div>
             </div>
           </div>
-        </details>
-
         {activeFilters.length ? (
-          <div class="flex flex-wrap items-center gap-2" aria-label="Filtri attivi">
+          <div class="col-span-2 flex flex-wrap items-center gap-2 border-t border-[#DDD7C9] px-1 pt-3 md:col-span-4" aria-label="Filtri attivi">
             {activeFilters.map((item) => (
               <button
                 type="button"
                 onClick={() => clearFilter(item.key)}
                 aria-label={`Rimuovi filtro ${item.label}`}
-                class="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#DDD7C9] bg-[#FFFDF7]/70 px-3 py-2 text-sm font-bold text-[#3F6B4F] transition-colors hover:bg-[#FFFDF7] hover:text-[#25251F] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F]"
+                class="inline-flex min-h-10 items-center gap-2 rounded-full border border-[#DDD7C9] bg-[#FFFDF7] px-3 py-1.5 text-sm font-bold text-[#3F6B4F] transition-colors hover:text-[#25251F] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F]"
               >
                 <span>{item.label}</span>
                 <X size={15} strokeWidth={2.4} aria-hidden="true" />
@@ -716,12 +665,13 @@ export default function Filtri({ escursioni = [], initialFilters = defaultFilter
             <button
               type="button"
               onClick={resetFilters}
-              class="inline-flex min-h-11 items-center px-2 text-sm font-bold text-terracotta-700 underline decoration-terracotta-300 underline-offset-4 transition-colors hover:text-terracotta-800 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F]"
+              class="inline-flex min-h-10 items-center rounded-[10px] px-3 text-sm font-bold text-terracotta-700 transition-colors hover:bg-terracotta-100/60 hover:text-terracotta-800 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F]"
             >
               Azzera filtri
             </button>
           </div>
         ) : null}
+        </details>
       </div>
 
       <section class="space-y-4" aria-labelledby="results-heading">
@@ -732,7 +682,7 @@ export default function Filtri({ escursioni = [], initialFilters = defaultFilter
             tabindex="-1"
             aria-live="polite"
             aria-atomic="true"
-            class="min-w-0 whitespace-nowrap text-xl font-bold text-[#25251f] outline-none focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F] sm:text-2xl"
+            class="min-w-0 text-[length:var(--type-ui-title)] font-bold leading-[var(--type-leading-ui-title)] text-[#25251f] outline-none focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-[#3F6B4F]"
           >
             {filtered.length} {filtered.length === 1 ? "Escursione" : "Escursioni"}
           </h2>

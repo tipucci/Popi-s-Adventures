@@ -471,13 +471,10 @@ export default function ZainoChecklist({ categories = [] }) {
           <div class="min-w-0">
             <h1
               id="zaino-checklist-title"
-              class="text-3xl font-bold tracking-[-0.025em] text-forest-800 sm:text-4xl"
+              class="max-w-[12ch] text-balance font-display text-[length:var(--type-page-title)] font-semibold leading-[var(--type-leading-page-title)] tracking-[var(--type-tracking-display)] text-[#25251F]"
             >
               Prepara lo zaino
             </h1>
-            <p class="mt-1 text-sm font-semibold text-forest-700 sm:text-base">
-              Nuova avventura in arrivo.
-            </p>
           </div>
 
           {remainingCount === 0 && totalCount > 0 && (
@@ -521,7 +518,7 @@ export default function ZainoChecklist({ categories = [] }) {
         )}
 
         {storageError && (
-          <p class="mt-3 text-sm font-semibold text-terracotta-700" role="status">
+          <p class="mt-3 text-sm font-medium text-terracotta-700" role="status">
             Il browser non può salvare le modifiche: resteranno attive solo in questa scheda.
           </p>
         )}
@@ -594,7 +591,7 @@ export default function ZainoChecklist({ categories = [] }) {
         </div>
 
         {isOrganizeMode && (
-          <p class="mt-3 text-sm font-semibold text-forest-700" role="status">
+          <p class="mt-3 text-sm font-medium text-forest-700" role="status">
             Usa le frecce per cambiare l’ordine. La vista completa resta attiva finché riordini.
           </p>
         )}
@@ -602,7 +599,7 @@ export default function ZainoChecklist({ categories = [] }) {
 
       {isAddFormOpen && (
         <section class="border-b border-[#DDD7C9] py-5" aria-labelledby="zaino-form-title">
-          <h2 id="zaino-form-title" class="text-xl font-bold text-forest-800">
+          <h2 id="zaino-form-title" class="text-[length:var(--type-ui-title)] font-bold leading-[var(--type-leading-ui-title)] text-forest-800">
             {editingItemId ? "Modifica elemento" : "Aggiungi elemento"}
           </h2>
           <form class="mt-4 grid gap-4" noValidate onSubmit={handleAddItem}>
@@ -643,7 +640,7 @@ export default function ZainoChecklist({ categories = [] }) {
             </div>
 
             {formError && (
-              <p id="zaino-form-error" class="text-sm font-semibold text-terracotta-700" role="alert">
+              <p id="zaino-form-error" class="text-sm font-bold text-terracotta-700" role="alert">
                 {formError}
               </p>
             )}
@@ -696,7 +693,7 @@ export default function ZainoChecklist({ categories = [] }) {
                   class="shrink-0 text-terracotta-700"
                   aria-hidden="true"
                 />
-                <span id={`category-${category.id}`} class="min-w-0 flex-1 text-xl font-bold text-forest-800">
+                <span id={`category-${category.id}`} class="min-w-0 flex-1 text-[length:var(--type-ui-title)] font-bold leading-[var(--type-leading-ui-title)] text-forest-800">
                   {category.label}
                 </span>
                 <span
@@ -743,7 +740,7 @@ export default function ZainoChecklist({ categories = [] }) {
                               class="h-5 w-5 shrink-0 accent-[#315334] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-forest-700"
                             />
 
-                            <span class="min-w-0 flex-1 break-words [overflow-wrap:anywhere] text-base font-semibold leading-6 text-forest-800">
+                            <span class="min-w-0 flex-1 break-words text-base font-medium leading-6 text-forest-800">
                               <span
                                 class={
                                   isChecked
@@ -856,7 +853,7 @@ export default function ZainoChecklist({ categories = [] }) {
           <button
             type="button"
             onClick={handleUndo}
-            class="min-h-11 shrink-0 rounded-[10px] px-3 py-2 text-sm font-bold text-[#FFFDF7] underline decoration-2 underline-offset-4 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[#FFFDF7]"
+            class="min-h-11 shrink-0 rounded-[10px] border border-[#FFFDF7]/45 px-3 py-2 text-sm font-bold text-[#FFFDF7] transition-colors hover:border-[#FFFDF7]/75 hover:bg-[#FFFDF7]/10 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[#FFFDF7]"
           >
             Annulla
           </button>
