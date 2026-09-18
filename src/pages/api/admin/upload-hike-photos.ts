@@ -1,4 +1,5 @@
 import type { APIContext } from "astro";
+import { getSecret } from "astro:env/server";
 
 export const prerender = false;
 
@@ -50,7 +51,7 @@ function json(body: Record<string, unknown>, status = 200) {
 }
 
 function getEnv(name: string, required = true) {
-  const value = import.meta.env[name];
+  const value = getSecret(name);
   if (value) return value;
   if (required) {
     throw new Error(`Missing environment variable: ${name}`);
