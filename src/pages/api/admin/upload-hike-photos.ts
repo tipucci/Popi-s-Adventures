@@ -8,27 +8,22 @@ const MAX_UPLOAD_BYTES = 3_800_000;
 const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const HIKES_ROOT = "src/assets/images/hikes";
 const UPLOADED_METADATA_PATH = "src/data/uploadedHikeImageMeta.json";
-const DEFAULT_VISION_MODEL = "gpt-4o-mini";
 
 type UploadPayload = {
   slug: string;
-  hikeTitle: string;
   target: "gallery" | "cover";
   images: Array<{
-    dataUrl: string;
     base64Content: string;
+  }>;
+  descriptions: Array<{
+    alt: string;
+    caption: string;
   }>;
 };
 
 type GitHubTreeItem = {
   path: string;
   type: string;
-};
-
-type PhotoDescription = {
-  index: number;
-  alt: string;
-  caption: string;
 };
 
 type UploadedHikeImageMeta = Record<string, {
@@ -104,7 +99,6 @@ async function parseUploadRequest(request: Request): Promise<UploadPayload> {
 
   const formData = await request.formData();
   const slug = String(formData.get("slug") || "");
-  const hikeTitle = String(formData.get("hikeTitle") || slug).trim().slice(0, 160);
   const target = formData.get("target") === "cover" ? "cover" : "gallery";
   const files = formData.getAll("images").filter((entry): entry is File => typeof entry !== "string");
   const totalBytes = files.reduce((total, file) => total + file.size, 0);
@@ -117,15 +111,42 @@ async function parseUploadRequest(request: Request): Promise<UploadPayload> {
     throw new UploadRequestError("Ogni file deve essere una foto JPEG valida.", 400);
   }
 
+  let rawDescriptions: unknown;
+  try {
+    rawDescriptions = JSON.parse(String(formData.get("descriptions") || ""));
+  } catch {
+    throw new UploadRequestError("Le descrizioni delle foto non sono valide.", 400);
+  }
+
+  if (!Array.isArray(rawDescriptions) || rawDescriptions.length !== files.length) {
+    throw new UploadRequestError("Ogni foto deve avere la propria descrizione.", 400);
+  }
+
+  const descriptions = rawDescriptions.map((description, index) => {
+    const alt = typeof description === "object" && description
+      ? String((description as Record<string, unknown>).alt || "").trim()
+      : "";
+    const caption = typeof description === "object" && description
+      ? String((description as Record<string, unknown>).caption || "").trim()
+      : "";
+
+    if (alt && (alt.length < 12 || alt.length > 220)) {
+      throw new UploadRequestError(`Il testo alternativo della foto ${index + 1} deve contenere da 12 a 220 caratteri.`, 400);
+    }
+
+    if (target === "gallery" && caption && (caption.length < 3 || caption.length > 100)) {
+      throw new UploadRequestError(`La didascalia della foto ${index + 1} deve contenere da 3 a 100 caratteri.`, 400);
+    }
+
+    return { alt, caption: target === "cover" ? "" : caption };
+  });
+
   const images = await Promise.all(files.map(async (file) => {
     const base64Content = bytesToBase64(new Uint8Array(await file.arrayBuffer()));
-    return {
-      base64Content,
-      dataUrl: `data:image/jpeg;base64,${base64Content}`
-    };
+    return { base64Content };
   }));
 
-  return { slug, hikeTitle, target, images };
+  return { slug, target, images, descriptions };
 }
 
 class UploadRequestError extends Error {
@@ -152,121 +173,6 @@ function decodeBase64Text(value: string) {
   const binary = atob(value.replace(/\s/g, ""));
   const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0));
   return new TextDecoder().decode(bytes);
-}
-
-function getResponseOutputText(data: any) {
-  for (const item of Array.isArray(data?.output) ? data.output : []) {
-    for (const content of Array.isArray(item?.content) ? item.content : []) {
-      if (content?.type === "output_text" && typeof content.text === "string") {
-        return content.text;
-      }
-    }
-  }
-
-  return "";
-}
-
-async function describePhotos(
-  images: string[],
-  hikeTitle: string,
-  target: "gallery" | "cover",
-  apiKey: string,
-  model: string
-) {
-  const imageContent = images.flatMap((image, index) => [
-    { type: "input_text", text: `Foto ${index + 1}` },
-    { type: "input_image", image_url: image, detail: "low" }
-  ]);
-  const response = await fetch("https://api.openai.com/v1/responses", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      model,
-      store: false,
-      instructions: [
-        "Analizza fotografie reali di un diario escursionistico.",
-        "Scrivi in italiano naturale e concreto, descrivendo soltanto elementi chiaramente visibili.",
-        "Non identificare persone, non attribuire nomi e non dedurre caratteristiche sensibili.",
-        "L'alt text deve essere una frase accessibile e specifica, senza iniziare con 'foto di' o 'immagine di'.",
-        "La caption deve essere una breve nota editoriale di 3-10 parole, nello stile caldo di un diario personale.",
-        "Non inventare luoghi, eventi, relazioni o dettagli non visibili."
-      ].join(" "),
-      input: [{
-        role: "user",
-        content: [
-          {
-            type: "input_text",
-            text: `Escursione: ${hikeTitle}. Tipo: ${target === "cover" ? "copertina" : "galleria"}. Restituisci una descrizione per ogni foto, mantenendo lo stesso indice.`
-          },
-          ...imageContent
-        ]
-      }],
-      max_output_tokens: Math.max(300, images.length * 120),
-      text: {
-        format: {
-          type: "json_schema",
-          name: "hike_photo_descriptions",
-          strict: true,
-          schema: {
-            type: "object",
-            properties: {
-              photos: {
-                type: "array",
-                minItems: images.length,
-                maxItems: images.length,
-                items: {
-                  type: "object",
-                  properties: {
-                    index: { type: "integer", minimum: 0, maximum: images.length - 1 },
-                    alt: { type: "string", minLength: 12, maxLength: 220 },
-                    caption: { type: "string", minLength: 3, maxLength: 100 }
-                  },
-                  required: ["index", "alt", "caption"],
-                  additionalProperties: false
-                }
-              }
-            },
-            required: ["photos"],
-            additionalProperties: false
-          }
-        }
-      }
-    })
-  });
-
-  if (!response.ok) {
-    const detail = await response.text().catch(() => "");
-    throw new Error(`Analisi automatica non riuscita (${response.status}): ${detail || "riprova più tardi."}`);
-  }
-
-  const data = await response.json();
-  const outputText = getResponseOutputText(data);
-  if (!outputText) {
-    throw new Error("L'analisi automatica non ha restituito descrizioni.");
-  }
-
-  const parsed = JSON.parse(outputText) as { photos?: PhotoDescription[] };
-  const photos = Array.isArray(parsed.photos) ? parsed.photos : [];
-  const byIndex = new Map(photos.map((photo) => [photo.index, photo]));
-
-  if (photos.length !== images.length || byIndex.size !== images.length) {
-    throw new Error("L'analisi automatica non ha descritto tutte le foto.");
-  }
-
-  return images.map((_, index) => {
-    const photo = byIndex.get(index);
-    const alt = String(photo?.alt || "").trim();
-    const caption = String(photo?.caption || "").trim();
-
-    if (!alt || !caption) {
-      throw new Error(`Descrizione incompleta per la foto ${index + 1}.`);
-    }
-
-    return { index, alt, caption };
-  });
 }
 
 async function githubRequest(
@@ -306,12 +212,12 @@ async function getUploadedImageMetadata(
   const data = await response.json();
 
   if (data.encoding !== "base64" || typeof data.content !== "string") {
-    throw new Error("Il file dei metadati automatici non può essere letto.");
+    throw new Error("Il file dei metadati delle foto non può essere letto.");
   }
 
   const parsed = JSON.parse(decodeBase64Text(data.content));
   if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-    throw new Error("Il file dei metadati automatici non è valido.");
+    throw new Error("Il file dei metadati delle foto non è valido.");
   }
 
   return parsed as UploadedHikeImageMeta;
@@ -435,10 +341,7 @@ export async function POST({ request }: APIContext) {
     const githubRepo = getEnv("GITHUB_REPO");
     const githubBranch = getEnv("GITHUB_BRANCH");
     const deployHookUrl = getEnv("VERCEL_DEPLOY_HOOK_URL", false);
-    const openaiApiKey = getEnv("OPENAI_API_KEY");
-    const visionModel = getEnv("OPENAI_IMAGE_DESCRIPTION_MODEL", false) || DEFAULT_VISION_MODEL;
-
-    const { slug, hikeTitle, target, images } = await parseUploadRequest(request);
+    const { slug, target, images, descriptions } = await parseUploadRequest(request);
 
     if (!isValidSlug(slug)) {
       return json({ success: false, createdFiles: [], message: "Slug non valido." }, 400);
@@ -464,24 +367,24 @@ export async function POST({ request }: APIContext) {
     const directoryPath = getDirectoryPath(slug);
 
     const preparedImages: Array<{
-      dataUrl: string;
       base64Content: string;
       fileName: string;
       filePath: string;
+      description: { alt: string; caption: string; };
     }> = [];
 
     if (target === "cover") {
       const fileName = "cover.jpg";
       const filePath = `${directoryPath}/cover.jpg`;
       preparedImages.push({
-        dataUrl: images[0].dataUrl,
         base64Content: images[0].base64Content,
         fileName,
-        filePath
+        filePath,
+        description: descriptions[0]
       });
     } else {
       let nextIndex = getNextGalleryIndex(existingPaths);
-      for (const image of images) {
+      for (const [index, image] of images.entries()) {
         const fileName = `gallery-${String(nextIndex).padStart(2, "0")}.jpg`;
         const filePath = `${directoryPath}/${fileName}`;
 
@@ -491,10 +394,10 @@ export async function POST({ request }: APIContext) {
         }
 
         preparedImages.push({
-          dataUrl: image.dataUrl,
           base64Content: image.base64Content,
           fileName,
-          filePath
+          filePath,
+          description: descriptions[index]
         });
         nextIndex += 1;
       }
@@ -504,13 +407,6 @@ export async function POST({ request }: APIContext) {
       return json({ success: false, createdFiles: [], message: "Nessun nuovo file da creare." }, 409);
     }
 
-    const descriptions = await describePhotos(
-      preparedImages.map((image) => image.dataUrl),
-      hikeTitle,
-      target,
-      openaiApiKey,
-      visionModel
-    );
     const uploadedMetadata = await getUploadedImageMetadata(
       githubOwner,
       githubRepo,
@@ -522,7 +418,7 @@ export async function POST({ request }: APIContext) {
     if (target === "cover") {
       uploadedMetadata[slug] = {
         ...currentMetadata,
-        coverAlt: descriptions[0].alt
+        coverAlt: preparedImages[0].description.alt
       };
     } else {
       const newFileNames = new Set(preparedImages.map((image) => image.fileName));
@@ -530,10 +426,10 @@ export async function POST({ request }: APIContext) {
         ...currentMetadata,
         gallery: [
           ...(currentMetadata.gallery || []).filter((item) => !newFileNames.has(item.file)),
-          ...preparedImages.map((image, index) => ({
+          ...preparedImages.map((image) => ({
             file: image.fileName,
-            alt: descriptions[index].alt,
-            caption: descriptions[index].caption
+            alt: image.description.alt,
+            caption: image.description.caption
           }))
         ]
       };
@@ -562,7 +458,7 @@ export async function POST({ request }: APIContext) {
 
     let message = target === "cover"
       ? "Cover e descrizione aggiornate con successo."
-      : `${createdFiles.length} ${createdFiles.length === 1 ? "foto aggiunta" : "foto aggiunte"} con descrizione automatica.`;
+      : `${createdFiles.length} ${createdFiles.length === 1 ? "foto aggiunta" : "foto aggiunte"} con le relative descrizioni.`;
     if (deployHookUrl) {
       try {
         await triggerDeployHook(deployHookUrl);

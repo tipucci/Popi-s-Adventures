@@ -8,6 +8,8 @@ type PhotoItem = {
   fileName: string;
   previewUrl: string;
   optimized?: Blob;
+  alt: string;
+  caption: string;
 };
 
 type UploadState = "idle" | "preparing" | "ready" | "uploading" | "success" | "error";
@@ -139,7 +141,6 @@ function sendUpload(
   apiUrl: string,
   password: string,
   slug: string,
-  hikeTitle: string,
   target: UploadTarget,
   photos: PhotoItem[],
   onProgress: (progress: number) => void
@@ -147,8 +148,11 @@ function sendUpload(
   return new Promise<{ status: number; data: UploadResponse }>((resolve, reject) => {
     const formData = new FormData();
     formData.set("slug", slug);
-    formData.set("hikeTitle", hikeTitle);
     formData.set("target", target);
+    formData.set("descriptions", JSON.stringify(photos.map((photo) => ({
+      alt: photo.alt.trim(),
+      caption: target === "cover" ? "" : photo.caption.trim()
+    }))));
 
     photos.forEach((photo, index) => {
       if (photo.optimized) {
@@ -222,6 +226,7 @@ export default function PhotoUploadButton({
   const buttonLabel = isCoverUpload ? "Modifica cover" : "Aggiungi foto";
   const dialogId = `photo-upload-${target}-${slug.replace(/[^a-z0-9-]/gi, "-")}`;
   const dialogTitleId = `${dialogId}-title`;
+  const formId = `${dialogId}-form`;
   const isBusy = status === "preparing" || status === "uploading";
   const isReady = photos.length > 0 && photos.every((photo) => photo.optimized);
   const canSubmit = password.trim().length > 0 && isReady && !isBusy;
@@ -309,7 +314,9 @@ export default function PhotoUploadButton({
         id: `${file.name}-${file.lastModified}-${index}`,
         file,
         fileName: file.name,
-        previewUrl: URL.createObjectURL(file)
+        previewUrl: URL.createObjectURL(file),
+        alt: "",
+        caption: ""
       }));
     });
     setMessage("");
@@ -371,13 +378,28 @@ export default function PhotoUploadButton({
   }
 
   function removePhoto(id: string) {
-    const remaining = photos.filter((photo) => photo.id !== id).map((photo) => photo.file);
-    if (remaining.length === 0) {
+    if (photos.length === 1) {
       clearPhotos();
       setMessage("");
       return;
     }
-    void prepareSelection(remaining);
+
+    setPhotos((current) => {
+      const removed = current.find((photo) => photo.id === id);
+      if (removed) URL.revokeObjectURL(removed.previewUrl);
+      return current.filter((photo) => photo.id !== id);
+    });
+  }
+
+  function updatePhotoDescription(id: string, field: "alt" | "caption", value: string) {
+    setPhotos((current) => current.map((photo) => (
+      photo.id === id ? { ...photo, [field]: value } : photo
+    )));
+
+    if (status === "error") {
+      setStatus("ready");
+      setMessage("");
+    }
   }
 
   async function handleSubmit(event: Event) {
@@ -394,12 +416,11 @@ export default function PhotoUploadButton({
         apiUrl,
         password,
         slug,
-        hikeTitle,
         target,
         photos,
         (progress) => {
           setUploadProgress(progress);
-          setBusyLabel(progress < 100 ? `Invio ${progress}%` : "Creo descrizioni e salvo…");
+          setBusyLabel(progress < 100 ? `Invio ${progress}%` : "Salvo foto e descrizioni…");
         }
       );
 
@@ -477,7 +498,7 @@ export default function PhotoUploadButton({
               </button>
             </div>
 
-            <form class="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-5 py-5" onSubmit={handleSubmit}>
+            <form id={formId} class="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-5 py-5" onSubmit={handleSubmit}>
               <label class="block space-y-2">
                 <span class="flex items-center gap-2 text-sm font-bold text-[#315334]">
                   <LockKeyhole size={17} strokeWidth={2} aria-hidden="true" />
@@ -531,21 +552,67 @@ export default function PhotoUploadButton({
                     <strong class="text-[#25251F]">{photos.length} {photos.length === 1 ? "foto" : "foto"}</strong>
                     {isReady && <span class="inline-flex items-center gap-1.5 text-[#315334]"><Check size={16} aria-hidden="true" /> {formatBytes(optimizedBytes)}</span>}
                   </div>
-                  <div class="grid grid-cols-3 gap-2 rounded-[10px] bg-[#F7F1E3] p-2">
-                    {photos.map((photo) => (
-                      <figure key={photo.id} class="relative overflow-hidden rounded-[6px] bg-white">
-                        <img src={photo.previewUrl} alt="" class="aspect-square h-full w-full object-cover" />
-                        {!isBusy && (
-                          <button
-                            type="button"
-                            onClick={() => removePhoto(photo.id)}
-                            aria-label={`Rimuovi ${photo.fileName}`}
-                            class="absolute right-0 top-0 flex h-11 w-11 items-center justify-center rounded-bl-[10px] bg-[#25251F]/82 text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
-                          >
-                            <Trash2 size={17} strokeWidth={2.1} aria-hidden="true" />
-                          </button>
-                        )}
-                      </figure>
+                  <p class="text-[0.8125rem] leading-snug text-[#5B665D]">
+                    {isCoverUpload
+                      ? "Se vuoi, descrivi in modo concreto ciò che si vede nella copertina."
+                      : "Puoi aggiungere una descrizione accessibile e una breve didascalia per ogni foto."}
+                  </p>
+                  <div class="space-y-3">
+                    {photos.map((photo, index) => (
+                      <fieldset key={photo.id} class="min-w-0 rounded-[10px] bg-[#F7F1E3] p-3">
+                        <legend class="sr-only">Foto {index + 1}</legend>
+                        <div class="flex items-start gap-3">
+                          <figure class="relative h-20 w-20 shrink-0 overflow-hidden rounded-[6px] bg-white sm:h-24 sm:w-24">
+                            <img src={photo.previewUrl} alt="" class="h-full w-full object-cover" />
+                            {!isBusy && (
+                              <button
+                                type="button"
+                                onClick={() => removePhoto(photo.id)}
+                                aria-label={`Rimuovi ${photo.fileName}`}
+                                class="absolute right-0 top-0 flex h-11 w-11 items-center justify-center rounded-bl-[10px] bg-[#25251F]/82 text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+                              >
+                                <Trash2 size={17} strokeWidth={2.1} aria-hidden="true" />
+                              </button>
+                            )}
+                          </figure>
+                          <div class="min-w-0 flex-1 space-y-3">
+                            <label class="block space-y-1.5">
+                              <span class="flex items-baseline justify-between gap-2 text-sm font-bold text-[#315334]">
+                                <span>Testo alternativo <span class="font-normal text-[#5B665D]">(facoltativo)</span></span>
+                                <span class="shrink-0 text-xs font-medium text-[#5B665D]">{photo.alt.length}/220</span>
+                              </span>
+                              <textarea
+                                value={photo.alt}
+                                onInput={(event) => updatePhotoDescription(photo.id, "alt", (event.currentTarget as HTMLTextAreaElement).value)}
+                                disabled={isBusy}
+                                minLength={12}
+                                maxLength={220}
+                                rows={2}
+                                placeholder="Es. Sentiero sul crinale tra prati e montagne"
+                                class="block min-h-20 w-full resize-y rounded-[8px] border border-[#D1CCBF] bg-white px-3 py-2.5 text-base leading-snug text-[#25251F] outline-none transition-colors placeholder:text-[#68685F] focus:border-[#3F6B4F] focus:ring-2 focus:ring-[#3F6B4F]/20 disabled:opacity-60"
+                              />
+                            </label>
+                            {!isCoverUpload && (
+                              <label class="block space-y-1.5">
+                                <span class="flex items-baseline justify-between gap-2 text-sm font-bold text-[#315334]">
+                                  <span>Didascalia breve <span class="font-normal text-[#5B665D]">(facoltativa)</span></span>
+                                  <span class="shrink-0 text-xs font-medium text-[#5B665D]">{photo.caption.length}/100</span>
+                                </span>
+                                <input
+                                  type="text"
+                                  value={photo.caption}
+                                  onInput={(event) => updatePhotoDescription(photo.id, "caption", (event.currentTarget as HTMLInputElement).value)}
+                                  disabled={isBusy}
+                                  minLength={3}
+                                  maxLength={100}
+                                  placeholder="Es. Sul crinale, finalmente"
+                                  class="block w-full rounded-[8px] border border-[#D1CCBF] bg-white px-3 py-2.5 text-base leading-snug text-[#25251F] outline-none transition-colors placeholder:text-[#68685F] focus:border-[#3F6B4F] focus:ring-2 focus:ring-[#3F6B4F]/20 disabled:opacity-60"
+                                />
+                              </label>
+                            )}
+                          </div>
+                        </div>
+                      </fieldset>
                     ))}
                   </div>
                 </section>
@@ -581,24 +648,25 @@ export default function PhotoUploadButton({
                 </div>
               )}
 
-              <div class="sticky bottom-0 -mx-5 mt-auto flex gap-3 border-t border-[#DDD7C9] bg-[#FFFDF7] px-5 pb-[max(0.25rem,env(safe-area-inset-bottom))] pt-4">
-                <button
-                  type="button"
-                  onClick={closePanel}
-                  disabled={isBusy}
-                  class="inline-flex min-h-12 flex-1 items-center justify-center rounded-[10px] border border-[#DDD7C9] bg-white px-4 py-3 text-sm font-bold text-[#3F6B4F] transition-colors hover:bg-[#F7F1E3] focus:outline-none focus:ring-2 focus:ring-[#3F6B4F] disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  Chiudi
-                </button>
-                <button
-                  type="submit"
-                  disabled={!canSubmit}
-                  class="inline-flex min-h-12 flex-[1.35] items-center justify-center rounded-[10px] bg-[#3F6B4F] px-4 py-3 text-sm font-bold text-[#FFFDF7] transition-colors hover:bg-[#25251F] focus:outline-none focus:ring-2 focus:ring-[#3F6B4F] focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {actionLabel}
-                </button>
-              </div>
             </form>
+            <div class="flex shrink-0 gap-3 border-t border-[#DDD7C9] bg-[#FFFDF7] px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4">
+              <button
+                type="button"
+                onClick={closePanel}
+                disabled={isBusy}
+                class="inline-flex min-h-12 flex-1 items-center justify-center rounded-[10px] border border-[#DDD7C9] bg-white px-4 py-3 text-sm font-bold text-[#3F6B4F] transition-colors hover:bg-[#F7F1E3] focus:outline-none focus:ring-2 focus:ring-[#3F6B4F] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                Chiudi
+              </button>
+              <button
+                type="submit"
+                form={formId}
+                disabled={!canSubmit}
+                class="inline-flex min-h-12 flex-[1.35] items-center justify-center rounded-[10px] bg-[#3F6B4F] px-4 py-3 text-sm font-bold text-[#FFFDF7] transition-colors hover:bg-[#25251F] focus:outline-none focus:ring-2 focus:ring-[#3F6B4F] focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {actionLabel}
+              </button>
+            </div>
           </div>
         </div>
       )}

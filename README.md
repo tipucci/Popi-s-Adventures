@@ -123,10 +123,6 @@ Il progetto usa queste variabili per la build e l'upload amministrativo:
   Credenziali e destinazione usate dall'endpoint amministrativo per salvare le immagini nel repository.
 - `ADMIN_UPLOAD_PASSWORD`
   Password richiesta dal pannello di caricamento foto.
-- `OPENAI_API_KEY`
-  Chiave server-side usata per generare alt text e didascalie durante ogni upload.
-- `OPENAI_IMAGE_DESCRIPTION_MODEL`
-  Modello visivo opzionale; il fallback è `gpt-4o-mini`.
 - `VERCEL_DEPLOY_HOOK_URL`
   Hook opzionale per avviare il deploy dopo il commit delle immagini.
 
@@ -184,7 +180,7 @@ Note operative:
 - le immagini di sito vengono usate per hero homepage, sezione about e logo
 - ogni escursione può avere una cover e una galleria
 - alt text e metadata galleria storici sono configurati in [src/data/hikeImageMeta.js](./src/data/hikeImageMeta.js)
-- gli upload amministrativi analizzano ogni foto e salvano alt text e didascalia in [src/data/uploadedHikeImageMeta.json](./src/data/uploadedHikeImageMeta.json), nello stesso commit dell'immagine
+- gli upload amministrativi permettono di compilare alt text e didascalie facoltativi nel modulo e li salvano in [src/data/uploadedHikeImageMeta.json](./src/data/uploadedHikeImageMeta.json), nello stesso commit dell'immagine
 - se le immagini locali mancano, il progetto genera placeholder per evitare rotture di layout
 
 Quando aggiungi una nuova escursione:
@@ -192,7 +188,7 @@ Quando aggiungi una nuova escursione:
 1. aggiungi la riga dati nella sorgente Google Sheet
 2. verifica che lo slug generato corrisponda al nome della cartella immagini
 3. aggiungi le immagini locali sotto `src/assets/images/hikes/<yyyy-mm-dd-slug>/`
-4. aggiungi in [src/data/hikeImageMeta.js](./src/data/hikeImageMeta.js) un alt text accurato per la cover e un alt text con caption breve per ogni foto di galleria; dall'upload amministrativo questi campi vengono generati automaticamente
+4. aggiungi in [src/data/hikeImageMeta.js](./src/data/hikeImageMeta.js) un alt text accurato per la cover e un alt text con caption breve per ogni foto di galleria; nell'upload amministrativo questi campi vengono compilati direttamente nel modulo
 
 ### Import GPX da Komoot
 
