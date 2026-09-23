@@ -15,6 +15,18 @@
     ]
   },
   "2026-09-06-piani-artavaggio": {
-    "coverAlt": ""
+    "coverAlt": "",
+    "gallery": [
+      {
+        "file": "gallery-01.jpg",
+        "alt": "",
+        "caption": ""
+      },
+      {
+        "file": "gallery-02.jpg",
+        "alt": "",
+        "caption": ""
+      }
+    ]
   }
 }
