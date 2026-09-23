@@ -1,5 +1,17 @@
 {
   "2026-09-13-braga-di-cavallo": {
-    "coverAlt": "Meg e Gea sul crinale"
+    "coverAlt": "Meg e Gea sul crinale",
+    "gallery": [
+      {
+        "file": "gallery-01.jpg",
+        "alt": "",
+        "caption": "Gea incontra Gea"
+      },
+      {
+        "file": "gallery-02.jpg",
+        "alt": "",
+        "caption": "Gea folletto del bosco"
+      }
+    ]
   }
 }
